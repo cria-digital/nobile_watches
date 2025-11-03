@@ -19,8 +19,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
     setIsFavorited(!isFavorited);
   };
 
-  // Gera o link do produto usando a estrutura /{marca}/{modelo}
-  const productUrl = `/${stringToSlug(product.brand)}/${stringToSlug(product.model)}`;
+  const productUrl = `/${stringToSlug(product.brand)}/${stringToSlug(product.model)}-${product.id}`;
 
   // Layout em lista - apenas para desktop (lg breakpoint ou maior)
   if (viewMode === "list") {
@@ -180,7 +179,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   // Layout em grade (original)
   return (
     <div className="group transition-all duration-300">
-      <Link href={productUrl} className="focus:outline-none rounded-lg block">
+      <Link
+        href={productUrl}
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D5A60A] focus-visible:ring-offset-2 rounded-lg block"
+      >
         <div className="relative aspect-square rounded-lg bg-[#EFEFEF] overflow-hidden mb-4">
           <Image
             src={product.images?.[0] || ""}

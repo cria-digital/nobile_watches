@@ -1,6 +1,6 @@
-// src/app/(main)/[brand]/[slug]/page.tsx
 import { ProductPageClient } from "@/components/products/ProductPageClient";
 import { mockProducts } from "@/lib/data/mockProducts";
+import { extractProductIdFromSlug } from "@/lib/utils/productUrlUtils";
 import { stringToSlug } from "@/lib/utils/stringUtils";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -15,10 +15,11 @@ interface ProductPageProps {
 export async function generateMetadata(props: ProductPageProps): Promise<Metadata> {
   const params = await props.params;
 
-  // Encontra o produto baseado na marca e slug
-  const product = mockProducts.find(
-    p => stringToSlug(p.brand) === params.brand && stringToSlug(p.model) === params.slug
-  );
+  // Extrai o ID do slug (ex: "gmt-master-ii-abc123" -> "abc123")
+  const productId = extractProductIdFromSlug(params.slug);
+
+  // Encontra o produto pelo ID
+  const product = productId ? mockProducts.find(p => p.id === productId) : null;
 
   if (!product) {
     return {
@@ -41,14 +42,22 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
 export default async function ProductPage(props: ProductPageProps) {
   const params = await props.params;
 
-  // Busca o produto pelos slugs da marca e modelo
-  const product = mockProducts.find(
-    p => stringToSlug(p.brand) === params.brand && stringToSlug(p.model) === params.slug
-  );
-  console.log("product", product);
-  if (!product) {
+  // Extrai o ID do slug
+  const productId = extractProductIdFromSlug(params.slug);
+
+  if (!productId) {
     notFound();
   }
+
+  // Busca o produto pelo ID
+  const product = mockProducts.find(p => p.id === productId);
+
+  // Valida se o produto existe e se a marca corresponde
+  if (!product || stringToSlug(product.brand) !== params.brand) {
+    notFound();
+  }
+
+  console.log("product", product);
 
   // Busca produtos relacionados (mesma marca ou similares)
   const relatedProducts = mockProducts

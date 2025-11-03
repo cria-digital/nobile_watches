@@ -16,8 +16,9 @@ export function Header() {
 
   return (
     <div className="relative inset-x-0 z-250 group">
-      <header className="relative h-16 md:h-24 mx-auto duration-200 bg-white">
+      <header className="relative h-[120px] md:h-24 mx-auto duration-200 bg-white">
         <div className="container mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+          {/* Primeira linha - Logo, Navigation e Auth Actions */}
           <div className="flex h-16 md:h-24 items-center justify-between gap-4">
             <div className="flex items-center md:gap-x-12">
               {/* Logo */}
@@ -60,28 +61,44 @@ export function Header() {
                   <Button
                     variant="gold"
                     size="default"
-                    className="relative h-[48px] w-[122px] font-bold leading-[150%] tracking-[0.02em] whitespace-nowrap"
+                    className="h-[48px] w-[122px] font-bold leading-[150%] tracking-[0.02em] whitespace-nowrap"
                   >
-                    <span className="relative z-10">Acessar</span>
-                    <span className="absolute bottom-0 left-0 w-full h-1/2 rounded-b-full bg-white opacity-25 blur-lg"></span>
+                    Acessar
                   </Button>
                 </Link>
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
-            <button
-              type="button"
-              className="md:hidden p-2"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Menu"
-            >
-              {isMobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6 text-gray-900" />
-              ) : (
-                <Bars3Icon className="h-6 w-6 text-gray-900" />
-              )}
-            </button>
+            {/* Mobile Auth Actions or Menu Toggle */}
+            <div className="md:hidden flex items-center gap-3">
+              {isAuthenticated && user ? (
+                <Link href="/meu-perfil">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                    <span className="font-lato text-sm font-medium text-gray-700">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                </Link>
+              ) : null}
+
+              <button
+                type="button"
+                className="p-2"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Menu"
+              >
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="h-6 w-6 text-gray-900" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6 text-gray-900" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Segunda linha - Search Bar (apenas mobile) */}
+          <div className="md:hidden pb-4">
+            <SearchBar />
           </div>
         </div>
       </header>

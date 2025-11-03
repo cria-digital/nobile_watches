@@ -19,8 +19,7 @@ export function CollectionCard({ item, onRemove }: CollectionCardProps) {
   const { watch, estimatedValue, priceChange } = item;
   const displayPrice = estimatedValue || watch.price;
 
-  // Gera o link do produto usando a estrutura /{marca}/{modelo}
-  const productUrl = `/${stringToSlug(watch.brand)}/${stringToSlug(watch.model)}`;
+  const productUrl = `/${stringToSlug(watch.brand)}/${stringToSlug(watch.model)}-${watch.id}`;
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault();
