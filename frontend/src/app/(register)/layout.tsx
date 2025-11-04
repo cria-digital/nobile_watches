@@ -9,7 +9,7 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
   return (
     <div className="min-h-screen relative flex flex-col lg:block lg:bg-[#0A0A0A]">
       {/* Background mobile */}
-      <div className="relative h-[calc(30vh+18px)] lg:hidden flex-shrink-0">
+      <div className="relative h-[calc(28vh+18px)] lg:hidden flex-shrink-0">
         <Image
           src="/images/auth/register-bg-mobile.svg"
           alt="Crie sua conta na Nobile"

@@ -168,7 +168,7 @@ export function VendedorHero() {
           </div>
 
           {/* Conteúdo do texto */}
-          <div className="relative top-[126px] z-200 px-4 pt-[48px] text-center hero-fade">
+          <div className="relative top-[126px] z-101 px-4 pt-[48px] text-center hero-fade">
             <div className="max-w-[250px] mx-auto">
               <p className="font-erstoria text-[#D5A60A] text-sm tracking-[-0.01em] mb-1.5">
                 Seja um vendedor
