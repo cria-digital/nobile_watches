@@ -36,21 +36,21 @@ export function Hero() {
   } as const;
 
   const initialProducts = [
-    { img: "/images/hero/banner1.svg", nome: "Rolex Deepsea", href: "/rolex/deepsea" },
+    { img: "/images/hero/banner1.svg", nome: "Rolex Deepsea", href: "/rolex/deepsea-12" },
     {
       img: "/images/hero/banner2.svg",
       nome: "Rolex Oyster-Perpetual",
-      href: "/rolex/oyster-perpetual",
+      href: "/rolex/oyster-perpetual-9",
     },
     {
       img: "/images/hero/banner3.svg",
       nome: "Patek Philippe",
-      href: "/patek-philippe/patek-philippe-nautilus",
+      href: "/patek-philippe/nautilus-14",
     },
     {
       img: "/images/hero/banner4.svg",
       nome: "Breitling Superocean Heritage",
-      href: "/breitling/superocean-heritage",
+      href: "/breitling/superocean-heritage-15",
     },
   ];
 

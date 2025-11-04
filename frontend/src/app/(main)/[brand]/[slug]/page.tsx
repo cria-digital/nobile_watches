@@ -57,8 +57,6 @@ export default async function ProductPage(props: ProductPageProps) {
     notFound();
   }
 
-  console.log("product", product);
-
   // Busca produtos relacionados (mesma marca ou similares)
   const relatedProducts = mockProducts
     .filter(p => p.id !== product.id && p.brand === product.brand)

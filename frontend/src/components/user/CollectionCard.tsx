@@ -40,7 +40,7 @@ export function CollectionCard({ item, onRemove }: CollectionCardProps) {
   ].filter(Boolean);
 
   return (
-    <div className="w-full bg-[#f7f7f7] rounded-2xl overflow-hidden lg:flex">
+    <div className="w-full rounded-2xl overflow-hidden lg:flex">
       {/* Imagem com navegação */}
       <div className="relative aspect-square bg-gradient-to-b from-transparent to-[#0D0D0D]/50 overflow-hidden lg:w-[50%] lg:h-[600px]">
         <Image
@@ -113,7 +113,7 @@ export function CollectionCard({ item, onRemove }: CollectionCardProps) {
       </div>
 
       {/* Conteúdo */}
-      <div className="p-6 lg:p-8 lg:w-[41%]">
+      <div className="py-6 lg:p-8 lg:w-[41%]">
         {/* Header com marca e modelo */}
         <div className="mb-4">
           <Link href={productUrl}>

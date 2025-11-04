@@ -138,7 +138,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                   const Icon = item.icon;
                   return (
                     <Link
-                      key={item.href}
+                      key={item.label}
                       href={item.href}
                       onClick={onClose}
                       className="flex flex-col items-center justify-center gap-3 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors"
@@ -163,7 +163,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                   const Icon = item.icon;
                   return (
                     <Link
-                      key={item.href}
+                      key={item.label}
                       href={item.href}
                       onClick={onClose}
                       className="flex flex-col items-center justify-center gap-3 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors"
@@ -188,7 +188,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                   const Icon = item.icon;
                   return (
                     <Link
-                      key={item.href}
+                      key={item.label}
                       href={item.href}
                       onClick={onClose}
                       className="flex flex-col items-center justify-center gap-3 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors"

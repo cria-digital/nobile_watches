@@ -1,11 +1,10 @@
 "use client";
 
+import { ProtectedMobileHeader } from "@/components/layout/ProtectedMobileHeader";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { OrderCard } from "@/components/user/OrderCard";
 import { UserNav } from "@/components/user/UserNav";
 import { useUserOrders } from "@/lib/hooks/useUserOrders";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 type TabType = "em_transito" | "entregue";
@@ -41,6 +40,8 @@ export default function MinhasComprasPage() {
 
   return (
     <div className="min-h-screen bg-white lg:py-8">
+      <ProtectedMobileHeader title="Minhas compras" />
+
       {/* ==================== HEADER DESKTOP ==================== */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,18 +54,6 @@ export default function MinhasComprasPage() {
             </div>
             <UserNav />
           </div>
-        </div>
-      </div>
-
-      {/* ==================== HEADER MOBILE ==================== */}
-      <div className="lg:hidden sticky top-0 z-50 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-3 px-5 h-14.5">
-          <Link href="/" className="-ml-1">
-            <ArrowLeft className="w-[26px] h-[26px] text-pb-500" strokeWidth={1.5} />
-          </Link>
-          <h1 className="font-erstoria text-[20px] text-pb-500 font-medium">
-            Minhas compras
-          </h1>
         </div>
       </div>
 

@@ -354,7 +354,7 @@ export const mockProducts: Product[] = [
   {
     id: "14",
     brand: "Patek Philippe",
-    model: "Patek Philippe Nautilus",
+    model: "Nautilus",
     description: "Patek Philippe Nautilus",
     price: 606529,
     images: ["/images/mock/patek-nautilus.png"],

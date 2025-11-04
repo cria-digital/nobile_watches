@@ -1,10 +1,11 @@
 "use client";
 
+import { ProtectedMobileHeader } from "@/components/layout/ProtectedMobileHeader";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
 import { UserNav } from "@/components/user/UserNav";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { ArrowLeft, Edit2 } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -39,6 +40,8 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <ProtectedMobileHeader title="Perfil" />
+
       {/* ==================== HEADER DESKTOP ==================== */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -51,16 +54,6 @@ export default function ProfilePage() {
             </div>
             <UserNav />
           </div>
-        </div>
-      </div>
-
-      {/* ==================== HEADER MOBILE ==================== */}
-      <div className="lg:hidden sticky top-0 z-50 bg-white">
-        <div className="flex items-center gap-3 px-5 h-14.5">
-          <Link href="/" className="-ml-1">
-            <ArrowLeft className="w-[26px] h-[26px] text-pb-500" strokeWidth={1.5} />
-          </Link>
-          <h1 className="font-erstoria text-[20px] text-pb-500 font-medium">Perfil</h1>
         </div>
       </div>
 

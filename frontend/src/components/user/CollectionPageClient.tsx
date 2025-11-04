@@ -57,9 +57,9 @@ export default function CollectionPageClient() {
         </div>
 
         {/* Content */}
-        <div className="pt-12 lg:pt-0 pb-24 lg:pb-8">
+        <div className="pt-6 lg:pt-0 pb-24 lg:pb-8">
           {/* Filtros de Marca */}
-          <div className="px-4 lg:px-8 mb-8">
+          <div className="px-4 lg:px-0 mb-4 lg:mb-8">
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {AVAILABLE_BRANDS.map(brand => {
                 const count = getBrandCount(brand.name);
@@ -99,7 +99,7 @@ export default function CollectionPageClient() {
           </div>
 
           {/* Grid de Relógios */}
-          <div className="px-4 lg:px-8">
+          <div className="px-4 lg:px-2">
             {isLoading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D5A60A]"></div>
@@ -161,7 +161,7 @@ export default function CollectionPageClient() {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-6 lg:gap-8">
+              <div className="grid grid-cols-1 gap-y-4 lg:gap-y-8">
                 {collection.map(item => (
                   <CollectionCard key={item.id} item={item} />
                 ))}

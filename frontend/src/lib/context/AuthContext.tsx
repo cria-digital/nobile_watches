@@ -129,7 +129,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
           body: JSON.stringify({ email, password }),
         });
-        console.log("response", response);
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.error || "Erro ao fazer login");

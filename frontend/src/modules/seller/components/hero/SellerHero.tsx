@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -152,11 +153,11 @@ export function VendedorHero() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative lg:overflow-hidden">
+      <section className="lg:overflow-hidden">
         {/* Layout Mobile */}
-        <div className="lg:hidden h-[480px]">
+        <div className="lg:hidden h-[410px] flex flex-col">
           {/* Imagem que se expande sob o header */}
-          <div className="relative h-[327px] -mt-16 pt-16 z-100">
+          <div className="absolute left-0 -top-4 right-0 h-[283px] z-100">
             <Image
               src="/images/seller/hero-mobile-bg.svg"
               alt="Relógio de luxo dourado"
@@ -167,26 +168,26 @@ export function VendedorHero() {
           </div>
 
           {/* Conteúdo do texto */}
-          <div className="relative z-200 top-[-126px] md:top-0 mb:bg-white px-5 pt-[48px] lg:py-8 text-center flex flex-col items-center hero-fade">
-            <div className="max-w-[257px]">
-              <p className="font-erstoria text-[#D5A60A] text-sm leading-[1.4] mb-3 tracking-[-0.01em]">
+          <div className="relative top-[126px] z-200 px-4 pt-[48px] text-center hero-fade">
+            <div className="max-w-[250px] mx-auto">
+              <p className="font-erstoria text-[#D5A60A] text-sm tracking-[-0.01em] mb-1.5">
                 Seja um vendedor
               </p>
-              <h1 className="font-erstoria text-[28px] text-[#141414] mb-3 leading-[100%]">
+              <h1 className="font-erstoria text-[28px] leading-[100%] mb-1">
                 Tenha seus relógios vendidos na Nobile
               </h1>
-              <p className="font-lato text-[14px] text-gray-600 mb-8 leading-[148%]">
+              <p className="text-sm text-gray-400">
                 Conectamos colecionadores, entusiastas e profissionais ao redor do mundo
                 com compradores confiáveis.
               </p>
             </div>
-            <Link
-              href="/login"
-              className="w-full max-w-[343px] h-[56px] inline-flex items-center justify-center bg-[#D5A60A] hover:bg-[#C09609] text-white tracking-[0.02em] font-lato font-bold rounded-full px-8 py-4 transition-colors text-base"
-            >
-              Vender meus relógios
-            </Link>
           </div>
+
+          <Link href="/login" className="relative mt-auto px-[42px] text-center">
+            <Button variant="gold" className="w-full max-w-[343px]">
+              Vender meus relógios
+            </Button>
+          </Link>
         </div>
 
         {/* Layout Desktop - mantém como estava */}
