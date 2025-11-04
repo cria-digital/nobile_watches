@@ -1,6 +1,6 @@
 "use client";
 
-import { ProtectedMobileHeader } from "@/components/layout/ProtectedMobileHeader";
+import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { OrderCard } from "@/components/user/OrderCard";
 import { UserNav } from "@/components/user/UserNav";
@@ -40,8 +40,7 @@ export default function MinhasComprasPage() {
 
   return (
     <div className="min-h-screen bg-white lg:py-8">
-      <ProtectedMobileHeader title="Minhas compras" />
-
+      <MobileBackHeader title="Minhas compras" />
       {/* ==================== HEADER DESKTOP ==================== */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

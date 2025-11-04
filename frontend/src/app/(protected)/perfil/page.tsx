@@ -1,6 +1,6 @@
 "use client";
 
-import { ProtectedMobileHeader } from "@/components/layout/ProtectedMobileHeader";
+import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
 import { UserNav } from "@/components/user/UserNav";
@@ -40,8 +40,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <ProtectedMobileHeader title="Perfil" />
-
+      <MobileBackHeader title="Perfil" />
       {/* ==================== HEADER DESKTOP ==================== */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">

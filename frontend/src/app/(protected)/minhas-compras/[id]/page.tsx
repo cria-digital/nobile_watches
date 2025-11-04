@@ -1,6 +1,6 @@
 "use client";
 
-import { ProtectedMobileHeader } from "@/components/layout/ProtectedMobileHeader";
+import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
 import { OrderTimelineComponent } from "@/components/user/OrderTimeline";
@@ -83,11 +83,7 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="min-h-screen bg-white lg:py-8">
-      <ProtectedMobileHeader
-        title="Acompanhar pedido"
-        onBackClick={() => router.back()}
-      />
-
+      <MobileBackHeader title="Acompanhar pedido" onBackClick={() => router.back()} />
       {/* Desktop Header */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
