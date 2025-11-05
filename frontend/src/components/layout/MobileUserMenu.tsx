@@ -205,7 +205,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
 
             {/* DEV ONLY: Simular Logout - apenas no mobile */}
             <div className="mt-6 pt-6 border-t border-gray-200">
-              {/* <button
+              <button
                 onClick={() => {
                   mockLogout();
                   onClose();
@@ -213,7 +213,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                 className="w-full py-3 px-4 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
               >
                 [DEV] Simular Logout
-              </button> */}
+              </button>
             </div>
           </div>
         ) : (

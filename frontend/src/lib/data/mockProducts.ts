@@ -295,7 +295,7 @@ export const mockProducts: Product[] = [
     model: "Deepsea",
     description: "Oyster, 44 mm, ouro amarelo",
     price: 519000,
-    images: ["/images/mock/rolex-deepsea.png"],
+    images: ["/images/mock/rolex-deepsea2.png"],
     reference: "M136668LB001",
     verified: true,
     year: 2021,

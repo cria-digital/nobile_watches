@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Slider from "react-slick";
 import FeaturedWatches from "./FeaturedWatches";
+import FeaturedWatchesDesktop from "./FeaturedWatchesDesktop";
 
 export function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -364,7 +365,13 @@ export function Hero() {
       </div>
 
       {/* Relógios em Destaque */}
-      <FeaturedWatches />
+      <div className="block lg:hidden">
+        <FeaturedWatches />
+      </div>
+
+      <div className="hidden lg:block">
+        <FeaturedWatchesDesktop />
+      </div>
 
       <div className="px-5 sm:px-8">
         <div className="mx-auto w-full max-w-7xl lg:px-8">
