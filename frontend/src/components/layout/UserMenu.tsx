@@ -22,13 +22,13 @@ const menuItems: MenuItem[] = [
   {
     icon: "/icons/shopping-cart.svg",
     label: "Meu carrinho",
-    href: "#",
+    href: "/carrinho",
     section: "gerenciamento",
   },
   {
     icon: "/icons/shopping-bag.svg",
     label: "Minhas compras",
-    href: "#",
+    href: "/minhas-compras",
     section: "gerenciamento",
   },
   {

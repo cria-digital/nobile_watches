@@ -34,7 +34,7 @@ const menuItems: MenuItem[] = [
   {
     icon: ShoppingCart,
     label: "Meu carrinho",
-    href: "#",
+    href: "/carrinho",
     section: "gerenciamento",
   },
   {

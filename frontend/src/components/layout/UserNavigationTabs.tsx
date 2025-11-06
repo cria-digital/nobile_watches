@@ -34,7 +34,7 @@ const navigationTabs: UserNavigationTab[] = [
   },
   {
     label: "Meus anúncios",
-    href: "/anuncios",
+    href: "/meus-anuncios",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path
@@ -48,7 +48,7 @@ const navigationTabs: UserNavigationTab[] = [
   },
   {
     label: "Minhas compras",
-    href: "/compras",
+    href: "/minhas-compras",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path
