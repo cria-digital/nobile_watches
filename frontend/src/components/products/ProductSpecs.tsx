@@ -115,7 +115,7 @@ export function ProductSpecs({ product }: ProductSpecsProps) {
   ].filter(item => item.value);
 
   return (
-    <div className="mb-6 lg:mb-12">
+    <div className="mb-8 lg:mb-12">
       {/* Grid Layout: 3 colunas x 2 linhas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 auto-rows-min">
         {/* Dados Básicos - Ocupa 2 linhas na primeira coluna */}

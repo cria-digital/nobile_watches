@@ -36,7 +36,7 @@ export default function CartPage() {
     );
   }
 
-  if (items.length !== 0) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen bg-white pb-24 lg:py-8">
         <MobileBackHeader title="Carrinho de compras" />
@@ -54,7 +54,6 @@ export default function CartPage() {
             </div>
           </div>
         </div>
-        {/* Empty state */}
         <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center max-w-sm">
             <p className="text-lg text-[#666666] mb-2">Seu carrinho está vazio</p>
@@ -62,7 +61,7 @@ export default function CartPage() {
               Adicione relógios incríveis à sua coleção
             </p>
             <button
-              onClick={() => router.push("/produtos")}
+              onClick={() => router.push("/all")}
               className="px-6 py-3 bg-[#D5A60A] text-white rounded-full font-medium hover:bg-[#B88F08] transition-colors"
             >
               Explorar relógios

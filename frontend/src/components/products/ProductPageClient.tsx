@@ -140,7 +140,7 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
         {/* Layout principal - Grid 2 colunas */}
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(400px,_1fr)_minmax(400px,_510px)] gap-6 lg:gap-8 xl:gap-12 mb-6 lg:mb-16">
           {/* Coluna Esquerda: Galeria de Imagens */}
-          <div className="space-y-6">
+          <div className="space-y-3 lg:space-y-6">
             {/* Imagem principal com zoom e navegação */}
             <div className="relative group">
               <div
@@ -279,9 +279,9 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`relative flex-shrink-0 w-[100px] h-[100px] rounded-[8px] overflow-hidden transition-all ${
+                    className={`relative flex-shrink-0 w-[100px] h-[90px] rounded-[8px] overflow-hidden transition-all ${
                       selectedImage === idx
-                        ? "ring-2 ring-[#D5A60A] ring-offset-2"
+                        ? "opacity-100"
                         : "opacity-60 hover:opacity-100"
                     }`}
                   >
@@ -323,14 +323,14 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
           </div>
 
           {/* Coluna Direita: Informações do Produto */}
-          <div className="pt-2 lg:pt-12 space-y-8">
+          <div className="pt-2 lg:pt-12 space-y-6 lg:space-y-[30px]">
             <Breadcrumbs
               items={[
                 { label: "Home", href: "/" },
                 { label: product.brand, href: `/${stringToSlug(product.brand)}` },
                 { label: product.model },
               ]}
-              className="hidden lg:flex"
+              className="hidden lg:flex lg:mb-6"
             />
 
             <div className="space-y-4 lg:space-y-6">
@@ -348,14 +348,16 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
               </div>
 
               {/* Título do produto */}
-              <div className="space-y-3 lg:space-y-4">
-                <h1 className="text-2xl lg:text-[32px] font-normal">
-                  {product.brand} {product.model}
+              <div className="">
+                <h1 className="text-2xl lg:text-[32px] font-normal leading-[34px] tracking-[-0.01em] mb-2">
+                  {product.model}
                 </h1>
-                <p className="text-gray-400 leading-[140%]">{product.description}</p>
+                <p className="text-sm lg:text-base text-gray-400 leading-[22px] mb-2">
+                  {product?.description}
+                </p>
 
                 {/* Referência e WebID */}
-                <div className="flex items-center gap-2 text-gray-400 leading-[140%]">
+                <div className="flex items-center gap-2 text-gray-400 leading-[22px] tracking-[-0.03em]">
                   <span>REF: {product.referenceNumber}</span>
                   <span>|</span>
                   <span>WEBID: {product.id}</span>
@@ -363,7 +365,7 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
               </div>
 
               {/* Preço */}
-              <div className="flex items-center justify-between h-[32px]">
+              <div className="flex items-center justify-between h-6 lg:h-[32px]">
                 <span className="text-2xl lg:text-[28px] font-bold leading-[140%]">
                   R$ {product.price.toLocaleString("pt-BR")}
                 </span>
@@ -521,8 +523,8 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
         <ProductSpecs product={product} />
 
         {/* Seção Evolução do Valor - Grid 2 colunas */}
-        <div className="mb-8 lg:mb-16">
-          <h2 className="font-erstoria text-[24px] font-medium text-pb-500 mb-6">
+        <div className="mb-[48px] lg:mb-16">
+          <h2 className="text-[28px] lg:text-[24px] font-medium mb-6">
             Evolução do valor
           </h2>
 
@@ -538,10 +540,10 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
             </div>
 
             {/* Coluna Direita: Card do Produto */}
-            <div className="bg-[#F7F7F7] rounded-lg p-8 h-[458px]">
-              <div className="flex gap-8 h-[302px]">
+            <div className="bg-[#F7F7F7] rounded-lg p-4 lg:p-8 lg:h-[458px]">
+              <div className="flex gap-4 lg:gap-8 h-[178px] lg:h-[302px]">
                 {/* Imagem do produto */}
-                <div className="relative flex-1 rounded-[13.62px] overflow-hidden">
+                <div className="relative flex-1 flex-shrink-0 rounded-[13.62px] overflow-hidden">
                   <Image
                     //@ts-ignore
                     src={images[0]}
@@ -552,22 +554,24 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                 </div>
 
                 {/* Informações do produto */}
-                <div className="flex-1 py-8">
+                <div className="flex-1 min-w-0 py-2.5 lg:py-8">
                   {/* Marca */}
-                  <div className="mb-5">
-                    <p className="text-sm text-pb-500 tracking-[-0.01em] mb-3">
+                  <div className="mb-2 lg:mb-5">
+                    <p className="text-sm tracking-[-0.01em] mb-2 lg:mb-3">
                       {product.brand}
                     </p>
-                    <div className="h-[88px]">
-                      <h3 className="text-[22px] font-medium tracking-[-0.01em] mb-1">
+                    <div className="lg:h-[88px]">
+                      <h3 className="text-[18px] lg:text-[22px] font-medium truncate tracking-[-0.01em] mb-1">
+                        {product.model}
+                        {product.model}
                         {product.model}
                       </h3>
-                      <p className="text-sm">{product?.referenceNumber}</p>
+                      <p className="text-sm font-light">{product?.referenceNumber}</p>
                     </div>
                   </div>
 
                   {/* Especificações */}
-                  <div className="space-y-4">
+                  <div className="space-y-2 lg:space-y-4">
                     <div className="flex justify-between items-center text-gray-400">
                       <span className="font-lato text-sm">Caixa:</span>
                       <span className="font-lato text-sm">
@@ -590,7 +594,7 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                 </div>
               </div>
               {/* Botão Adicionar a coleção */}
-              <button className="w-full h-[56px] mt-8 py-3 border-1 border-[#141414] rounded-full font-lato font-bold text-[#141414] hover:bg-[#141414] hover:text-white transition-colors duration-200">
+              <button className="w-full h-[56px] mt-5 lg:mt-8 py-3 border-1 border-[#141414] rounded-full font-lato font-bold text-[#141414] hover:bg-[#141414] hover:text-white transition-colors duration-200">
                 Adicionar a coleção
               </button>
             </div>
