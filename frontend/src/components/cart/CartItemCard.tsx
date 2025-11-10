@@ -4,7 +4,24 @@ import { formatCurrency } from "@/lib/utils/format";
 import { CartItem } from "@/types/cart";
 import { X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+// Hook elegante para detectar se é desktop
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [matches, query]);
+
+  return matches;
+}
 
 interface CartItemCardProps {
   item: CartItem;
@@ -14,17 +31,22 @@ interface CartItemCardProps {
 
 export function CartItemCard({ item, onRemove, onCheckout }: CartItemCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   return (
     <div
-      className="relative bg-[#F7F7F7] rounded-[12px] p-4 transition-all"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="relative bg-[#F7F7F7] rounded-[12px] p-4 transition-all duration-300"
+      onMouseEnter={() => !isDesktop && setIsHovered(true)}
+      onMouseLeave={() => !isDesktop && setIsHovered(false)}
     >
-      {/* Borda dourada no hover */}
-      {isHovered && (
-        <div className="absolute inset-0 border-2 border-[#D5A60A] rounded-[12px] pointer-events-none" />
-      )}
+      {/* Borda dourada com transição suave */}
+      <div
+        className={`
+          absolute inset-0 border-2 border-[#D5A60A] rounded-[12px] pointer-events-none 
+          transition-opacity duration-300 ease-in-out
+          ${isHovered ? "opacity-100" : "opacity-0"}
+        `}
+      ></div>
 
       {/* Botão remover */}
       <button
@@ -42,7 +64,7 @@ export function CartItemCard({ item, onRemove, onCheckout }: CartItemCardProps) 
             src={item.watch.image}
             alt={`${item.watch.brand} ${item.watch.model}`}
             fill
-            className="object-contain p-2"
+            className="object-cover"
           />
         </div>
 
@@ -84,15 +106,18 @@ export function CartItemCard({ item, onRemove, onCheckout }: CartItemCardProps) 
         </div>
       </div>
 
-      {/* Botão "Finalizar compra" que aparece no hover */}
-      {isHovered && (
-        <button
-          onClick={() => onCheckout(item.id)}
-          className="w-full py-3.5 bg-white border-2 border-[#141414] rounded-full text-base font-medium transition-all hover:bg-[#141414] hover:text-white"
-        >
-          Finalizar compra
-        </button>
-      )}
+      {/* Botão "Finalizar compra" com transição suave */}
+      <button
+        onClick={() => onCheckout(item.id)}
+        className={`
+          w-full py-3.5 bg-white border-2 border-[#141414] rounded-full text-base font-medium 
+          transition-all duration-500 ease-in-out
+          hover:bg-[#141414] hover:text-white
+          ${isHovered || isDesktop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
+        `}
+      >
+        Finalizar compra
+      </button>
     </div>
   );
 }

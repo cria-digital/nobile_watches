@@ -1,21 +1,28 @@
 "use client";
 
-import { User } from "@/lib/auth/auth";
+import {
+  login as authLogin,
+  logout as authLogout,
+  register as authRegister,
+  getCurrentUser,
+  User,
+} from "@/lib/auth/auth";
 import { useRouter } from "next/navigation";
-import React, {
+import {
   createContext,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
 
-interface AuthContextData {
+interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (userData: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   mockLogin: () => void;
@@ -26,22 +33,30 @@ interface RegisterData {
   name: string;
   email: string;
   password: string;
-  phone?: string;
-  country?: string;
-  state?: string;
-  city?: string;
+  phone: string;
+  country: string;
+  state: string;
+  city: string;
   role?: "BUYER" | "SELLER";
 }
 
-// Usuário mockado para testes
+// ===============================================
+// DADOS MOCKADOS
+// ===============================================
+
+/**
+ * Usuário mockado para desenvolvimento
+ * Todos os campos estão de acordo com os tipos da API
+ */
 const MOCK_USER: User = {
   id: 1,
   email: "teste@nobile.com",
-  name: "Lohan Marçal",
-  avatar: "/images/avatar-placeholder.jpg",
+  name: "Carlos Eduardo Silva",
+  role: "BUYER",
+  // Campos opcionais (não existem na API real)
+  avatar: "/images/avatar-placeholder2.jpg",
   phone: "+55 51 99999-8888",
   cpf: "123.456.789-00",
-  role: "BUYER",
   addresses: [
     {
       id: "addr-001",
@@ -70,157 +85,188 @@ const MOCK_USER: User = {
   createdAt: new Date().toISOString(),
 };
 
-const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+// ===============================================
+// CONTEXTO
+// ===============================================
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Verifica se há usuário mockado ao montar o componente
+  // ===============================================
+  // EFEITO INICIAL - Carrega usuário ao montar
+  // ===============================================
   useEffect(() => {
-    const mockToken = localStorage.getItem("mock_auth_token");
-    if (mockToken === "mock_token_active") {
-      setUser(MOCK_USER);
-      setIsLoading(false);
-      return;
-    }
-
-    // Busca o usuário real se não houver mock ativo
-    const hasSession = localStorage.getItem("hasSession");
-    if (hasSession) {
-      refreshUser();
-    } else {
-      setIsLoading(false);
-    }
+    loadUser();
   }, []);
 
-  // Busca o usuário atual ao montar o componente
-  const refreshUser = useCallback(async () => {
+  // ===============================================
+  // FUNÇÃO DE CARREGAMENTO DE USUÁRIO
+  // ===============================================
+  const loadUser = async () => {
     try {
-      const response = await fetch("/api/auth/me");
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        // Marca que há uma sessão ativa
-        localStorage.setItem("hasSession", "true");
-      } else {
-        setUser(null);
-        // Remove o marcador de sessão
-        localStorage.removeItem("hasSession");
+      setIsLoading(true);
+
+      // Verifica se há usuário mockado ativo
+      const mockToken = localStorage.getItem("mock_auth_token");
+      if (mockToken === "mock_token_active") {
+        console.log("🔷 Mock login ativo:", MOCK_USER);
+        setUser(MOCK_USER);
+        setIsLoading(false);
+        return;
       }
+
+      // Se não há mock, busca usuário real da API
+      const currentUser = await getCurrentUser();
+
+      // Se não tem name no JWT, tentar recuperar do sessionStorage
+      if (currentUser && !currentUser.name) {
+        const savedName = sessionStorage.getItem("user_name");
+        if (savedName) {
+          currentUser.name = savedName;
+        }
+      }
+
+      setUser(currentUser);
     } catch (error) {
-      console.error("Erro ao buscar usuário:", error);
+      console.error("Erro ao carregar usuário:", error);
       setUser(null);
-      localStorage.removeItem("hasSession");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // ===============================================
+  // FUNÇÃO DE REFRESH
+  // ===============================================
+  const refreshUser = useCallback(async () => {
+    try {
+      // Não atualiza se estiver em modo mock
+      const mockToken = localStorage.getItem("mock_auth_token");
+      if (mockToken === "mock_token_active") {
+        return;
+      }
+
+      const currentUser = await getCurrentUser();
+
+      if (currentUser && !currentUser.name) {
+        const savedName = sessionStorage.getItem("user_name");
+        if (savedName) {
+          currentUser.name = savedName;
+        }
+      }
+
+      setUser(currentUser);
+    } catch (error) {
+      console.error("Erro ao atualizar usuário:", error);
+      setUser(null);
+    }
   }, []);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Erro ao fazer login");
-        }
-
-        const data = await response.json();
-        setUser(data.user);
-        // Marca que há uma sessão ativa após login bem-sucedido
-        localStorage.setItem("hasSession", "true");
-        // Remove token de mock se existir
-        localStorage.removeItem("mock_auth_token");
-        router.refresh();
-      } catch (error: any) {
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [router]
-  );
-
-  const register = useCallback(
-    async (data: RegisterData) => {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Erro ao fazer registro");
-        }
-
-        const responseData = await response.json();
-        setUser(responseData.user);
-        // Marca que há uma sessão ativa após registro bem-sucedido
-        localStorage.setItem("hasSession", "true");
-        // Remove token de mock se existir
-        localStorage.removeItem("mock_auth_token");
-        router.refresh();
-      } catch (error: any) {
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [router]
-  );
-
-  const logout = useCallback(async () => {
+  // ===============================================
+  // LOGIN (API)
+  // ===============================================
+  const login = async (email: string, password: string) => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
-      setUser(null);
-      // Remove o marcador de sessão no logout
-      localStorage.removeItem("hasSession");
+      setIsLoading(true);
+      const response = await authLogin(email, password);
+
+      // Salvar name no sessionStorage
+      if (response.user.name) {
+        sessionStorage.setItem("user_name", response.user.name);
+      }
+
+      // Remove token de mock se existir
       localStorage.removeItem("mock_auth_token");
+
+      setUser(response.user);
       router.push("/");
+      router.refresh();
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ===============================================
+  // REGISTER (API)
+  // ===============================================
+  const register = async (userData: RegisterData) => {
+    try {
+      setIsLoading(true);
+      const response = await authRegister(userData);
+
+      // Salvar name no sessionStorage
+      if (response.user.name) {
+        sessionStorage.setItem("user_name", response.user.name);
+      }
+
+      // Remove token de mock se existir
+      localStorage.removeItem("mock_auth_token");
+
+      setUser(response.user);
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ===============================================
+  // LOGOUT (API)
+  // ===============================================
+  const logout = async () => {
+    try {
+      await authLogout();
+      sessionStorage.removeItem("user_name");
+      localStorage.removeItem("mock_auth_token");
+      setUser(null);
+      router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
-  }, [router]);
+  };
 
-  // Função para simular login (apenas para desenvolvimento)
+  // ===============================================
+  // MOCK LOGIN
+  // ===============================================
   const mockLogin = useCallback(() => {
     setUser(MOCK_USER);
     localStorage.setItem("mock_auth_token", "mock_token_active");
-    localStorage.removeItem("hasSession");
-    console.log("🔐 Mock login ativado:", MOCK_USER);
-  }, []);
+    sessionStorage.removeItem("user_name");
+    console.log("🔷 Mock login ativado:", MOCK_USER);
+    router.push("/");
+    router.refresh();
+  }, [router]);
 
-  // Função para simular logout (apenas para desenvolvimento)
+  // ===============================================
+  // MOCK LOGOUT
+  // ===============================================
   const mockLogout = useCallback(() => {
     setUser(null);
     localStorage.removeItem("mock_auth_token");
-    localStorage.removeItem("hasSession");
-    console.log("🔓 Mock logout ativado");
-  }, []);
+    sessionStorage.removeItem("user_name");
+    console.log("🔶 Mock logout ativado");
+    router.push("/login");
+    router.refresh();
+  }, [router]);
 
+  // ===============================================
+  // PROVIDER
+  // ===============================================
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
         isLoading,
+        isAuthenticated: !!user,
         login,
         register,
         logout,
@@ -236,8 +282,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

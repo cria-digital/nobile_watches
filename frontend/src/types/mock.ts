@@ -36,7 +36,7 @@ export interface Product {
   dialNumbers?: string;
 
   // Pulseira/Bracelete
-  strapMaterial?: string;
+  braceletMaterial?: string;
   strapColor?: string;
   clasp?: string;
   claspMaterial?: string;
@@ -57,7 +57,7 @@ export interface FilterOptions {
   brands: string[];
   models: string[];
   caseMaterials: string[];
-  strapMaterials: string[];
+  braceletMaterials: string[];
   dialColors: string[];
   movements: string[];
   conditions: string[];

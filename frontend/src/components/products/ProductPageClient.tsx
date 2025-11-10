@@ -1,11 +1,13 @@
 "use client";
 
+import { usePurchase } from "@/hooks/usePurchase";
 import { stringToSlug } from "@/lib/utils/stringUtils";
-import { Product } from "@/types/mock";
+import { Product } from "@/types/product";
 import Image from "next/image";
 import Link from "next/link";
 import { MouseEvent, useEffect, useRef, useState } from "react";
 import { Breadcrumbs } from "../ui/Breadcrumbs";
+import { Toast } from "../ui/Toast";
 import AuthWatchCard from "./AuthWatchCard";
 import { PriceEvolutionChart } from "./PriceEvolutionChart";
 import { ProductCard } from "./ProductCard";
@@ -19,6 +21,9 @@ interface ProductPageClientProps {
 export function ProductPageClient({ product, relatedProducts }: ProductPageClientProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showAllImages, setShowAllImages] = useState(false);
+
+  // Hook de compra
+  const { isLoading, message, addToCartAndRedirect, clearMessage } = usePurchase();
 
   // Estados para controle do zoom
   const [isZooming, setIsZooming] = useState(false);
@@ -46,6 +51,11 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
       { date: "30/11/24", value: product.price - 5000 },
       { date: "30/02/25", value: product.price },
     ],
+  };
+
+  // Handler do botão Comprar
+  const handleBuyClick = () => {
+    addToCartAndRedirect(product);
   };
 
   // Verifica se pode scrollar
@@ -112,6 +122,11 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Toast de feedback */}
+      {message && (
+        <Toast message={message.text} type={message.type} onClose={clearMessage} />
+      )}
+
       <div className="container mx-auto max-w-7xl px-4 lg:px-8 pt-5 lg:pt-[48px] pb-28">
         <Breadcrumbs
           items={[
@@ -223,16 +238,11 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                       />
                     </svg>
                   </button>
-
-                  {/* Indicador de posição (contador de imagens) */}
-                  <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/60 text-white text-sm rounded-full font-lato">
-                    {selectedImage + 1} / {images.length}
-                  </div>
                 </>
               )}
             </div>
 
-            {/* Slider de Thumbnails */}
+            {/* Thumbnails com slider */}
             <div className="relative group">
               {/* Botão scroll esquerda */}
               {canScrollLeft && (
@@ -259,24 +269,20 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                 </button>
               )}
 
-              {/* Container de thumbnails com scroll */}
+              {/* Container de thumbnails */}
               <div
                 ref={thumbnailsContainerRef}
+                className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth"
                 onScroll={checkScrollability}
-                className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
-                style={{
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                }}
               >
-                {images.map((img, idx) => (
+                {(showAllImages ? images : images.slice(0, 4)).map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`h-[94px] min-w-[94px] relative rounded-lg bg-[#F5F5F5] overflow-hidden transition-all flex-shrink-0 ${
+                    className={`relative flex-shrink-0 w-[100px] h-[100px] rounded-[8px] overflow-hidden transition-all ${
                       selectedImage === idx
-                        ? "opacity-100"
-                        : "opacity-50 hover:opacity-75"
+                        ? "ring-2 ring-[#D5A60A] ring-offset-2"
+                        : "opacity-60 hover:opacity-100"
                     }`}
                   >
                     <Image
@@ -339,23 +345,6 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                 >
                   {product.brand}
                 </span>
-                {product.verified && (
-                  <div className="flex h-6 lg:h-[28px] items-center gap-1 bg-[#EFEFEF] px-2 py-1 rounded-[4px]">
-                    <div className="w-[18px] h-[18px]">
-                      <Image
-                        src="/icons/verified-badge.svg"
-                        alt="Verificado"
-                        width={16}
-                        height={16}
-                        className="w-full h-full"
-                      />
-                    </div>
-                    <span className="hidden lg:flex text-sm text-pb-500">
-                      Vendedor verificado
-                    </span>
-                    <span className="flex lg:hidden text-sm text-pb-500">Verificado</span>
-                  </div>
-                )}
               </div>
 
               {/* Título do produto */}
@@ -367,7 +356,7 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
 
                 {/* Referência e WebID */}
                 <div className="flex items-center gap-2 text-gray-400 leading-[140%]">
-                  <span>REF: {product.reference}</span>
+                  <span>REF: {product.referenceNumber}</span>
                   <span>|</span>
                   <span>WEBID: {product.id}</span>
                 </div>
@@ -392,8 +381,38 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
 
             {/* Botões de ação */}
             <div className="">
-              <button className="w-full h-[56px] bg-[#D5A60A] hover:bg-[#C09509] text-white text-base font-bold py-3.5 px-6 rounded-full transition-colors">
-                Comprar
+              <button
+                onClick={handleBuyClick}
+                disabled={isLoading}
+                className="w-full h-[56px] bg-[#D5A60A] hover:bg-[#C09509] text-white text-base font-bold py-3.5 px-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Processando...</span>
+                  </>
+                ) : (
+                  "Comprar"
+                )}
               </button>
             </div>
 
@@ -543,7 +562,7 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
                       <h3 className="text-[22px] font-medium tracking-[-0.01em] mb-1">
                         {product.model}
                       </h3>
-                      <p className="text-sm">{product.reference}</p>
+                      <p className="text-sm">{product?.referenceNumber}</p>
                     </div>
                   </div>
 

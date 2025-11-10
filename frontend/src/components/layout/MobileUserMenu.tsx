@@ -1,17 +1,7 @@
 "use client";
 
+import { USER_MENU_ITEMS } from "@/config/user-menu-items";
 import { useAuth } from "@/lib/context/AuthContext";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  Heart,
-  LogOut,
-  ShoppingBag,
-  ShoppingCart,
-  Store,
-  Tag,
-  User,
-  Watch,
-} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/Button";
@@ -22,73 +12,21 @@ interface MobileUserMenuProps {
   onClose: () => void;
 }
 
-interface MenuItem {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  section: "gerenciamento" | "meusDados" | "opcoes";
-}
-
-const menuItems: MenuItem[] = [
-  // Gerenciamento
-  {
-    icon: ShoppingCart,
-    label: "Meu carrinho",
-    href: "/carrinho",
-    section: "gerenciamento",
-  },
-  {
-    icon: ShoppingBag,
-    label: "Minhas compras",
-    href: "/minhas-compras",
-    section: "gerenciamento",
-  },
-  {
-    icon: Heart,
-    label: "Lista de desejos",
-    href: "#",
-    section: "gerenciamento",
-  },
-  {
-    icon: Watch,
-    label: "Minha coleção",
-    href: "/colecao",
-    section: "gerenciamento",
-  },
-  // Meus dados
-  {
-    icon: User,
-    label: "Meu perfil",
-    href: "/perfil",
-    section: "meusDados",
-  },
-  {
-    icon: Store,
-    label: "Vender",
-    href: "/vendedor",
-    section: "meusDados",
-  },
-  {
-    icon: Tag,
-    label: "Meus anúncios",
-    href: "/meus-anuncios",
-    section: "meusDados",
-  },
-  // Opções
-  {
-    icon: LogOut,
-    label: "Sair",
-    href: "#",
-    section: "opcoes",
-  },
-];
-
 export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
   const { isAuthenticated, mockLogin, mockLogout } = useAuth();
 
-  const gerenciamentoItems = menuItems.filter(item => item.section === "gerenciamento");
-  const meusDadosItems = menuItems.filter(item => item.section === "meusDados");
-  const opcoesItems = menuItems.filter(item => item.section === "opcoes");
+  const gerenciamentoItems = USER_MENU_ITEMS.filter(
+    item => item.section === "gerenciamento"
+  );
+  const meusDadosItems = USER_MENU_ITEMS.filter(item => item.section === "meusDados");
+  const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
+
+  const handleClick = (e: React.MouseEvent) => {
+    onClose(); // fecha o menu
+
+    e.preventDefault(); // impede redirecionamento
+    mockLogout(); // executa logout
+  };
 
   if (!isOpen) return null;
 
@@ -104,19 +42,17 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
       {/* Drawer */}
       <div className="fixed inset-y-0 left-0 right-0 bg-white z-[9999] overflow-y-auto md:hidden">
         {/* Header do menu */}
-        <div className="flex h-16 items-center justify-between px-5 border-b border-gray-200">
+        <div className="flex h-16 items-center justify-between px-5">
           <Link href="/" onClick={onClose}>
-            <Image
-              src="/logo.svg"
-              alt="Nobile"
-              width={120}
-              height={30}
-              className="w-[91px] h-[24px]"
-              priority
-            />
+            <Image src="/logo.svg" alt="Nobile" width={91} height={24} priority />
           </Link>
-          <button onClick={onClose} className="p-2 -mr-2" aria-label="Fechar menu">
-            <XMarkIcon className="w-6 h-6 text-gray-900" />
+
+          <button
+            onClick={onClose}
+            className="w-auto h-auto flex items-center justify-center rounded-lg hover:bg-gray-50 transition-colors"
+            aria-label="Fechar menu"
+          >
+            <Image src="/icons/XSquare.svg" alt="Fechar" width={32} height={32} />
           </button>
         </div>
 
@@ -127,29 +63,26 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
 
         {/* Menu Content */}
         {isAuthenticated ? (
-          <div className="px-5 pb-6 mt-1">
+          <div className="px-5 mt-1">
             {/* Gerenciamento */}
             <div className="mb-6">
               <h3 className="font-lato text-sm font-normal text-[#141414] mb-4">
                 Gerenciamento
               </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {gerenciamentoItems.map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={onClose}
-                      className="flex flex-col items-center justify-center gap-3 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors"
-                    >
-                      <Icon className="w-6 h-6 text-[#141414]" strokeWidth={1.5} />
-                      <span className="font-lato text-xs font-medium text-[#141414] text-center leading-[148%]">
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
+              <div className="grid grid-cols-3 gap-2 min-w-0">
+                {gerenciamentoItems.map(item => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={onClose}
+                    className="flex flex-col items-center justify-center gap-2 sm:gap-2.5 p-3 sm:p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors min-w-0"
+                  >
+                    <Image src={item.icon} alt={item.label} width={24} height={24} />
+                    <span className="font-lato text-xs font-medium text-[#141414] text-center leading-[148%] line-clamp-2">
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
 
@@ -158,23 +91,20 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
               <h3 className="font-lato text-sm font-normal text-[#141414] mb-4">
                 Meus dados
               </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {meusDadosItems.map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={onClose}
-                      className="flex flex-col items-center justify-center gap-3 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors"
-                    >
-                      <Icon className="w-6 h-6 text-[#141414]" strokeWidth={1.5} />
-                      <span className="font-lato text-xs font-medium text-[#141414] text-center leading-[148%]">
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
+              <div className="grid grid-cols-3 gap-2 min-w-0">
+                {meusDadosItems.map(item => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={onClose}
+                    className="flex flex-col items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors min-w-0"
+                  >
+                    <Image src={item.icon} alt={item.label} width={24} height={24} />
+                    <span className="font-lato text-xs font-medium text-[#141414] text-center leading-[148%] line-clamp-2">
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
 
@@ -183,28 +113,25 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
               <h3 className="font-lato text-sm font-normal text-[#141414] mb-4">
                 Opções
               </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {opcoesItems.map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={onClose}
-                      className="flex flex-col items-center justify-center gap-3 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors"
-                    >
-                      <Icon className="w-6 h-6 text-red-600" strokeWidth={1.5} />
-                      <span className="font-lato text-xs font-medium text-red-600 text-center">
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 min-w-0">
+                {opcoesItems.map(item => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={handleClick}
+                    className="flex flex-col items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors min-w-0"
+                  >
+                    <Image src={item.icon} alt={item.label} width={24} height={24} />
+                    <span className="font-lato text-xs font-medium text-red-600 text-center line-clamp-2">
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </div>
 
             {/* DEV ONLY: Simular Logout - apenas no mobile */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 py-6 border-t border-gray-200">
               <button
                 onClick={() => {
                   mockLogout();

@@ -95,7 +95,7 @@ export function Header() {
               <SearchBar className="md:w-[420px]" />
 
               {isAuthenticated && user ? (
-                <UserMenu user={user} />
+                <UserMenu user={user} logout={mockLogout} />
               ) : (
                 <Link href="/login">
                   <Button

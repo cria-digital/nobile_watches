@@ -1,34 +1,36 @@
 export interface Product {
-  id: string;
-  title: string;
-  description: string;
+  id: number;
   brand: string;
   model: string;
+  referenceNumber?: string;
+  movement?: string;
+  year?: number;
+  condition: string;
   price: number;
-  originalPrice?: number;
-  condition: "novo" | "seminovo" | "usado";
+  description?: string;
   images: string[];
-  specifications: {
-    movement: string;
-    caseMaterial: string;
-    caseSize: string;
-    waterResistance: string;
-    complications: string[];
-  };
-  seller: {
-    id: string;
-    name: string;
-    verified: boolean;
-    rating: number;
-    location: string;
-  };
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  };
+  sellerId: number;
   createdAt: string;
   updatedAt: string;
+  caseMaterial?: string;
+  caseDiameter?: number;
+  waterResistance?: string;
+  glassType?: string;
+  dialColor?: string;
+  braceletMaterial?: string;
+  braceletColor?: string;
+  claspType?: string;
+  gender?: string;
+  seller?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+
+  //não existem no back
+
+  hasBox?: boolean;
+  hasDocuments?: boolean;
 }
 
 export interface ProductFilters {

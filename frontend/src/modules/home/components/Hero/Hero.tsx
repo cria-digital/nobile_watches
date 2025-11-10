@@ -2,18 +2,73 @@
 
 import { ProductCard } from "@/components/products";
 import { mockProducts } from "@/lib/data/mockProducts";
-import { Product } from "@/types/mock";
+import nobileService from "@/lib/services/nobile.service";
+import { Product } from "@/types/product";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Slider from "react-slick";
+import useSWR from "swr";
 import FeaturedWatches from "./FeaturedWatches";
 import FeaturedWatchesDesktop from "./FeaturedWatchesDesktop";
+
+// Tipagem local para as marcas renderizadas
+interface Marca {
+  nome: string;
+  img: string;
+  href: string;
+}
+
+const useMockData = false; // ➜ altere para true para forçar modo mock local
+
+// Mock de fallback (mantido do código atual)
+const mockMarcas: Marca[] = [
+  { img: "/images/brand/marca1.svg", nome: "Rolex", href: "/rolex" },
+  { img: "/images/brand/marca2.svg", nome: "Tag Heuer", href: "/tag-heuer" },
+  { img: "/images/brand/marca3.svg", nome: "Breitling", href: "/breitling" },
+  { img: "/images/brand/marca4.svg", nome: "Audemars Piguet", href: "/audemars-piguet" },
+  { img: "/images/brand/marca5.svg", nome: "Patek Philippe", href: "/patek-philippe" },
+  { img: "/images/brand/marca6.svg", nome: "Hublot", href: "/hublot" },
+  { img: "/images/brand/marca7.svg", nome: "Cartier", href: "/cartier" },
+  { img: "/images/brand/marca8.svg", nome: "Seiko", href: "/seiko" },
+  { img: "/images/brand/marca9.svg", nome: "Omega", href: "/omega" },
+  { img: "/images/brand/marca10.svg", nome: "IWC", href: "/iwc" },
+];
+
+const fetcher = async () => {
+  try {
+    const data = await nobileService.getWatches();
+    return data as Product[];
+  } catch (error) {
+    console.error("Erro ao buscar relógios:", error);
+    throw error;
+  }
+};
 
 export function Hero() {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  const {
+    data: watches,
+    error,
+    isLoading,
+  } = useSWR(!useMockData ? "/watches" : null, fetcher, {
+    revalidateOnFocus: false,
+  });
+
+  // Deriva lista única de marcas com base nos relógios
+  const marcas: Marca[] = useMemo(() => {
+    if (useMockData || error || !watches) return mockMarcas;
+
+    const uniqueBrands = Array.from(new Set(watches.map(w => w.brand)));
+    return uniqueBrands.map((brand, i) => ({
+      nome: brand,
+      href: `/${brand.toLowerCase().replace(/\s+/g, "-")}`,
+      img: `/images/brand/marca${(i % 10) + 1}.svg`, // fallback local (poderia vir da API futuramente)
+    }));
+  }, [watches, error]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,26 +110,26 @@ export function Hero() {
     },
   ];
 
-  const marcas = [
-    { img: "/images/brand/marca1.svg", nome: "Rolex", href: "/rolex" },
-    { img: "/images/brand/marca2.svg", nome: "Tag Heuer", href: "/tag-heuer" },
-    { img: "/images/brand/marca3.svg", nome: "Breitling", href: "/breitling" },
-    {
-      img: "/images/brand/marca4.svg",
-      nome: "Audemars Piguet",
-      href: "/audemars-piguet",
-    },
-    {
-      img: "/images/brand/marca5.svg",
-      nome: "Patek Philippe",
-      href: "/patek-philippe",
-    },
-    { img: "/images/brand/marca6.svg", nome: "Hublot", href: "/hublot" },
-    { img: "/images/brand/marca7.svg", nome: "Cartier", href: "/cartier" },
-    { img: "/images/brand/marca8.svg", nome: "Seiko", href: "/seiko" },
-    { img: "/images/brand/marca9.svg", nome: "Omega", href: "/omega" },
-    { img: "/images/brand/marca10.svg", nome: "IWC", href: "/iwc" },
-  ];
+  // const marcas = [
+  //   { img: "/images/brand/marca1.svg", nome: "Rolex", href: "/rolex" },
+  //   { img: "/images/brand/marca2.svg", nome: "Tag Heuer", href: "/tag-heuer" },
+  //   { img: "/images/brand/marca3.svg", nome: "Breitling", href: "/breitling" },
+  //   {
+  //     img: "/images/brand/marca4.svg",
+  //     nome: "Audemars Piguet",
+  //     href: "/audemars-piguet",
+  //   },
+  //   {
+  //     img: "/images/brand/marca5.svg",
+  //     nome: "Patek Philippe",
+  //     href: "/patek-philippe",
+  //   },
+  //   { img: "/images/brand/marca6.svg", nome: "Hublot", href: "/hublot" },
+  //   { img: "/images/brand/marca7.svg", nome: "Cartier", href: "/cartier" },
+  //   { img: "/images/brand/marca8.svg", nome: "Seiko", href: "/seiko" },
+  //   { img: "/images/brand/marca9.svg", nome: "Omega", href: "/omega" },
+  //   { img: "/images/brand/marca10.svg", nome: "IWC", href: "/iwc" },
+  // ];
 
   const vendedores = [
     {
@@ -182,12 +237,21 @@ export function Hero() {
     },
   ];
 
-  const suggestedProducts = [
-    mockProducts[0],
-    mockProducts[3],
-    mockProducts[12],
-    mockProducts[14],
-  ].filter((product): product is Product => product !== undefined);
+  // ✅ Deriva sugestões a partir da API (ou usa mock)
+  const suggestedProducts: Product[] = useMemo(() => {
+    if (useMockData || error || !watches?.length) {
+      return [
+        mockProducts[0],
+        mockProducts[3],
+        mockProducts[12],
+        mockProducts[14],
+      ].filter((p): p is Product => p !== undefined);
+    }
+
+    // exemplo: pegar os 4 primeiros relógios únicos com imagem
+
+    return watches.filter(w => w.images?.length).slice(0, 4) as Product[];
+  }, [watches, error]);
 
   return (
     <div className="mt-5 sm:mt-12">
@@ -279,18 +343,12 @@ export function Hero() {
             <h2 className="font-erstoria text-2xl md:text-[28px] text-slate-900">
               Sugestões para você
             </h2>
-            {/* <Link
-              href="/relogios"
-              className="font-lato text-sm text-[#D5A60A] hover:text-[#C09609] transition-colors font-normal underline whitespace-nowrap"
-            >
-              Ver tudo
-            </Link> */}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {suggestedProducts.map((product, index) => (
               <div
-                key={product.id}
+                key={product.id || index}
                 className="animate-fadeIn"
                 style={{
                   animationDelay: `${index * 20}ms`,
@@ -383,8 +441,7 @@ export function Hero() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {vendedores.map((vendedor, index) => (
                 <div key={index} className="flex flex-col">
-                  <Link
-                    href={`/vendedor/${index}`}
+                  <div
                     className={`group ${vendedor.bgColor} rounded-[6px] md:rounded-[14px] p-4 md:p-6 text-center hover:opacity-90 transition-opacity relative overflow-hidden min-h-[58px] md:min-h-[126px] max-h-[58px] md:max-h-[126px] flex items-center justify-center mb-2 md:mb-4`}
                   >
                     <div className="absolute top-2 right-2 md:top-2.5 md:right-2.5 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
@@ -404,21 +461,13 @@ export function Hero() {
                       height={50}
                       className="md:w-[120px] md:h-[60px] object-contain max-h-[50px] md:max-h-[60px]"
                     />
-                  </Link>
+                  </div>
 
                   <p className="font-erstoria text-[14px] md:text-[20px] text-[#000000]">
                     {vendedor.descricao}
                   </p>
                 </div>
               ))}
-            </div>
-            <div className="text-center mt-6 md:mt-8 lg:hidden">
-              <Link
-                href="/vendedores"
-                className="inline-flex items-center justify-center w-full max-w-[343px] md:max-w-none md:w-auto h-[56px] px-8 border-2 border-[#141414] rounded-full font-lato text-base text-[#141414] hover:bg-[#141414] hover:text-white transition-colors font-bold"
-              >
-                Ver todos vendedores
-              </Link>
             </div>
           </section>
 

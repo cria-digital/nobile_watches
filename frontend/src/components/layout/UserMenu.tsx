@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "@/lib/auth/auth";
+import { USER_MENU_ITEMS } from "@/lib/config/user-menu-items";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface UserMenuProps {
   user: User;
+  logout: () => void;
 }
 
 interface MenuItem {
@@ -17,61 +19,7 @@ interface MenuItem {
   section: "gerenciamento" | "meusDados" | "opcoes";
 }
 
-const menuItems: MenuItem[] = [
-  // Gerenciamento
-  {
-    icon: "/icons/shopping-cart.svg",
-    label: "Meu carrinho",
-    href: "/carrinho",
-    section: "gerenciamento",
-  },
-  {
-    icon: "/icons/shopping-bag.svg",
-    label: "Minhas compras",
-    href: "/minhas-compras",
-    section: "gerenciamento",
-  },
-  {
-    icon: "/icons/heart-outline.svg",
-    label: "Lista de desejos",
-    href: "#",
-    section: "gerenciamento",
-  },
-  // Meus dados
-  {
-    icon: "/icons/watch.svg",
-    label: "Minha coleção",
-    href: "/colecao",
-    section: "meusDados",
-  },
-  {
-    icon: "/icons/user-outline.svg",
-    label: "Meu perfil",
-    href: "/perfil",
-    section: "meusDados",
-  },
-  {
-    icon: "/icons/hand-user.svg",
-    label: "Vender",
-    href: "/vendedor",
-    section: "meusDados",
-  },
-  {
-    icon: "/icons/tag.svg",
-    label: "Meus anúncios",
-    href: "/meus-anuncios",
-    section: "meusDados",
-  },
-  // Opções
-  {
-    icon: "/icons/logout-red.svg",
-    label: "Sair",
-    href: "#",
-    section: "opcoes",
-  },
-];
-
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ user, logout }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -91,12 +39,20 @@ export function UserMenu({ user }: UserMenuProps) {
     };
   }, [isOpen]);
 
-  const gerenciamentoItems = menuItems.filter(item => item.section === "gerenciamento");
-  const meusDadosItems = menuItems.filter(item => item.section === "meusDados");
-  const opcoesItems = menuItems.filter(item => item.section === "opcoes");
+  const gerenciamentoItems = USER_MENU_ITEMS.filter(
+    item => item.section === "gerenciamento"
+  );
+  const meusDadosItems = USER_MENU_ITEMS.filter(item => item.section === "meusDados");
+  const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
 
   // Avatar padrão se não houver
-  const avatarUrl = user.avatar || "/images/avatar-placeholder.jpg";
+  const avatarUrl = user.avatar || "/images/avatar-placeholder2.jpg";
+
+  useEffect(() => {
+    const handleLogoutRequest = () => logout();
+    window.addEventListener("logout-request", handleLogoutRequest);
+    return () => window.removeEventListener("logout-request", handleLogoutRequest);
+  }, [logout]);
 
   return (
     <div className="relative" ref={menuRef}>
@@ -216,10 +172,19 @@ function MenuItemButton({
   onClick: () => void;
   isLogout?: boolean;
 }) {
+  const handleClick = (e: React.MouseEvent) => {
+    onClick(); // Fecha o menu
+    if (isLogout) {
+      e.preventDefault(); // Impede a navegação automática do Link
+      const event = new CustomEvent("logout-request");
+      window.dispatchEvent(event);
+    }
+  };
+
   return (
     <Link
       href={item.href}
-      onClick={onClick}
+      onClick={handleClick}
       className={`flex flex-col items-center justify-center gap-2 border border-[#EFEFEF] rounded-[12px] px-8 py-6 bg-[#F7F7F7] hover:bg-gray-50 transition-colors min-w-[140px] ${
         isLogout ? "text-red-600 hover:bg-red-50" : "text-pb-500"
       }`}

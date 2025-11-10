@@ -1,10 +1,15 @@
-// src/lib/auth/auth.ts
-import { cookies } from "next/headers";
+// frontend/src/lib/auth/auth.ts
+// VERSÃO ATUALIZADA - Compatível com API e Mock
 
-const TOKEN_NAME = "nobile_token";
+"use client";
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-interface Address {
+// ===============================================
+// INTERFACES E TIPOS
+// ===============================================
+
+export interface Address {
   id: string;
   type: "home" | "work" | "other";
   street: string;
@@ -17,28 +22,32 @@ interface Address {
   isDefault: boolean;
 }
 
+export interface UserPreferences {
+  notifications: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+  };
+  privacy: {
+    showEmail: boolean;
+    showPhone: boolean;
+  };
+}
+
+/**
+ * Interface User - campos base da API + campos opcionais para mock
+ */
 export interface User {
   id: number;
   name: string;
   email: string;
   role: "BUYER" | "SELLER" | "ADMIN";
-
-  // não existem
+  // Campos opcionais (não existem na API mas são úteis no mock)
   avatar?: string;
   phone?: string;
   cpf?: string;
   addresses?: Address[];
-  preferences?: {
-    notifications: {
-      email: boolean;
-      sms: boolean;
-      push: boolean;
-    };
-    privacy: {
-      showEmail: boolean;
-      showPhone: boolean;
-    };
-  };
+  preferences?: UserPreferences;
   createdAt?: string;
 }
 
@@ -48,50 +57,51 @@ export interface AuthResponse {
   message: string;
 }
 
-/**
- * Salva o token JWT em um cookie HTTP-only seguro
- */
-export async function setAuthCookie(token: string) {
-  (await cookies()).set(TOKEN_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 dias
-    path: "/",
-  });
+interface JWTPayload {
+  id: number;
+  email: string;
+  role: string;
+  iat: number;
+  exp: number;
 }
 
-/**
- * Remove o cookie de autenticação
- */
-export async function removeAuthCookie() {
-  (await cookies()).delete(TOKEN_NAME);
-}
+// ===============================================
+// FUNÇÕES AUXILIARES
+// ===============================================
 
 /**
- * Obtém o token JWT do cookie
+ * Decodifica um JWT manualmente (base64)
  */
-export async function getAuthToken(): Promise<string | undefined> {
-  return (await cookies()).get(TOKEN_NAME)?.value;
+function decodeJWT(token: string): JWTPayload | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+
+    const payload = parts[1];
+    //@ts-ignore
+    const decoded = JSON.parse(atob(payload));
+    return decoded;
+  } catch (error) {
+    console.error("Erro ao decodificar JWT:", error);
+    return null;
+  }
 }
+
+// ===============================================
+// FUNÇÕES DE AUTENTICAÇÃO
+// ===============================================
 
 /**
  * Verifica se há um token válido e retorna os dados do usuário
  */
 export async function getCurrentUser(): Promise<User | null> {
-  const token = await getAuthToken();
-  if (!token) return null;
-
   try {
-    const response = await fetch(`${BACKEND_URL}/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
+    // Faz requisição para a rota API que lê o cookie
+    const response = await fetch("/api/auth/me", {
+      credentials: "include",
     });
 
     if (!response.ok) {
-      await removeAuthCookie();
       return null;
     }
 
@@ -104,15 +114,58 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 /**
+ * Obtém apenas o ID do usuário
+ */
+export async function getUserId(): Promise<number | null> {
+  try {
+    const response = await fetch("/api/auth/me", {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data.user?.id || null;
+  } catch (error) {
+    console.error("Erro ao buscar ID do usuário:", error);
+    return null;
+  }
+}
+
+/**
+ * Obtém o role do usuário
+ */
+export async function getUserRole(): Promise<"BUYER" | "SELLER" | "ADMIN" | null> {
+  try {
+    const response = await fetch("/api/auth/me", {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data.user?.role || null;
+  } catch (error) {
+    console.error("Erro ao buscar role do usuário:", error);
+    return null;
+  }
+}
+
+/**
  * Faz login no backend e salva o token
  */
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(`${BACKEND_URL}/auth/login`, {
+  const response = await fetch("/api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email, password }),
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -121,12 +174,11 @@ export async function login(email: string, password: string): Promise<AuthRespon
   }
 
   const data: AuthResponse = await response.json();
-  await setAuthCookie(data.token);
   return data;
 }
 
 /**
- * Faz registro no backend e salva o token
+ * Faz registro no backend
  */
 export async function register(userData: {
   name: string;
@@ -138,12 +190,13 @@ export async function register(userData: {
   city: string;
   role?: "BUYER" | "SELLER";
 }): Promise<AuthResponse> {
-  const response = await fetch(`${BACKEND_URL}/auth/register`, {
+  const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(userData),
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -152,19 +205,19 @@ export async function register(userData: {
   }
 
   const data: AuthResponse = await response.json();
-
-  // Após registro, fazer login automático
-  if (data.user && userData.password) {
-    const loginData = await login(userData.email, userData.password);
-    return loginData;
-  }
-
   return data;
 }
 
 /**
- * Faz logout removendo o cookie
+ * Faz logout
  */
 export async function logout() {
-  await removeAuthCookie();
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error("Erro ao fazer logout:", error);
+  }
 }

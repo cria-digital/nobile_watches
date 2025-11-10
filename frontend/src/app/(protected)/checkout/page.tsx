@@ -30,6 +30,30 @@ export default function CheckoutPage() {
     goToPreviousStep, //@ts-ignore
   } = useCheckout({ itemIds });
 
+  // Componente de indicador de progresso
+  const StepIndicator = () => {
+    const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
+
+    return (
+      <div className="px-5 lg:px-8 lg:mb-8">
+        <div className="flex items-center gap-4 h-2">
+          {/* Progress Bar */}
+          <div className="flex-1 relative h-[2px] bg-[#EFEFEF] rounded-full overflow-hidden">
+            <div
+              className="absolute top-0 left-0 h-full bg-[#D5A60A] transition-all duration-300 ease-out rounded-full"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+
+          {/* Step Counter */}
+          <span className="text-xs font-light whitespace-nowrap">
+            {String(currentStep).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
@@ -93,8 +117,13 @@ export default function CheckoutPage() {
         </div>
       </div>
 
+      {/* Step Indicator */}
+      <div className="mt-5 lg:mt-8 max-w-7xl mx-auto">
+        <StepIndicator />
+      </div>
+
       {/* Content */}
-      <div className="relative max-w-7xl mx-auto lg:mt-12.5 lg:px-8">
+      <div className="relative max-w-7xl mx-auto lg:px-8">
         {currentStep === 1 && (
           <OrderSummaryStep
             data={checkoutData}

@@ -19,7 +19,7 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
   const productId = extractProductIdFromSlug(params.slug);
 
   // Encontra o produto pelo ID
-  const product = productId ? mockProducts.find(p => p.id === productId) : null;
+  const product = productId ? mockProducts.find(p => p.id === Number(productId)) : null;
 
   if (!product) {
     return {
@@ -30,7 +30,8 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
   return {
     title: `${product.brand} ${product.model} - Nobile`,
     description:
-      product.description || `${product.brand} ${product.model} - ${product.reference}`,
+      product.description ||
+      `${product.brand} ${product.model} - ${product.referenceNumber}`,
     openGraph: {
       title: `${product.brand} ${product.model}`,
       description: product.description || "",
@@ -50,7 +51,8 @@ export default async function ProductPage(props: ProductPageProps) {
   }
 
   // Busca o produto pelo ID
-  const product = mockProducts.find(p => p.id === productId);
+  // Busca o produto pelo ID
+  const product = mockProducts.find(p => p.id === Number(productId));
 
   // Valida se o produto existe e se a marca corresponde
   if (!product || stringToSlug(product.brand) !== params.brand) {

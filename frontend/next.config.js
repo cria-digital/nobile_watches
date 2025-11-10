@@ -9,7 +9,11 @@ const nextConfig = {
 
   // Configuração de imagens
   images: {
-    domains: ["localhost"],
+    domains: [
+      "localhost",
+      "images.unsplash.com", // Imagens placeholder durante desenvolvimento
+      "res.cloudinary.com", // Cloudinary para imagens de produção
+    ],
     formats: ["image/webp", "image/avif"],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

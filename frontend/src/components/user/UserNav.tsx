@@ -8,7 +8,7 @@ export function UserNav() {
   const navItems = [
     {
       label: "Minha coleção",
-      href: "/minha-colecao",
+      href: "/colecao",
       icon: "/icons/watch.svg",
     },
     {

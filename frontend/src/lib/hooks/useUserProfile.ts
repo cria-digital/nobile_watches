@@ -20,7 +20,7 @@ const MOCK_USER_PROFILE_DATA: UserProfileData = {
     isVerified: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    avatar: "/images/avatar-placeholder.jpg",
+    avatar: "/images/avatar-placeholder2.jpg",
   },
   activity: {
     vendidos: 3,

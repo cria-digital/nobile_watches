@@ -1,7 +1,7 @@
 "use client";
 
 import { stringToSlug } from "@/lib/utils/stringUtils";
-import { Product } from "@/types/mock";
+import { Product } from "@/types/product";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -36,6 +36,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 src={product.images?.[0] || ""}
                 alt={`${product.brand} ${product.model}`}
                 fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
               />
             </div>
@@ -43,7 +44,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
 
           <div className="relative min-h-[116px]">
             {/* Badge de verificado */}
-            {product.verified && (
+            {/* {product.verified && (
               <div className="absolute top-0 right-0 w-[18px] h-[18px] md:w-[22px] md:h-[22px]">
                 <Image
                   src="/icons/verified-badge.svg"
@@ -53,7 +54,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                   className="w-full h-full"
                 />
               </div>
-            )}
+            )} */}
 
             <Link href={productUrl}>
               <p className="font-erstoria text-sm md:text-base text-[#D5A60A] leading-[140%] mb-2 md:mb-3">
@@ -101,6 +102,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                   src={product.images?.[0] || ""}
                   alt={`${product.brand} ${product.model}`}
                   fill
+                  sizes="281px"
                   className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
               </div>
@@ -116,7 +118,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                         <p className="font-erstoria text-base md:text-lg text-[#D5A60A] leading-[140%]">
                           {product.brand}
                         </p>
-                        {product.verified && (
+                        {/* {product.verified && (
                           <div className="w-[18px] h-[18px] md:w-[22px] md:h-[22px]">
                             <Image
                               src="/icons/verified-badge.svg"
@@ -126,7 +128,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                               className="w-full h-full"
                             />
                           </div>
-                        )}
+                        )} */}
                       </div>
                       <h3 className="font-erstoria text-xl md:text-2xl text-[#141414] font-normal leading-[120%] mb-2">
                         {product.model}
@@ -188,6 +190,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             src={product.images?.[0] || ""}
             alt={`${product.brand} ${product.model}`}
             fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         </div>
@@ -195,7 +198,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
 
       <div className="relative min-h-[116px]">
         {/* Badge de verificado */}
-        {product.verified && (
+        {/* {product.verified && (
           <div className="absolute top-0 right-0 w-[18px] h-[18px] md:w-[22px] md:h-[22px]">
             <Image
               src="/icons/verified-badge.svg"
@@ -205,7 +208,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               className="w-full h-full"
             />
           </div>
-        )}
+        )} */}
 
         <Link href={productUrl}>
           <p className="font-erstoria text-sm md:text-base text-[#D5A60A] leading-[140%] mb-2 md:mb-3">

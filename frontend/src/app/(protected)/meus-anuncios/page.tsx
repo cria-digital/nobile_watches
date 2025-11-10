@@ -1,5 +1,7 @@
 "use client";
 
+import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { ListingCard } from "@/components/user/ListingCard";
 import { UserNav } from "@/components/user/UserNav";
 import { useUserListings } from "@/hooks/useUserListings";
@@ -35,30 +37,24 @@ export default function MyListingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header com navegação */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="mb-6">
-            <nav className="text-sm text-gray-600 mb-2">Home &gt; Meus anúncios</nav>
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900">Meus anúncios</h1>
-
-              {/* Botão criar anúncio */}
-              <Link
-                href="/vender-relogio"
-                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                Criar anúncio
-              </Link>
+    <div className="min-h-screen bg-white lg:py-8">
+      <MobileBackHeader title="Meus anúncios" />
+      {/* ==================== HEADER DESKTOP ==================== */}
+      <div className="hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <Breadcrumbs
+                items={[{ label: "Home", href: "/" }, { label: "Meus anúncios" }]}
+              />
+              <h1 className="text-3xl lg:text-[32px] leading-[100%]">Meus anúncios</h1>
             </div>
+            <UserNav />
           </div>
-          <UserNav />
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto lg:mt-12.5 px-5 lg:px-8">
         {/* Estatísticas resumidas */}
         {listings.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -91,37 +87,39 @@ export default function MyListingsPage() {
         )}
 
         {/* Lista de anúncios */}
-        {listings.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <div className="max-w-md mx-auto">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Você ainda não tem anúncios
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Comece a vender seus relógios de luxo criando seu primeiro anúncio.
-              </p>
-              <Link
-                href="/vender-relogio"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                Criar primeiro anúncio
-              </Link>
+        <div className="rounded-[12px] lg:border border-[#EFEFEF] py-4 lg:py-6 lg:px-8">
+          {listings.length === 0 ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+              <div className="max-w-md mx-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Você ainda não tem anúncios
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Comece a vender seus relógios de luxo criando seu primeiro anúncio.
+                </p>
+                <Link
+                  href="/vender-relogio"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  Criar primeiro anúncio
+                </Link>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {listings.map(listing => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                onDelete={deleteListing}
-                onPause={pauseListing}
-                onActivate={activateListing}
-              />
-            ))}
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+              {listings.map(listing => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  onDelete={deleteListing}
+                  onPause={pauseListing}
+                  onActivate={activateListing}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

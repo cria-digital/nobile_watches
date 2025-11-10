@@ -1,4 +1,4 @@
-import { Product } from "@/types/mock";
+import { Product } from "@/types/product";
 
 interface ProductSpecsProps {
   product: Product;
@@ -61,57 +61,57 @@ export function ProductSpecs({ product }: ProductSpecsProps) {
 
   // Preparar dados básicos
   const basicData = [
-    { label: "Código do anúncio", value: product.adCode },
+    // { label: "Código do anúncio", value: product.adCode },
     { label: "Marca", value: product.brand },
     { label: "Modelo", value: product.model },
-    { label: "Número de referência", value: product.reference },
+    { label: "Número de referência", value: product.referenceNumber },
     { label: "Ano de fabricação", value: product.year?.toString() },
     { label: "Estado", value: product.condition },
     { label: "Gênero", value: product.gender },
-    { label: "Localização", value: product.location },
+    //  { label: "Localização", value: product.location },
     { label: "Preço", value: `R$ ${product.price.toLocaleString("pt-BR")}` },
-    { label: "Disponibilidade", value: product.availability },
+    //  { label: "Disponibilidade", value: product.availability },
   ].filter(item => item.value);
 
   // Preparar dados de movimento
   const movementData = [
     { label: "Movimento", value: product.movement },
-    { label: "Calibre", value: product.caliber },
+    //  { label: "Calibre", value: product.caliber },
     {
       label: "Reserva de corda",
-      value: product.powerReserve ? `${product.powerReserve}h` : undefined,
+      //   value: product.powerReserve ? `${product.powerReserve}h` : undefined,
     },
-    { label: "Número de rubis", value: product.jewels?.toString() },
+    //   { label: "Número de rubis", value: product.jewels?.toString() },
   ].filter(item => item.value);
 
   // Preparar dados de bracelete
   const braceletData = [
-    { label: "Material do bracelete", value: product.strapMaterial },
-    { label: "Cor do bracelete", value: product.strapColor },
-    { label: "Fecho", value: product.clasp },
-    { label: "Material do fecho", value: product.claspMaterial },
+    { label: "Material do bracelete", value: product.braceletMaterial },
+    { label: "Cor do bracelete", value: product.braceletColor },
+    //   { label: "Fecho", value: product.clasp },
+    { label: "Material do fecho", value: product?.claspType },
   ].filter(item => item.value);
 
   // Preparar dados de caixa
   const caseData = [
     { label: "Material da caixa", value: product.caseMaterial },
-    { label: "Diâmetro", value: product.diameter ? `${product.diameter}mm` : undefined },
+    {
+      label: "Diâmetro",
+      value: product.caseDiameter ? `${product.caseDiameter}mm` : undefined,
+    },
     { label: "Estanqueidade", value: product.waterResistance },
-    { label: "Material da luneta", value: product.bezelMaterial },
-    { label: "Vidro", value: product.crystal },
+    //{ label: "Material da luneta", value: product.bezelMaterial },
+    { label: "Vidro", value: product.glassType },
     { label: "Mostrador", value: product.dialColor },
-    { label: "Algarismos do mostrador", value: product.dialNumbers },
+    //   { label: "Algarismos do mostrador", value: product.dialNumbers },
   ].filter(item => item.value);
 
   // Preparar outras características (usando os mesmos dados de movimento)
   const otherData = [
     { label: "Movimento", value: product.movement },
-    { label: "Calibre", value: product.caliber },
-    {
-      label: "Reserva de corda",
-      value: product.powerReserve ? `${product.powerReserve}h` : undefined,
-    },
-    { label: "Número de rubis", value: product.jewels?.toString() },
+    //   { label: "Calibre", value: product.caliber },
+
+    //   { label: "Número de rubis", value: product.jewels?.toString() },
   ].filter(item => item.value);
 
   return (

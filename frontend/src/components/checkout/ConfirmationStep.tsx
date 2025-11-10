@@ -11,14 +11,14 @@ export function ConfirmationStep() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex flex-col items-center pt-18 px-4">
       {/* Check verde */}
-      <div className="w-20 h-20 bg-[#00C853] rounded-full flex items-center justify-center mb-6">
-        <Check className="w-12 h-12 text-white stroke-[3]" />
+      <div className="w-14 h-14 bg-[#00C853] rounded-full flex items-center justify-center mb-6">
+        <Check className="w-11.5 h-11.5 text-white stroke-[3]" />
       </div>
 
       {/* Título */}
-      <h1 className="font-erstoria text-3xl text-center mb-3">Compra realizada!</h1>
+      <h1 className="text-[28px] text-center mb-3">Compra realizada!</h1>
 
       {/* Descrição */}
       <p className="text-base text-[#666666] text-center mb-8 max-w-sm">

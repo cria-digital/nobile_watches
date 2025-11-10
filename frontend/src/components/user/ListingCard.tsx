@@ -30,23 +30,23 @@ export function ListingCard({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="bg-[#F7F7F7] rounded-[12px] p-4 hover:shadow-md transition-shadow">
+      <div className="flex gap-4 h-[116px] mb-4">
         {/* Imagem do relógio */}
-        <div className="relative w-full md:w-32 h-32 flex-shrink-0">
+        <div className="w-[116px] relative bg-[#EFEFEF] rounded-[5px] overflow-hidden">
           <Image
             src={listing.images[0] || "/placeholder-watch.jpg"}
             alt={`${listing.brand} ${listing.model}`}
             fill
-            className="object-contain"
+            className="object-cover"
           />
         </div>
 
         {/* Informações do anúncio */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 py-2.5 min-w-0">
           {/* Marca e Modelo */}
-          <div>
-            <h3 className="font-semibold text-lg">
+          <div className="min-w-0">
+            <h3 className="text-[18px] leading-[140%] tracking-[-1%] truncate">
               {listing.brand} {listing.model}
             </h3>
             <p className="text-sm text-gray-600">{listing.condition}</p>
@@ -57,71 +57,52 @@ export function ListingCard({
 
           {/* Preço */}
           <div>
-            <p className="text-2xl font-bold">
+            <p className="text-[18px] font-medium">
               R$ {listing.price.toLocaleString("pt-BR")}
             </p>
           </div>
-
-          {/* Status e Estatísticas */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                statusColors[listing.status]
-              }`}
-            >
-              {statusLabels[listing.status]}
-            </span>
-
-            {listing.stats && (
-              <div className="flex gap-4 text-sm text-gray-600">
-                <span title="Visualizações">👁 {listing.stats.views}</span>
-                <span title="Favoritos">❤️ {listing.stats.favorites}</span>
-                <span title="Mensagens">💬 {listing.stats.messages}</span>
-              </div>
-            )}
-          </div>
         </div>
+      </div>
 
-        {/* Ações */}
-        <div className="flex md:flex-col justify-center items-center gap-2">
-          <Link
-            href={`/produto/${listing.id}`}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors whitespace-nowrap w-full md:w-auto text-center"
+      {/* Ações */}
+      <div className="flex md:flex-col justify-center items-center gap-2">
+        <Link
+          href={`/produto/${listing.id}`}
+          className="w-full h-[52px] flex items-center justify-center rounded-full border-2 border-pb-500 text-pb-500 text-base font-bold tracking-[2%] hover:bg-gray-50 transition-colors whitespace-nowrap"
+        >
+          Visualizar anúncio
+        </Link>
+
+        {/* {listing.status === "ativo" && onPause && (
+          <button
+            onClick={() => onPause(listing.id)}
+            className="px-6 py-2 border border-yellow-300 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-50 transition-colors whitespace-nowrap w-full md:w-auto"
           >
-            Visualizar anúncio
-          </Link>
+            Pausar
+          </button>
+        )}
 
-          {listing.status === "ativo" && onPause && (
-            <button
-              onClick={() => onPause(listing.id)}
-              className="px-6 py-2 border border-yellow-300 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-50 transition-colors whitespace-nowrap w-full md:w-auto"
-            >
-              Pausar
-            </button>
-          )}
+        {listing.status === "pausado" && onActivate && (
+          <button
+            onClick={() => onActivate(listing.id)}
+            className="px-6 py-2 border border-green-300 text-green-700 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors whitespace-nowrap w-full md:w-auto"
+          >
+            Ativar
+          </button>
+        )}
 
-          {listing.status === "pausado" && onActivate && (
-            <button
-              onClick={() => onActivate(listing.id)}
-              className="px-6 py-2 border border-green-300 text-green-700 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors whitespace-nowrap w-full md:w-auto"
-            >
-              Ativar
-            </button>
-          )}
-
-          {onDelete && (
-            <button
-              onClick={() => {
-                if (confirm("Tem certeza que deseja excluir este anúncio?")) {
-                  onDelete(listing.id);
-                }
-              }}
-              className="px-6 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors whitespace-nowrap w-full md:w-auto"
-            >
-              Excluir
-            </button>
-          )}
-        </div>
+        {onDelete && (
+          <button
+            onClick={() => {
+              if (confirm("Tem certeza que deseja excluir este anúncio?")) {
+                onDelete(listing.id);
+              }
+            }}
+            className="px-6 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors whitespace-nowrap w-full md:w-auto"
+          >
+            Excluir
+          </button>
+        )} */}
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { CartItemCard } from "@/components/cart/CartItemCard";
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { useCart } from "@/lib/hooks/useCart";
-import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function CartPage() {
@@ -37,23 +36,24 @@ export default function CartPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (items.length !== 0) {
     return (
-      <div className="min-h-screen bg-white">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]">
-          <div className="flex items-center gap-4 px-4 h-14">
-            <button
-              onClick={() => router.back()}
-              className="w-10 h-10 flex items-center justify-center -ml-2"
-              aria-label="Voltar"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="font-erstoria text-xl">Carrinho de compras</h1>
+      <div className="min-h-screen bg-white pb-24 lg:py-8">
+        <MobileBackHeader title="Carrinho de compras" />
+        <div className="hidden lg:block">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <Breadcrumbs
+                  items={[{ label: "Home", href: "/" }, { label: "Carrinho de compras" }]}
+                />
+                <h1 className="text-3xl lg:text-[32px] leading-[100%]">
+                  Carrinho de compras
+                </h1>
+              </div>
+            </div>
           </div>
-        </header>
-
+        </div>
         {/* Empty state */}
         <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center max-w-sm">
@@ -94,28 +94,30 @@ export default function CartPage() {
 
       {/* Lista de items */}
       <div className="max-w-7xl mx-auto lg:mt-12.5 px-5 lg:px-8">
-        <div className="py-4 space-y-4">
-          {items.map(item => (
-            <CartItemCard
-              key={item.id}
-              item={item}
-              onRemove={removeItem}
-              onCheckout={handleCheckoutItem}
-            />
-          ))}
-        </div>
+        <div className="rounded-[12px] lg:border border-[#EFEFEF] py-4 lg:py-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+            {items.map(item => (
+              <CartItemCard
+                key={item.id}
+                item={item}
+                onRemove={removeItem}
+                onCheckout={handleCheckoutItem}
+              />
+            ))}
+          </div>
 
-        {/* Botão de comprar todos */}
-        <div className="bg-white border-t border-[#E5E5E5] mt-4">
-          <button
-            onClick={handleCheckoutAll}
-            className="w-full h-14 bg-[#D5A60A] text-white rounded-full font-medium text-base flex items-center justify-center gap-2.5 hover:bg-[#B88F08] transition-colors group"
-          >
-            <span>Comprar todos</span>
-            {/* <div className="w-10 h-10 bg-[#B88F08] rounded-full flex items-center justify-center group-hover:bg-[#9A7706] transition-colors">
+          {/* Botão de comprar todos */}
+          <div className="bg-white border-t border-[#E5E5E5] mt-4">
+            <button
+              onClick={handleCheckoutAll}
+              className="w-full h-14 bg-[#D5A60A] text-white rounded-full font-medium text-base flex items-center justify-center gap-2.5 hover:bg-[#B88F08] transition-colors group"
+            >
+              <span>Comprar todos</span>
+              {/* <div className="w-10 h-10 bg-[#B88F08] rounded-full flex items-center justify-center group-hover:bg-[#9A7706] transition-colors">
               <ArrowRight className="w-5 h-5" />
             </div> */}
-          </button>
+            </button>
+          </div>
         </div>
       </div>
     </div>
