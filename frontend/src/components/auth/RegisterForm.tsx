@@ -3,18 +3,14 @@
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/context/AuthContext";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  MapPinIcon,
-  PhoneIcon,
-} from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Icon } from "../ui/Icon/Icon";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -145,7 +141,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image src="/icons/user-outline.svg" alt="User" width={24} height={24} />
+              <Icon src="/icons/user-outline.svg" alt="User" />
             </div>
             <input
               {...register("name")}
@@ -167,18 +163,15 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image
-                src="/icons/envelope-outline.svg"
-                alt="Envelope"
-                width={24}
-                height={24}
-              />
+              <Icon src="/icons/envelope-outline.svg" alt="Envelope" />
             </div>
             <input
               {...register("email")}
               type="email"
               id="email"
               placeholder="Digite seu e-mail..."
+              autoComplete="email"
+              inputMode="email"
               className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
           </div>
@@ -194,18 +187,15 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image
-                src="/icons/password-lock.svg"
-                alt="Password"
-                width={24}
-                height={24}
-              />
+              <Icon src="/icons/password-lock.svg" alt="Password" />
             </div>
             <input
               {...register("password")}
               type={showPassword ? "text" : "password"}
               id="password"
               placeholder="Digite sua senha..."
+              autoComplete="new-password"
+              enterKeyHint="next"
               className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
             <button
@@ -235,18 +225,15 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image
-                src="/icons/password-lock.svg"
-                alt="Password"
-                width={24}
-                height={24}
-              />
+              <Icon src="/icons/password-lock.svg" alt="Password" />
             </div>
             <input
               {...register("confirmPassword")}
               type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               placeholder="Confirme sua senha..."
+              autoComplete="new-password"
+              enterKeyHint="done"
               className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
             <button
@@ -273,13 +260,15 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <PhoneIcon className="h-5 w-5 text-pb-500" />
+              <Icon src="/icons/phone.svg" alt="Location" />
             </div>
             <input
               {...register("phone")}
               type="tel"
               id="phone"
               placeholder="Digite seu número..."
+              autoComplete="tel"
+              inputMode="tel"
               className="w-full pl-10 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
           </div>
@@ -295,12 +284,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPinIcon className="h-5 w-5 text-pb-500" />
-              {/* <Image src="/icons/map-pin.svg" alt="MapPin" width={24} height={24} /> */}
+              <Icon src="/icons/map-pin.svg" alt="Location" />
             </div>
             <select
               {...register("country")}
               id="country"
+              autoComplete="country-name"
               className="w-full pl-10 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors appearance-none bg-[#F7F7F7]"
             >
               <option value="Brasil">Brasil</option>
@@ -333,7 +322,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPinIcon className="h-5 w-5 text-pb-500" />
+              <Icon src="/icons/map-pin.svg" alt="Location" />
             </div>
             <input
               {...register("state")}
@@ -355,7 +344,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPinIcon className="h-5 w-5 text-pb-500" />
+              <Icon src="/icons/map-pin.svg" alt="Location" />
             </div>
             <input
               {...register("city")}

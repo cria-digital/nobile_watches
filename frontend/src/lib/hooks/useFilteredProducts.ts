@@ -1,5 +1,4 @@
 /**
- * src/lib/hooks/useFilteredProducts.ts
  * Hook que integra filtragem com API/Mock
  */
 

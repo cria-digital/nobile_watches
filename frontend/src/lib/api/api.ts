@@ -1,12 +1,7 @@
-/**
- * ServiÃ§o de API para integraÃ§Ã£o com o backend Nobile
- * Gerencia chamadas HTTP e conversÃµes de dados
- */
-
 import { ApiBrand, ApiError, ApiWatch } from "@/types/api";
 import { Product } from "@/types/product";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 /**
  * Classe de erro personalizada para erros da API
@@ -35,13 +30,12 @@ export function apiWatchToProduct(apiWatch: ApiWatch): Product {
     price: apiWatch.price,
     images: apiWatch.images.length > 0 ? apiWatch.images : ["/placeholder-watch.jpg"],
     referenceNumber: apiWatch.referenceNumber || "",
-    //   verified: !!apiWatch.seller?.name,
     year: apiWatch.year,
     gender: apiWatch.gender as "Masculino" | "Feminino" | "Unissex" | undefined,
     // @ts-ignore
     condition: mapCondition(apiWatch.condition),
-    hasBox: true, // API nÃ£o tem esse campo, assumir true por padrÃ£o
-    hasDocuments: true, // API nÃ£o tem esse campo, assumir true por padrÃ£o
+    hasBox: true, // API não tem esse campo, assumir true por padrão
+    hasDocuments: true, // API não tem esse campo, assumir true por padrão
     // @ts-ignore
     movement: apiWatch.movement,
     caseMaterial: apiWatch.caseMaterial,
@@ -65,7 +59,7 @@ export function apiWatchToProduct(apiWatch: ApiWatch): Product {
 }
 
 /**
- * Mapeia condiÃ§Ã£o da API para o formato do frontend
+ * Mapeia condição da API para o formato do frontend
  */
 function mapCondition(apiCondition: string): "Novo" | "Muito bom" | "Usado" | "Seminovo" {
   const conditionLower = apiCondition.toLowerCase();
@@ -78,11 +72,11 @@ function mapCondition(apiCondition: string): "Novo" | "Muito bom" | "Usado" | "S
 }
 
 /**
- * ServiÃ§o principal da API
+ * Serviço principal da API
  */
 export const apiService = {
   /**
-   * Busca todos os relÃ³gios disponÃ­veis
+   * Busca todos os relógios disponíveis
    */
   async getWatches(): Promise<Product[]> {
     try {
@@ -100,7 +94,7 @@ export const apiService = {
           error: "Erro desconhecido",
         }));
         throw new ApiServiceError(
-          errorData.error || "Erro ao buscar relÃ³gios",
+          errorData.error || "Erro ao buscar relógios",
           response.status
         );
       }
@@ -113,12 +107,12 @@ export const apiService = {
       }
 
       // Erro de rede ou parsing
-      throw new ApiServiceError("Erro de conexÃ£o com o servidor", undefined, error);
+      throw new ApiServiceError("Erro de conexão com o servidor", undefined, error);
     }
   },
 
   /**
-   * Busca relÃ³gio por ID
+   * Busca relógio por ID
    */
   async getWatchById(id: number | string): Promise<Product> {
     try {
@@ -135,7 +129,7 @@ export const apiService = {
           error: "Erro desconhecido",
         }));
         throw new ApiServiceError(
-          errorData.error || "Erro ao buscar relÃ³gio",
+          errorData.error || "Erro ao buscar relógio",
           response.status
         );
       }
@@ -147,12 +141,12 @@ export const apiService = {
         throw error;
       }
 
-      throw new ApiServiceError("Erro de conexÃ£o com o servidor", undefined, error);
+      throw new ApiServiceError("Erro de conexão com o servidor", undefined, error);
     }
   },
 
   /**
-   * Busca relÃ³gios por marca
+   * Busca relógio por marca
    */
   async getWatchesByBrand(brand: string): Promise<Product[]> {
     try {
@@ -164,15 +158,15 @@ export const apiService = {
   },
 
   /**
-   * Busca marcas disponÃ­veis
-   * Como a API nÃ£o tem endpoint especÃ­fico de marcas,
-   * extraÃ­mos das marcas Ãºnicas dos relÃ³gios
+   * Busca marcas disponiveis
+   * Como a API não tem endpoint especí­fico de marcas,
+   * extraí­mos das marcas únicas dos relógios
    */
   async getBrands(): Promise<ApiBrand[]> {
     try {
       const watches = await this.getWatches();
 
-      // Extrair marcas Ãºnicas
+      // Extrair marcas únicas
       const brandMap = new Map<string, { count: number }>();
 
       watches.forEach(watch => {
@@ -202,17 +196,17 @@ export const apiService = {
   },
 
   /**
-   * Busca relÃ³gios em destaque
-   * Retorna os 4 relÃ³gios mais recentes
+   * Busca relógios em destaque
+   * Retorna os 4 relógios mais recentes
    */
   async getFeaturedWatches(limit: number = 4): Promise<Product[]> {
     try {
       const watches = await this.getWatches();
 
-      // Ordenar por data de criaÃ§Ã£o (mais recentes primeiro)
+      // Ordenar por data de criação (mais recentes primeiro)
       const sortedWatches = watches.sort((a, b) => {
         // Se tiver createdAt no futuro quando implementado
-        return 0; // Por enquanto mantÃ©m ordem da API
+        return 0;
       });
 
       return sortedWatches.slice(0, limit);

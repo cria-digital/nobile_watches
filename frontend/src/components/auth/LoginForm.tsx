@@ -60,10 +60,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <div>
       <div className="flex flex-col gap-3 mb-6">
-        <h1 className="font-erstoria text-[28px] font-normal text-pb-500">
-          Acesse sua conta
-        </h1>
-        <p className="font-lato text-gray-400 text-sm leading-[148%]">
+        <h1 className="text-[28px]">Acesse sua conta</h1>
+        <p className="text-gray-400 text-sm leading-[148%]">
           Descubra as marcas mais exclusivas, negocie com segurança e acompanhe a
           valorização das suas peças.
         </p>
@@ -102,7 +100,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" autoComplete="on">
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm text-pb-500 mb-2.5">
@@ -122,6 +120,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               type="email"
               id="email"
               placeholder="Digite seu e-mail..."
+              autoComplete="email"
+              inputMode="email"
               className={`w-full h-[48px] pl-12 pr-3 py-3 border rounded-xl focus:outline-none transition-colors ${
                 errors.email
                   ? "border-[#E81F33] text-[#E81F33] placeholder:text-[#E81F33]"
@@ -150,6 +150,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               type={showPassword ? "text" : "password"}
               id="password"
               placeholder="Digite sua senha..."
+              autoComplete="current-password"
+              enterKeyHint="done"
               className={`w-full h-[48px] pl-12 pr-3 py-3 border rounded-xl focus:outline-none transition-colors ${
                 errors.password ? "border-[#E81F33]" : "border-[#EFEFEF]"
               }`}

@@ -133,14 +133,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Melhorar transições de imagens */
-img {
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-}
-
 /* Suavizar todas as transições de layout */
 .transition-all {
   transition-property: all;
@@ -175,10 +167,10 @@ img {
 }
 
 /* Transição suave para mudanças de grid/flex */
-[class*="grid"],
+/* [class*="grid"],
 [class*="flex"] {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+} */
 
 /* Banner Slider Dots - Posicionados abaixo do slider */
 .banner-dots {
@@ -313,6 +305,7 @@ img {
 .bg-gradient-radial {
   background-image: radial-gradient(circle, var(--tw-gradient-stops));
 }
+
 .featured-watches-slider .slick-track {
   display: flex !important;
   align-items: center !important;

@@ -16,6 +16,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           src="/images/auth/auth-bg-mobile.svg"
           alt="Vitrine Nobile com relógios de luxo"
           fill
+          sizes="(max-width: 1024px) 100vw, 0vw" // usada apenas até 1024px
           className="object-cover"
           priority
         />
@@ -34,10 +35,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           src="/images/auth/auth-bg.svg"
           alt="Vitrine Nobile com relógios de luxo"
           fill
+          sizes="(min-width: 1024px) 100vw"
           className="object-cover"
           priority
         />
-
         {/* Overlay escuro para melhor legibilidade - apenas no desktop */}
         <div className="absolute inset-0 bg-black/10"></div>
       </div>
@@ -46,7 +47,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       <div className="flex-1 lg:absolute lg:inset-0 relative z-10 flex items-start lg:items-center justify-center lg:justify-end lg:px-15 xl:px-15 -mt-[18px] lg:mt-0">
         <div className="w-full lg:max-w-lg">
           {/* Card do formulário */}
-          <div className="bg-white w-full lg:max-w-[596px] rounded-t-[24px] lg:rounded-2xl shadow-2xl px-6 pt-[30px] pb-10 lg:p-10.5 min-h-[69vh] lg:min-h-0">
+          <div className="scrollbar-subtle bg-white w-full lg:max-w-[596px] rounded-t-[24px] lg:rounded-2xl shadow-2xl px-6 pt-[30px] pb-10 lg:p-10.5 min-h-[69vh] lg:min-h-0 lg:max-h-[90vh] overflow-y-auto">
             {/* Conteúdo do formulário */}
             {children}
           </div>

@@ -6,7 +6,7 @@
 import { ApiBrand, ApiError, ApiWatch } from "@/types/api";
 import { Product } from "@/types/mock";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 /**
  * Classe de erro personalizada para erros da API
@@ -20,6 +20,24 @@ export class ApiServiceError extends Error {
     super(message);
     this.name = "ApiServiceError";
   }
+}
+
+/**
+ * Interface para sugestões de relógios
+ */
+export interface WatchSuggestion {
+  id: number;
+  label: string;
+  brand: string;
+  model: string;
+  referenceNumber: string | null;
+  imageUrl: string | null;
+  caseMaterial?: string;
+  caseDiameter?: number;
+  dialColor?: string;
+  movement?: string;
+  year?: number;
+  averagePrice: number;
 }
 
 /**
@@ -217,6 +235,44 @@ export const apiService = {
       return sortedWatches.slice(0, limit);
     } catch (error) {
       throw error;
+    }
+  },
+
+  /**
+   * Busca sugestões de relógios para autocompletar
+   * Usado na página de vender relógio
+   */
+  async getWatchSuggestions(query: string): Promise<WatchSuggestion[]> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/search/suggestions?query=${encodeURIComponent(query)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData: ApiError = await response.json().catch(() => ({
+          error: "Erro desconhecido",
+        }));
+        throw new ApiServiceError(
+          errorData.error || "Erro ao buscar sugestões",
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      return data.suggestions || [];
+    } catch (error) {
+      if (error instanceof ApiServiceError) {
+        throw error;
+      }
+
+      throw new ApiServiceError("Erro de conexão com o servidor", undefined, error);
     }
   },
 };

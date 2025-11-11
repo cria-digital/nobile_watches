@@ -1,13 +1,4 @@
-// frontend/src/lib/auth/auth.ts
-// VERSÃO ATUALIZADA - Compatível com API e Mock
-
 "use client";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-// ===============================================
-// INTERFACES E TIPOS
-// ===============================================
 
 export interface Address {
   id: string;

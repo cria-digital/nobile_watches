@@ -15,6 +15,7 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
           alt="Crie sua conta na Nobile"
           fill
           className="object-cover"
+          sizes="(max-width: 1024px) 100vw, 0vw"
           priority
         />
 
@@ -32,6 +33,7 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
           src="/images/auth/auth-bg.svg"
           alt="Vitrine Nobile com relógios de luxo"
           fill
+          sizes="(min-width: 1024px) 100vw"
           className="object-cover"
           priority
         />

@@ -1,4 +1,3 @@
-// src/services/nobile.service.ts
 import {
   AdminLog,
   Collection,
@@ -9,8 +8,10 @@ import {
 } from "@/types/nobile";
 import axios from "axios";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -20,7 +21,8 @@ const api = axios.create({
 // Interceptor para inserir token JWT automaticamente
 api.interceptors.request.use(
   config => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("nobile_token") : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,22 +32,21 @@ api.interceptors.request.use(
 );
 
 // Interceptor global de respostas (tratamento de erros)
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      if (typeof window !== "undefined") window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
+// remover comentário depois
+// api.interceptors.response.use(
+//   response => response,
+//   error => {
+//     if (error.response?.status === 401) {
+//       localStorage.removeItem("nobile_token");
+//       if (typeof window !== "undefined") window.location.href = "/login";
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
 // Classe principal do serviço de integração com o backend Nobile
 class NobileService {
-  // ============================
-  // AUTENTICAÇÃO
-  // ============================
+  // autenticação
   async register(data: {
     name: string;
     email: string;
@@ -63,18 +64,16 @@ class NobileService {
   async login(email: string, password: string) {
     const response = await api.post("/auth/login", { email, password });
     if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("nobile_token", response.data.token);
     }
     return response.data;
   }
 
   logout() {
-    localStorage.removeItem("token");
+    localStorage.removeItem("nobile_token");
   }
 
-  // ============================
-  // RELÓGIOS
-  // ============================
+  // relógios
   async getWatches(): Promise<Watch[]> {
     const response = await api.get("/watches");
     return response.data;
@@ -102,9 +101,7 @@ class NobileService {
     return response.data;
   }
 
-  // ============================
-  // PEDIDOS
-  // ============================
+  // pedidos
   async createOrder(watchId: number) {
     const response = await api.post("/orders", { watchId });
     return response.data;
@@ -142,9 +139,7 @@ class NobileService {
     return response.data;
   }
 
-  // ============================
-  // MENSAGENS
-  // ============================
+  // mensagens
   async sendMessage(data: {
     toUserId: number;
     content: string;
@@ -159,9 +154,7 @@ class NobileService {
     return response.data;
   }
 
-  // ============================
-  // COLEÇÕES
-  // ============================
+  // coleções
   async addToCollection(watchId: number, estimatedValue?: number) {
     const response = await api.post("/collections", {
       watchId,
@@ -185,17 +178,13 @@ class NobileService {
     return response.data;
   }
 
-  // ============================
-  // HISTÓRICO DE PREÇOS
-  // ============================
+  // histórico de preço
   async getPriceHistory(watchId: number): Promise<PriceHistory[]> {
     const response = await api.get(`/price-history/${watchId}`);
     return response.data;
   }
 
-  // ============================
-  // ADMIN
-  // ============================
+  // admin
   async getReports() {
     const response = await api.get("/admin/reports");
     return response.data;

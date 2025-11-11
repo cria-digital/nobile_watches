@@ -1,5 +1,4 @@
 /**
- * src/lib/hooks/useSearch.ts
  * Hook para busca de relógios com suporte a API e Mock
  */
 
