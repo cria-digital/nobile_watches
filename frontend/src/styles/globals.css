@@ -15,8 +15,8 @@
   h6 {
     font-family:
       var(--font-erstoria), var(--font-lato), ui-sans-serif, system-ui, sans-serif;
-    line-height: 100%;
     color: #141414;
+    letter-spacing: -0.01em;
   }
 
   a {
@@ -110,6 +110,12 @@
   --font-weight-normal: 400;
   --font-weight-bold: 700;
   --font-weight-black: 900;
+
+  --number-of-items-per-slide-xs: 1;
+  --number-of-items-per-slide-sm: 3;
+  --number-of-items-per-slide-md: 3;
+  --number-of-items-per-slide-lg: 4;
+  --cut-of-last-item-on-start: 0;
 }
 
 @keyframes fadeIn {

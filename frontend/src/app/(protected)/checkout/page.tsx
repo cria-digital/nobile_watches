@@ -4,7 +4,7 @@ import { ConfirmationStep } from "@/components/checkout/ConfirmationStep";
 import { OrderSummaryStep } from "@/components/checkout/OrderSummaryStep";
 import { PaymentStep } from "@/components/checkout/PaymentStep";
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Breadcrumbs } from "@/components/ui";
 import { useCheckout } from "@/lib/hooks/useCheckout";
 import { useRouter, useSearchParams } from "next/navigation";
 

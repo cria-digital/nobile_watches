@@ -4,11 +4,11 @@
  */
 
 import { mockProducts } from "@/lib/data/mockProducts";
-import { Product } from "@/types/mock";
+import { Product } from "@/types/product";
 import useSWR, { SWRConfiguration } from "swr";
 
 import { ApiBrand } from "@/types/api";
-import { apiService, ApiServiceError } from "../services/api";
+import { apiService, ApiServiceError } from "../services/api.service";
 
 /**
  * Verifica se o modo mock está ativo via variável de ambiente

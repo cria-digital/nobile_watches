@@ -44,7 +44,7 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
       {/* Container do formulário */}
       <div className="flex-1 lg:absolute lg:inset-0 relative z-10 flex items-start lg:items-center justify-center lg:justify-end lg:px-15 xl:px-15 -mt-[18px] lg:mt-0">
         <div className="w-full lg:max-w-lg">
-          <div className="scrollbar-subtle bg-white w-full lg:max-w-[596px] rounded-t-[32px] lg:rounded-2xl shadow-2xl px-6 pt-[30px] pb-10 lg:p-10.5 min-h-[calc(70vh+18px)] lg:min-h-0 lg:max-h-[90vh] overflow-y-auto">
+          <div className="scrollbar-subtle bg-white w-full lg:max-w-[596px] rounded-t-[32px] lg:rounded-2xl shadow-2xl px-5 pt-[28px] pb-10 lg:p-10.5 min-h-[calc(70vh+18px)] lg:min-h-0 lg:max-h-[90vh] overflow-y-auto">
             {children}
           </div>
         </div>

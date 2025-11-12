@@ -2,7 +2,7 @@
 
 import { CartItemCard } from "@/components/cart/CartItemCard";
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs/Breadcrumbs";
 import { useCart } from "@/lib/hooks/useCart";
 import { useRouter } from "next/navigation";
 

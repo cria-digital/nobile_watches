@@ -23,7 +23,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, mockLogin, mockLogout, isLoading } = useAuth();
-
+  console.log("useMockData", useMockData);
   const {
     register,
     handleSubmit,

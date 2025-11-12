@@ -1,13 +1,12 @@
 "use client";
 
+import { Breadcrumbs, Toast } from "@/components/ui";
 import { usePurchase } from "@/hooks/usePurchase";
 import { stringToSlug } from "@/lib/utils/stringUtils";
 import { Product } from "@/types/product";
 import Image from "next/image";
 import Link from "next/link";
 import { MouseEvent, useEffect, useRef, useState } from "react";
-import { Breadcrumbs } from "../ui/Breadcrumbs";
-import { Toast } from "../ui/Toast";
 import AuthWatchCard from "./AuthWatchCard";
 import { PriceEvolutionChart } from "./PriceEvolutionChart";
 import { ProductCard } from "./ProductCard";

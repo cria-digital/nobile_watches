@@ -4,15 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useState } from "react";
-import { FieldError as RHFFieldError, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
 import { Step1WatchIdentification } from "@/components/seller/Step1WatchIdentification";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { Button } from "@/components/ui/Button";
-import nobileService from "@/lib/services/nobile.service";
+import { Breadcrumbs, Button, FieldError } from "@/components/ui";
+
 import { CreateWatchFormValues, watchSchema } from "@/lib/validations/watch";
-import { useRouter } from "next/navigation";
 
 type NotificationType = "success" | "error" | "info";
 
@@ -34,7 +32,6 @@ const steps = [
 ];
 
 export default function VenderRelogioPage() {
-  const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -46,9 +43,8 @@ export default function VenderRelogioPage() {
     watch,
     setValue,
     getValues,
-    // reset,
     trigger,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<CreateWatchFormValues>({
     //@ts-ignore
     resolver: zodResolver(watchSchema),
@@ -58,9 +54,7 @@ export default function VenderRelogioPage() {
       model: "",
       condition: "Muito bom",
       price: "" as any,
-      includedBox: false,
-      includedDocs: false,
-      includedOthers: false,
+      includedAccessories: "box_and_docs",
       hasSignsOfWear: "no",
     },
   });
@@ -100,7 +94,6 @@ export default function VenderRelogioPage() {
 
   const next = async () => {
     const v = getValues();
-
     // Validação por step
     let fieldsToValidate: (keyof CreateWatchFormValues)[] = [];
 
@@ -109,22 +102,24 @@ export default function VenderRelogioPage() {
         fieldsToValidate = ["brand", "model"];
         break;
       case 2:
-        fieldsToValidate = ["referenceNumber"];
+        fieldsToValidate = ["customTitleSuffix"];
         break;
       case 3:
         fieldsToValidate = [
           "year",
           "gender",
+          "serialNumber",
           "dialColor",
+          "caseWidth",
+          "caseHeight",
           "movement",
           "caseMaterial",
-          "caseDiameter",
           "braceletMaterial",
           "braceletColor",
         ];
         break;
       case 4:
-        fieldsToValidate = ["includedBox", "includedDocs", "includedOthers"];
+        fieldsToValidate = ["includedAccessories"];
         break;
       case 5:
         fieldsToValidate = ["hasSignsOfWear", "condition"];
@@ -175,6 +170,7 @@ export default function VenderRelogioPage() {
   };
 
   const onSubmit = async (data: CreateWatchFormValues) => {
+    console.log("data", data);
     // Validação final: garantir que estamos no step 7
     if (step !== 7) {
       addNotification(
@@ -203,6 +199,9 @@ export default function VenderRelogioPage() {
       form.append("model", String(data.model));
       if (data.referenceNumber)
         form.append("referenceNumber", String(data.referenceNumber));
+      if (data.customTitleSuffix)
+        form.append("customTitleSuffix", String(data.customTitleSuffix));
+      if (data.serialNumber) form.append("serialNumber", String(data.serialNumber));
       if (data.movement) form.append("movement", String(data.movement));
       if (data.year) form.append("year", String(data.year));
       form.append("condition", String(data.condition || ""));
@@ -212,80 +211,61 @@ export default function VenderRelogioPage() {
       if (data.dialColor) form.append("dialColor", String(data.dialColor));
       if (data.caseMaterial) form.append("caseMaterial", String(data.caseMaterial));
       if (data.caseDiameter) form.append("caseDiameter", String(data.caseDiameter));
+      if (data.caseWidth) form.append("caseWidth", String(data.caseWidth));
+      if (data.caseHeight) form.append("caseHeight", String(data.caseHeight));
       if (data.braceletMaterial)
         form.append("braceletMaterial", String(data.braceletMaterial));
       if (data.braceletColor) form.append("braceletColor", String(data.braceletColor));
       if (data.claspType) form.append("claspType", String(data.claspType));
       // inclusos
-      form.append("includedBox", String(Boolean(data.includedBox)));
-      form.append("includedDocs", String(Boolean(data.includedDocs)));
-      form.append("includedOthers", String(Boolean(data.includedOthers)));
+      form.append("includedAccessories", String(data.includedAccessories || "none"));
       form.append("hasSignsOfWear", String(data.hasSignsOfWear || "no"));
+      console.log("form", form);
 
       // images
       // @ts-ignore
-      const files: FileList | null = data.images ?? null;
-      if (files && files.length > 0) {
-        Array.from(files)
-          .slice(0, 6)
-          .forEach(file => {
-            form.append("image", file);
-          });
+      // const files: FileList | null = data.images ?? null;
+      // if (files && files.length > 0) {
+      //   Array.from(files)
+      //     .slice(0, 6)
+      //     .forEach(file => {
+      //       form.append("image", file);
+      //     });
+      // }
+      const imgs = Array.from(data.images || []) as File[];
+      for (const img of imgs) {
+        form.append("images", img);
       }
 
-      // chama o serviço (nobile.service.ts)
-      const result = await nobileService.createWatch(form);
+      //essa parte pode ser removida depois
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // sucesso
       addNotification(
         "success",
-        "Anúncio criado com sucesso!",
-        "Seu relógio foi cadastrado e em breve estará disponível para venda."
+        "Anúncio criado!",
+        "Seu anúncio foi criado com sucesso e está em análise."
       );
+      //essa parte pode ser removida depois
 
-      // Redireciona após 2 segundos
-      setTimeout(() => {
-        router.push("/meus-anuncios");
-      }, 2000);
+      // p/ baixo é oque precisa manter
+      // chama o serviço (nobile.service.ts)
+      // const result = await nobileService.createWatch(form);
 
-      return result;
-    } catch (err: any) {
-      console.error("Erro ao criar anúncio:", err);
+      // // sucesso
+      // addNotification(
+      //   "success",
+      //   "Anúncio criado com sucesso!",
+      //   "Seu relógio foi cadastrado e em breve estará disponível para venda."
+      // );
 
-      // Tratamento de erros melhorado SEM causar logout
-      let errorTitle = "Erro ao criar anúncio";
-      let errorMessage = "Ocorreu um erro inesperado. Por favor, tente novamente.";
+      // // Redireciona após 2 segundos
+      // setTimeout(() => {
+      //   router.push("/meus-anuncios");
+      // }, 2000);
 
-      // Verificar se o erro tem response do axios
-      if (err?.response) {
-        const status = err.response.status;
-
-        if (status === 400) {
-          errorTitle = "Dados inválidos";
-          errorMessage =
-            err?.response?.data?.message ||
-            "Por favor, verifique os dados informados e tente novamente.";
-        } else if (status === 401) {
-          errorTitle = "Sessão expirada";
-          errorMessage =
-            "Sua sessão expirou. Por favor, faça login novamente para continuar.";
-          // NÃO redirecionar automaticamente - deixar o usuário decidir
-        } else if (status === 403) {
-          errorTitle = "Acesso negado";
-          errorMessage =
-            "Você não tem permissão para realizar esta ação. Verifique se sua conta está ativa.";
-        } else if (status === 500) {
-          errorTitle = "Erro no servidor";
-          errorMessage =
-            "Nosso servidor está enfrentando problemas. Tente novamente em alguns minutos.";
-        } else {
-          errorMessage = err?.response?.data?.message || errorMessage;
-        }
-      } else if (err?.message) {
-        errorMessage = err.message;
-      }
-
-      addNotification("error", errorTitle, errorMessage);
+      // return result;
+    } catch (error: any) {
+      addNotification("error", "Erro ao criar anúncio", error.message);
     } finally {
       setSubmitting(false);
     }
@@ -372,11 +352,6 @@ export default function VenderRelogioPage() {
     );
   };
 
-  const FieldError = ({ error }: { error: RHFFieldError | undefined }) => {
-    if (!error?.message) return null;
-    return <span className="text-red-500 text-xs mt-1 block">{error.message}</span>;
-  };
-
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -404,16 +379,16 @@ export default function VenderRelogioPage() {
               </div>
               <input
                 type="text"
-                {...register("referenceNumber")}
+                {...register("customTitleSuffix")}
                 className={clsx(
                   "w-full max-w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                  errors.referenceNumber
+                  errors.customTitleSuffix
                     ? "border-red-500 focus:border-red-500"
                     : "border-[#EFEFEF] focus:border-[#D5A60A]"
                 )}
                 placeholder="Digite..."
               />
-              <FieldError error={errors.referenceNumber} />
+              <FieldError error={errors.customTitleSuffix} />
             </label>
 
             {/* Preview Card */}
@@ -439,7 +414,7 @@ export default function VenderRelogioPage() {
             <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
               Insira detalhes sobre o seu relógio
             </h2>
-            <p className="font-light text-gray-400 text-sm">
+            <p className="font-light lg:font-normal text-gray-400 text-sm">
               Já preenchemos alguns detalhes com base no modelo. Verifique-os e, se
               necessário, corrija-os.
             </p>
@@ -481,9 +456,25 @@ export default function VenderRelogioPage() {
               </label>
 
               <label className="block">
-                <div className="text-sm mb-2.5">Cor do mostrador</div>
+                <div className="text-sm mb-2.5">Número de série (não será publicado)</div>
                 <input
                   type="text"
+                  {...register("serialNumber")}
+                  className={clsx(
+                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
+                    errors.serialNumber
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
+                  )}
+                  placeholder="Digite..."
+                  maxLength={100}
+                />
+                <FieldError error={errors.serialNumber} />
+              </label>
+
+              <label className="block">
+                <div className="text-sm mb-2.5">Cor do mostrador</div>
+                <select
                   {...register("dialColor")}
                   className={clsx(
                     "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
@@ -491,15 +482,73 @@ export default function VenderRelogioPage() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-[#EFEFEF] focus:border-[#D5A60A]"
                   )}
-                  placeholder="Ex: Azul"
-                />
+                >
+                  <option value="">Selecionar</option>
+                  <option value="Yellow">Amarelo</option>
+                  <option value="Blue">Azul</option>
+                  <option value="Bordeaux">Bordeaux</option>
+                  <option value="White">Branco</option>
+                  <option value="Bronze">Bronze</option>
+                  <option value="Brown">Castanho</option>
+                  <option value="Beige">Champanhe</option>
+                  <option value="Gray">Cinzento</option>
+                  <option value="Pink">Cor-de-rosa</option>
+                  <option value="Skeletonized">Esqueletizado</option>
+                  <option value="Orange">Laranja</option>
+                  <option value="MotherOfPearl">Madrepérola</option>
+                  <option value="Meteorite">Meteorito</option>
+                  <option value="Gold">Ouro</option>
+                  <option value="SolidGold">Ouro (maciço)</option>
+                  <option value="Silver">Prata</option>
+                  <option value="SolidSilver">Prata (maciça)</option>
+                  <option value="Black">Preto</option>
+                  <option value="Turquoise">Turquesa</option>
+                  <option value="Green">Verde</option>
+                  <option value="Red">Vermelho</option>
+                  <option value="Purple">Violeta</option>
+                </select>
                 <FieldError error={errors.dialColor} />
               </label>
 
               <label className="block">
+                <div className="text-sm mb-2.5">Diâmetro (mm)</div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("caseWidth")}
+                    className={clsx(
+                      "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
+                      errors.caseWidth
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-[#EFEFEF] focus:border-[#D5A60A]"
+                    )}
+                    placeholder="40"
+                  />
+                  <span className="text-gray-500 text-sm">x</span>
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register("caseHeight")}
+                    className={clsx(
+                      "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
+                      errors.caseHeight
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-[#EFEFEF] focus:border-[#D5A60A]"
+                    )}
+                    placeholder="40"
+                  />
+                </div>
+                {(errors.caseWidth || errors.caseHeight) && (
+                  <span className="text-red-500 text-xs mt-1 block">
+                    {errors.caseWidth?.message || errors.caseHeight?.message}
+                  </span>
+                )}
+              </label>
+
+              <label className="block">
                 <div className="text-sm mb-2.5">Movimento</div>
-                <input
-                  type="text"
+                <select
                   {...register("movement")}
                   className={clsx(
                     "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
@@ -507,8 +556,14 @@ export default function VenderRelogioPage() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-[#EFEFEF] focus:border-[#D5A60A]"
                   )}
-                  placeholder="Ex: Automático"
-                />
+                >
+                  <option value="">Selecione...</option>
+                  <option value="Automático">Automático</option>
+                  <option value="Corda manual">Corda manual</option>
+                  <option value="Quartzo">Quartzo</option>
+                  <option value="Smartwatch">Smartwatch</option>
+                  <option value="Solar">Solar</option>
+                </select>
                 <FieldError error={errors.movement} />
               </label>
 
@@ -529,23 +584,6 @@ export default function VenderRelogioPage() {
               </label>
 
               <label className="block">
-                <div className="text-sm mb-2.5">Diâmetro da caixa (mm)</div>
-                <input
-                  type="number"
-                  step="0.1"
-                  {...register("caseDiameter")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.caseDiameter
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                  placeholder="Ex: 40"
-                />
-                <FieldError error={errors.caseDiameter} />
-              </label>
-
-              <label className="block">
                 <div className="text-sm mb-2.5">Material do bracelete</div>
                 <input
                   type="text"
@@ -563,8 +601,7 @@ export default function VenderRelogioPage() {
 
               <label className="block">
                 <div className="text-sm mb-2.5">Cor do bracelete</div>
-                <input
-                  type="text"
+                <select
                   {...register("braceletColor")}
                   className={clsx(
                     "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
@@ -572,8 +609,27 @@ export default function VenderRelogioPage() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-[#EFEFEF] focus:border-[#D5A60A]"
                   )}
-                  placeholder="Ex: Marrom"
-                />
+                >
+                  <option value="">Selecionar</option>
+                  <option value="Steel">Aço</option>
+                  <option value="Yellow">Amarelo</option>
+                  <option value="Blue">Azul</option>
+                  <option value="Beige">Bege</option>
+                  <option value="Bordeaux">Bordeaux</option>
+                  <option value="White">Branco</option>
+                  <option value="Bronze">Bronze</option>
+                  <option value="Brown">Castanho</option>
+                  <option value="Gray">Cinzento</option>
+                  <option value="Pink">Cor-de-rosa</option>
+                  <option value="Gold">Dourado</option>
+                  <option value="GoldSteel">Ouro/aço</option>
+                  <option value="Orange">Laranja</option>
+                  <option value="Silver">Prateado</option>
+                  <option value="Black">Preto</option>
+                  <option value="Green">Verde</option>
+                  <option value="Red">Vermelho</option>
+                  <option value="Purple">Violeta</option>
+                </select>
                 <FieldError error={errors.braceletColor} />
               </label>
             </div>
@@ -618,36 +674,55 @@ export default function VenderRelogioPage() {
       case 4:
         return (
           <div>
-            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
+            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-6">
               O que está incluído com seu relógio?
             </h2>
 
             <div className="space-y-4">
-              <label className="flex items-center gap-3 p-4 border border-[#EFEFEF] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
+              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
+                <span className="text-sm font-light">
+                  Caixa original e documentos originais
+                </span>
                 <input
-                  type="checkbox"
-                  {...register("includedBox")}
-                  className="w-5 h-5 accent-[#D5A60A]"
+                  type="radio"
+                  value="box_and_docs"
+                  {...register("includedAccessories")}
+                  className="w-6 h-6 accent-white"
                 />
-                <span className="text-gray-700">Caixa original</span>
               </label>
-              <label className="flex items-center gap-3 p-4 border border-[#EFEFEF] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
+
+              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
+                <span className="text-sm font-light">Caixa original</span>
                 <input
-                  type="checkbox"
-                  {...register("includedDocs")}
-                  className="w-5 h-5 accent-[#D5A60A]"
+                  type="radio"
+                  value="box_only"
+                  {...register("includedAccessories")}
+                  className="w-6 h-6 accent-white"
                 />
-                <span className="text-gray-700">Documentos originais</span>
               </label>
-              <label className="flex items-center gap-3 p-4 border border-[#EFEFEF] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
+
+              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
+                <span className="text-sm font-light">Documentos originais</span>
                 <input
-                  type="checkbox"
-                  {...register("includedOthers")}
-                  className="w-5 h-5 accent-[#D5A60A]"
+                  type="radio"
+                  value="docs_only"
+                  {...register("includedAccessories")}
+                  className="w-6 h-6 accent-white"
                 />
-                <span className="text-gray-700">Outros acessórios</span>
+              </label>
+
+              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
+                <span className="text-sm font-light">Sem mais acessórios</span>
+                <input
+                  type="radio"
+                  value="none"
+                  {...register("includedAccessories")}
+                  className="w-6 h-6 accent-white"
+                />
               </label>
             </div>
+
+            <FieldError error={errors.includedAccessories} />
           </div>
         );
       case 5:
@@ -656,32 +731,32 @@ export default function VenderRelogioPage() {
             <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
               Indique o estado do seu relógio
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-400 text-sm font-light lg:font-normal mb-6">
               Sinais de utilização, tais como riscos ou amolgadelas.
             </p>
             <div className="space-y-4">
-              <div className="text-sm text-gray-700 mb-2">
-                Seu relógio apresenta sinais de desgaste? *
+              <div className="text-sm">Seu relógio apresenta sinais de desgaste? *</div>
+              <div className="flex gap-6">
+                <label className="flex items-center w-[64px] h-[42px] gap-2 bg-[#F7F7F7] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
+                  <input
+                    type="radio"
+                    value="no"
+                    {...register("hasSignsOfWear")}
+                    className="accent-[#e7f6eb]"
+                    defaultChecked
+                  />
+                  <span className="text-sm font-light">Não</span>
+                </label>
+                <label className="flex items-center w-[64px] h-[42px] gap-2 bg-[#F7F7F7] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
+                  <input
+                    type="radio"
+                    value="yes"
+                    {...register("hasSignsOfWear")}
+                    className="accent-[#e7f6eb]"
+                  />
+                  <span className="text-sm font-light">Sim</span>
+                </label>
               </div>
-              <label className="flex items-center gap-3 p-4 border border-[#EFEFEF] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
-                <input
-                  type="radio"
-                  value="no"
-                  {...register("hasSignsOfWear")}
-                  className="w-5 h-5 accent-[#D5A60A]"
-                  defaultChecked
-                />
-                <span className="text-gray-700">Não</span>
-              </label>
-              <label className="flex items-center gap-3 p-4 border border-[#EFEFEF] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
-                <input
-                  type="radio"
-                  value="yes"
-                  {...register("hasSignsOfWear")}
-                  className="w-5 h-5 accent-[#D5A60A]"
-                />
-                <span className="text-gray-700">Sim</span>
-              </label>
               <FieldError error={errors.hasSignsOfWear} />
             </div>
           </div>
@@ -692,13 +767,13 @@ export default function VenderRelogioPage() {
             <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
               Diga-nos mais sobre o seu relógio
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="font-light lg:font-normal text-gray-400 text-sm leading-[20px] mb-6">
               Uma descrição detalhada reforça a confiança dos potenciais compradores.
               Utilize esta oportunidade para comunicar o valor do seu relógio e aumentar
               as suas oportunidades de venda.
             </p>
             <label className="block max-w-full overflow-hidden">
-              <div className="text-sm text-gray-700 mb-2">Descrição (Opcional)</div>
+              <div className="text-sm mb-2">Descrição (Opcional)</div>
               <textarea
                 {...register("description")}
                 rows={6}
@@ -722,7 +797,7 @@ export default function VenderRelogioPage() {
             </h2>
             <div className="space-y-6">
               <label className="block max-w-full overflow-hidden">
-                <div className="text-sm text-gray-700 mb-2">Preço de venda *</div>
+                <div className="text-sm mb-2">Preço de venda *</div>
                 <div className="text-xs text-gray-500 mb-2">Sugestão: R$ 508.940,32</div>
                 <input
                   type="number"
@@ -791,7 +866,7 @@ export default function VenderRelogioPage() {
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-sm text-red-900 mb-1">
+                      <h4 className="font-lato font-semibold text-sm text-red-900 mb-1">
                         Existem erros no formulário
                       </h4>
                       <p className="text-sm text-red-700">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { apiService, WatchSuggestion } from "../services/api";
+import { apiService, WatchSuggestion } from "../services/api.service";
 
 interface UseWatchSuggestionsReturn {
   suggestions: WatchSuggestion[];

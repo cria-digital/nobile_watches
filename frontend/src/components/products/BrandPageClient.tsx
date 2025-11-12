@@ -1,4 +1,5 @@
 "use client";
+
 import { FilterModal } from "@/components/products/FilterModal";
 import { ProductCard } from "@/components/products/ProductCard";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -9,7 +10,7 @@ import { useProductFilters } from "@/lib/hooks/useProductFilters";
 import { AppliedFilters } from "@/types/filters";
 import { AlertCircle, ArrowDownUp, ListFilter } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Breadcrumbs } from "../ui/Breadcrumbs";
+import { Breadcrumbs } from "../ui/Breadcrumbs/Breadcrumbs";
 import { UserNav } from "../user/UserNav";
 
 type ViewMode = "grid" | "list";

@@ -9,7 +9,7 @@ import axios, { AxiosError } from "axios";
 // CONFIGURAÇÃO DO AXIOS
 // ===============================================
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const authApi = axios.create({
   baseURL: API_BASE_URL,

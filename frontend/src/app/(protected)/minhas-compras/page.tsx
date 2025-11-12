@@ -1,7 +1,7 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs/Breadcrumbs";
 import { OrderCard } from "@/components/user/OrderCard";
 import { UserNav } from "@/components/user/UserNav";
 import { useUserOrders } from "@/lib/hooks/useUserOrders";

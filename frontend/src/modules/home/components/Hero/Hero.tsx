@@ -6,8 +6,7 @@ import nobileService from "@/lib/services/nobile.service";
 import { Product } from "@/types/product";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Slider from "react-slick";
 import useSWR from "swr";
 import FeaturedWatches from "./FeaturedWatches";
@@ -47,9 +46,6 @@ const fetcher = async () => {
 };
 
 export function Hero() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
-
   const {
     data: watches,
     error,
@@ -69,13 +65,6 @@ export function Hero() {
       img: `/images/brand/marca${(i % 10) + 1}.svg`, // fallback local (poderia vir da API futuramente)
     }));
   }, [watches, error]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/produtos?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
 
   const bannerSettings = {
     dots: true,
@@ -109,27 +98,6 @@ export function Hero() {
       href: "/breitling/superocean-heritage-15",
     },
   ];
-
-  // const marcas = [
-  //   { img: "/images/brand/marca1.svg", nome: "Rolex", href: "/rolex" },
-  //   { img: "/images/brand/marca2.svg", nome: "Tag Heuer", href: "/tag-heuer" },
-  //   { img: "/images/brand/marca3.svg", nome: "Breitling", href: "/breitling" },
-  //   {
-  //     img: "/images/brand/marca4.svg",
-  //     nome: "Audemars Piguet",
-  //     href: "/audemars-piguet",
-  //   },
-  //   {
-  //     img: "/images/brand/marca5.svg",
-  //     nome: "Patek Philippe",
-  //     href: "/patek-philippe",
-  //   },
-  //   { img: "/images/brand/marca6.svg", nome: "Hublot", href: "/hublot" },
-  //   { img: "/images/brand/marca7.svg", nome: "Cartier", href: "/cartier" },
-  //   { img: "/images/brand/marca8.svg", nome: "Seiko", href: "/seiko" },
-  //   { img: "/images/brand/marca9.svg", nome: "Omega", href: "/omega" },
-  //   { img: "/images/brand/marca10.svg", nome: "IWC", href: "/iwc" },
-  // ];
 
   const vendedores = [
     {
@@ -249,8 +217,8 @@ export function Hero() {
     }
 
     // exemplo: pegar os 4 primeiros relógios únicos com imagem
-
-    return watches.filter(w => w.images?.length).slice(0, 4) as Product[];
+    //return watches.filter(w => w.images?.length).slice(0, 4) as Product[];
+    return watches?.slice(0, 4) as Product[];
   }, [watches, error]);
 
   return (

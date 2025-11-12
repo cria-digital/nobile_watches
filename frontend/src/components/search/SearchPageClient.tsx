@@ -2,8 +2,7 @@
 
 import { FilterModal } from "@/components/products/FilterModal";
 import { ProductCard } from "@/components/products/ProductCard";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { Button } from "@/components/ui/Button";
+import { Breadcrumbs, Button } from "@/components/ui";
 import { useAuth } from "@/lib/context/AuthContext";
 import { getFilterOptions } from "@/lib/data/mockProducts";
 import { useFilteredProducts } from "@/lib/hooks/useFilteredProducts";

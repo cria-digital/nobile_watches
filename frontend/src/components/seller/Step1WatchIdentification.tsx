@@ -1,7 +1,7 @@
 "use client";
 
 import { useWatchSuggestions } from "@/lib/hooks/useWatchSuggestions";
-import { WatchSuggestion } from "@/lib/services/api";
+import { WatchSuggestion } from "@/lib/services/api.service";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {

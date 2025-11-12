@@ -1,8 +1,7 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { Button } from "@/components/ui/Button";
+import { Breadcrumbs, Button } from "@/components/ui";
 import { UserNav } from "@/components/user/UserNav";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Edit2 } from "lucide-react";

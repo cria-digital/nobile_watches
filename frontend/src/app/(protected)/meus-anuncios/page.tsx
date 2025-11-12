@@ -1,7 +1,7 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Breadcrumbs } from "@/components/ui";
 import { ListingCard } from "@/components/user/ListingCard";
 import { UserNav } from "@/components/user/UserNav";
 import { useUserListings } from "@/hooks/useUserListings";

@@ -1,6 +1,6 @@
 "use client";
 
-import { WatchSuggestion } from "@/lib/services/api";
+import { WatchSuggestion } from "@/lib/services/api.service";
 import Image from "next/image";
 
 interface WatchSuggestionsListProps {

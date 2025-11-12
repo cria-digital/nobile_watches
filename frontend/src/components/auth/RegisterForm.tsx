@@ -91,10 +91,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   return (
     <div className="w-full max-w-[500px]">
       <div className="flex flex-col gap-3 mb-6">
-        <h1 className="font-erstoria text-[28px] font-normal text-pb-500">
-          Crie sua conta
-        </h1>
-        <p className="font-lato text-gray-400 text-sm leading-[148%]">
+        <h1 className="text-[28px] leading-[28px]">Crie sua conta</h1>
+        <p className="text-gray-400 text-sm leading-[21px]">
           Descubra as marcas mais exclusivas, negocie com segurança e acompanhe a
           valorização das suas peças.
         </p>
@@ -129,17 +127,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <div className="w-full border-t border-[#EFEFEF]" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="font-lato px-3 bg-white text-gray-400">Ou</span>
+          <span className="px-3 bg-white text-gray-400">Ou</span>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Nome */}
-        <div>
-          <label htmlFor="name" className="block text-sm text-pb-500 mb-2.5">
+        <div className="w-full flex flex-col items-start gap-2.5">
+          <label htmlFor="name" className="text-sm text-pb-500">
             Nome
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/user-outline.svg" alt="User" />
             </div>
@@ -148,7 +146,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               type="text"
               id="name"
               placeholder="Digite seu nome completo"
-              className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors"
+              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors"
             />
           </div>
           {errors.name && (
@@ -157,11 +155,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* E-mail */}
-        <div>
-          <label htmlFor="email" className="block text-sm text-[#141414] mb-[10px]">
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="email" className="text-sm text-pb-500">
             E-mail
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/envelope-outline.svg" alt="Envelope" />
             </div>
@@ -172,7 +170,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               placeholder="Digite seu e-mail..."
               autoComplete="email"
               inputMode="email"
-              className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
+              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
           </div>
           {errors.email && (
@@ -181,11 +179,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* Senha */}
-        <div>
-          <label htmlFor="password" className="block text-sm text-[#141414] mb-[10px]">
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="password" className="text-sm text-pb-500">
             Senha
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/password-lock.svg" alt="Password" />
             </div>
@@ -196,7 +194,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               placeholder="Digite sua senha..."
               autoComplete="new-password"
               enterKeyHint="next"
-              className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
+              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
             <button
               type="button"
@@ -216,14 +214,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* Confirmar senha */}
-        <div>
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm text-pb-500 mb-[10px]"
-          >
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="confirmPassword" className="text-sm text-pb-500">
             Confirme sua senha
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/password-lock.svg" alt="Password" />
             </div>
@@ -234,7 +229,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               placeholder="Confirme sua senha..."
               autoComplete="new-password"
               enterKeyHint="done"
-              className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
+              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
             />
             <button
               type="button"
@@ -254,11 +249,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* Telefone */}
-        <div>
-          <label htmlFor="phone" className="block text-sm text-[#141414] mb-[10px]">
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="phone" className="text-sm text-pb-500">
             Número
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/phone.svg" alt="Location" />
             </div>
@@ -278,11 +273,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* Localização - País ocupa 100% da largura */}
-        <div>
-          <label htmlFor="country" className="block text-sm text-[#141414] mb-[10px]">
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="country" className="text-sm text-pb-500">
             País
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/map-pin.svg" alt="Location" />
             </div>
@@ -316,11 +311,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* Estado */}
-        <div>
-          <label htmlFor="state" className="block text-sm text-[#141414] mb-[10px]">
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="state" className="text-sm text-pb-500">
             Estado
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/map-pin.svg" alt="Location" />
             </div>
@@ -338,11 +333,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
 
         {/* Cidade */}
-        <div>
-          <label htmlFor="city" className="block text-sm text-[#141414] mb-[10px]">
+        <div className="flex flex-col items-start gap-2.5">
+          <label htmlFor="city" className="text-sm text-pb-500">
             Cidade
           </label>
-          <div className="relative">
+          <div className="w-full relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Icon src="/icons/map-pin.svg" alt="Location" />
             </div>

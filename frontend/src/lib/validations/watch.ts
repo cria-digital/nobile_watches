@@ -9,10 +9,14 @@ export const watchSchema = z.object({
   model: z
     .string()
     .min(2, "O modelo deve ter pelo menos 2 caracteres")
-    .max(100, "O modelo não pode ter mais de 100 caracteres"),
+    .max(200, "O modelo não pode ter mais de 200 caracteres"),
+  referenceNumber: z.string().max(250, "Número de referência muito longo").optional(),
 
   // STEP 2 - Título & Destaque (opcional)
-  referenceNumber: z.string().max(100, "Número de referência muito longo").optional(),
+  customTitleSuffix: z
+    .string()
+    .max(60, "Informações adicionais não podem ter mais de 60 caracteres")
+    .optional(),
 
   // STEP 3 - Detalhes
   year: z
@@ -27,9 +31,26 @@ export const watchSchema = z.object({
     .optional()
     .transform(val => (val ? Number(val) : undefined)),
   gender: z.enum(["Homem", "Mulher", "Unissex", ""]).optional(),
-  dialColor: z.string().max(50, "Cor muito longa").optional(),
-  movement: z.string().max(100, "Movimento muito longo").optional(),
+  serialNumber: z.string().max(100, "Número de série muito longo").optional(),
+  dialColor: z.string().optional(),
+  movement: z
+    .enum(["", "Automático", "Corda manual", "Quartzo", "Smartwatch", "Solar"])
+    .optional(),
   caseMaterial: z.string().max(100, "Material muito longo").optional(),
+  caseWidth: z
+    .union([
+      z.string().regex(/^\d+(\.\d+)?$/, "Largura inválida"),
+      z.number().positive("Largura deve ser positiva"),
+    ])
+    .optional()
+    .transform(val => (val ? Number(val) : undefined)),
+  caseHeight: z
+    .union([
+      z.string().regex(/^\d+(\.\d+)?$/, "Altura inválida"),
+      z.number().positive("Altura deve ser positiva"),
+    ])
+    .optional()
+    .transform(val => (val ? Number(val) : undefined)),
   caseDiameter: z
     .union([
       z.string().regex(/^\d+(\.\d+)?$/, "Diâmetro inválido"),
@@ -38,19 +59,18 @@ export const watchSchema = z.object({
     .optional()
     .transform(val => (val ? Number(val) : undefined)),
   braceletMaterial: z.string().max(100, "Material muito longo").optional(),
-  braceletColor: z.string().max(50, "Cor muito longa").optional(),
+  braceletColor: z.string().optional(),
   claspType: z.string().max(50, "Tipo de fecho muito longo").optional(),
 
   // STEP 3 - Imagens
   images: z.any().optional(),
 
-  // STEP 4 - Inclusos
-  includedBox: z.boolean().optional(),
-  includedDocs: z.boolean().optional(),
-  includedOthers: z.boolean().optional(),
+  // Step 4 - Acessórios inclusos (ATUALIZADO)
+  includedAccessories: z
+    .enum(["box_and_docs", "box_only", "docs_only", "none"])
+    .optional(),
 
   // STEP 5 - Estado (obrigatório)
-
   hasSignsOfWear: z.enum(["yes", "no"]).default("no"),
   condition: z.string().min(3, "Condição é obrigatória").max(50, "Condição muito longa"),
 
