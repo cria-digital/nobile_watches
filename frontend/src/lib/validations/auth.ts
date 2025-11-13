@@ -27,10 +27,7 @@ export const registerSchema = z
     phone: z
       .string()
       .min(1, "Telefone é obrigatório")
-      .regex(
-        /^\+55\s\d{2}\s\d{4,5}-?\d{4}$/,
-        "Telefone deve estar no formato +55 XX XXXXX-XXXX"
-      ),
+      .regex(/^\d{11}$/, "Telefone deve conter 11 dígitos (DD + número)"),
     country: z.string().min(1, "País é obrigatório"),
     state: z.string().min(1, "Estado é obrigatório"),
     city: z.string().min(1, "Cidade é obrigatória"),

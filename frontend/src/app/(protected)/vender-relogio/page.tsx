@@ -7,9 +7,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Step1WatchIdentification } from "@/components/seller/Step1WatchIdentification";
-import { Breadcrumbs, Button, FieldError } from "@/components/ui";
+import { Step1Identification } from "@/components/seller/Step1Identification";
+import { WatchSearchStep } from "@/components/seller/WatchSearchStep";
+import { Breadcrumbs, Button, FieldError, Input, Select } from "@/components/ui";
 
+import { PreviewCard } from "@/components/seller/PreviewCard";
+import { dialColorOptions, genderOptions } from "@/lib/constants";
 import { CreateWatchFormValues, watchSchema } from "@/lib/validations/watch";
 
 type NotificationType = "success" | "error" | "info";
@@ -21,6 +24,7 @@ interface Notification {
   message: string;
 }
 
+// Steps do fluxo (sem contar a busca inicial)
 const steps = [
   { id: 1, title: "Identificação" },
   { id: 2, title: "Título & Destaque" },
@@ -32,7 +36,9 @@ const steps = [
 ];
 
 export default function VenderRelogioPage() {
-  const [step, setStep] = useState<number>(1);
+  // step 0 = busca inicial (não faz parte dos 7 steps)
+  // steps 1-7 = fluxo de criação do anúncio
+  const [step, setStep] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -65,7 +71,6 @@ export default function VenderRelogioPage() {
 
     setNotifications(prev => [...prev, notification]);
 
-    // Remove automaticamente após 5 segundos
     setTimeout(() => {
       removeNotification(id);
     }, 5000);
@@ -94,6 +99,7 @@ export default function VenderRelogioPage() {
 
   const next = async () => {
     const v = getValues();
+
     // Validação por step
     let fieldsToValidate: (keyof CreateWatchFormValues)[] = [];
 
@@ -110,8 +116,7 @@ export default function VenderRelogioPage() {
           "gender",
           "serialNumber",
           "dialColor",
-          "caseWidth",
-          "caseHeight",
+          "caseDiameter",
           "movement",
           "caseMaterial",
           "braceletMaterial",
@@ -132,7 +137,6 @@ export default function VenderRelogioPage() {
         break;
     }
 
-    // Trigger validação dos campos do step atual
     const isStepValid = await trigger(fieldsToValidate);
 
     if (!isStepValid) {
@@ -144,7 +148,7 @@ export default function VenderRelogioPage() {
       return;
     }
 
-    // Validações específicas por step
+    // Validações específicas
     if (step === 1) {
       if (!v.brand || !v.model) {
         addNotification(
@@ -165,13 +169,13 @@ export default function VenderRelogioPage() {
   };
 
   const prev = () => {
-    setStep(s => Math.max(s - 1, 1));
+    // Se estiver no step 1, volta para a busca (step 0)
+    setStep(s => Math.max(s - 1, 0));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async (data: CreateWatchFormValues) => {
     console.log("data", data);
-    // Validação final: garantir que estamos no step 7
     if (step !== 7) {
       addNotification(
         "info",
@@ -181,7 +185,6 @@ export default function VenderRelogioPage() {
       return;
     }
 
-    // Validar campos obrigatórios finais
     const finalValidation = await trigger();
     if (!finalValidation) {
       addNotification(
@@ -199,9 +202,7 @@ export default function VenderRelogioPage() {
       form.append("model", String(data.model));
       if (data.referenceNumber)
         form.append("referenceNumber", String(data.referenceNumber));
-      if (data.customTitleSuffix)
-        form.append("customTitleSuffix", String(data.customTitleSuffix));
-      if (data.serialNumber) form.append("serialNumber", String(data.serialNumber));
+
       if (data.movement) form.append("movement", String(data.movement));
       if (data.year) form.append("year", String(data.year));
       form.append("condition", String(data.condition || ""));
@@ -211,33 +212,25 @@ export default function VenderRelogioPage() {
       if (data.dialColor) form.append("dialColor", String(data.dialColor));
       if (data.caseMaterial) form.append("caseMaterial", String(data.caseMaterial));
       if (data.caseDiameter) form.append("caseDiameter", String(data.caseDiameter));
-      if (data.caseWidth) form.append("caseWidth", String(data.caseWidth));
-      if (data.caseHeight) form.append("caseHeight", String(data.caseHeight));
       if (data.braceletMaterial)
         form.append("braceletMaterial", String(data.braceletMaterial));
       if (data.braceletColor) form.append("braceletColor", String(data.braceletColor));
       if (data.claspType) form.append("claspType", String(data.claspType));
-      // inclusos
-      form.append("includedAccessories", String(data.includedAccessories || "none"));
-      form.append("hasSignsOfWear", String(data.hasSignsOfWear || "no"));
-      console.log("form", form);
 
-      // images
-      // @ts-ignore
-      // const files: FileList | null = data.images ?? null;
-      // if (files && files.length > 0) {
-      //   Array.from(files)
-      //     .slice(0, 6)
-      //     .forEach(file => {
-      //       form.append("image", file);
-      //     });
-      // }
+      // não existe no backend
+      if (data.customTitleSuffix)
+        form.append("customTitleSuffix", String(data.customTitleSuffix));
+      if (data.serialNumber) form.append("serialNumber", String(data.serialNumber));
+      form.append("hasSignsOfWear", String(data.hasSignsOfWear || "no"));
+      form.append("includedAccessories", String(data.includedAccessories || "none"));
+
+      // só existe o campo "image" que aceita uma imagem
       const imgs = Array.from(data.images || []) as File[];
       for (const img of imgs) {
-        form.append("images", img);
+        form.append("image", img);
       }
 
-      //essa parte pode ser removida depois
+      // Simulação de envio
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       addNotification(
@@ -245,25 +238,11 @@ export default function VenderRelogioPage() {
         "Anúncio criado!",
         "Seu anúncio foi criado com sucesso e está em análise."
       );
-      //essa parte pode ser removida depois
 
-      // p/ baixo é oque precisa manter
-      // chama o serviço (nobile.service.ts)
+      // Código real comentado:
       // const result = await nobileService.createWatch(form);
-
-      // // sucesso
-      // addNotification(
-      //   "success",
-      //   "Anúncio criado com sucesso!",
-      //   "Seu relógio foi cadastrado e em breve estará disponível para venda."
-      // );
-
-      // // Redireciona após 2 segundos
-      // setTimeout(() => {
-      //   router.push("/meus-anuncios");
-      // }, 2000);
-
-      // return result;
+      // addNotification("success", "Anúncio criado com sucesso!", "...");
+      // setTimeout(() => router.push("/meus-anuncios"), 2000);
     } catch (error: any) {
       addNotification("error", "Erro ao criar anúncio", error.message);
     } finally {
@@ -299,7 +278,7 @@ export default function VenderRelogioPage() {
 
           <div className="flex-1 min-w-0">
             <h4
-              className={clsx("font-semibold text-sm mb-1", {
+              className={clsx("font-lato font-semibold text-sm mb-1", {
                 "text-green-900": notification.type === "success",
                 "text-red-900": notification.type === "error",
                 "text-blue-900": notification.type === "info",
@@ -353,16 +332,15 @@ export default function VenderRelogioPage() {
   };
 
   const renderStep = () => {
+    // Step 0 = Busca inicial (não faz parte dos 7 steps)
+    if (step === 0) {
+      return <WatchSearchStep setValue={setValue} onContinue={() => setStep(1)} />;
+    }
+
+    // Steps 1-7 = Fluxo de criação do anúncio
     switch (step) {
       case 1:
-        return (
-          <Step1WatchIdentification
-            setValue={setValue}
-            watch={watch}
-            errors={errors}
-            register={register}
-          />
-        );
+        return <Step1Identification watch={watch} errors={errors} register={register} />;
       case 2:
         return (
           <div>
@@ -391,27 +369,20 @@ export default function VenderRelogioPage() {
               <FieldError error={errors.customTitleSuffix} />
             </label>
 
-            {/* Preview Card */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-xs text-gray-500 mb-2">Pré-visualização</p>
-              <div className="flex items-start gap-3">
-                <div className="w-16 h-16 bg-gray-200 rounded-md flex-shrink-0"></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm mb-2">{watch("brand") || "Marca"}</p>
-                  <h3 className="truncate">{watch("model") || "Modelo"}</h3>
-                  <p className="text-xs text-gray-600 truncate mt-1">
-                    {watch("referenceNumber") ||
-                      "Informações adicionais aparecem aqui..."}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PreviewCard
+              brand={watch("brand")}
+              model={watch("model")}
+              referenceNumber={
+                watch("referenceNumber") || "Informações adicionais aparecem aqui..."
+              }
+              className="mt-6"
+            />
           </div>
         );
       case 3:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
+            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-5">
               Insira detalhes sobre o seu relógio
             </h2>
             <p className="font-light lg:font-normal text-gray-400 text-sm">
@@ -420,223 +391,126 @@ export default function VenderRelogioPage() {
             </p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <label className="block">
-                <div className="text-sm mb-2.5">Ano de fabricação</div>
-                <input
-                  type="number"
-                  {...register("year")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.year
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                  placeholder="Ex: 2012"
-                />
-                <FieldError error={errors.year} />
-              </label>
+              <Input
+                {...register("year")}
+                id="year"
+                label="Ano de fabricação"
+                type="number"
+                error={errors.year?.message as string}
+                placeholder="Ex: 2012"
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Gênero</div>
-                <select
-                  {...register("gender")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.gender
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Homem">Homem</option>
-                  <option value="Mulher">Mulher</option>
-                  <option value="Unissex">Unissex</option>
-                </select>
-                <FieldError error={errors.gender} />
-              </label>
+              <Select
+                {...register("gender")}
+                id="gender"
+                label="Gênero"
+                placeholder="Selecione..."
+                options={genderOptions}
+                error={errors.gender?.message}
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Número de série (não será publicado)</div>
-                <input
-                  type="text"
-                  {...register("serialNumber")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.serialNumber
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                  placeholder="Digite..."
-                  maxLength={100}
-                />
-                <FieldError error={errors.serialNumber} />
-              </label>
+              <Input
+                {...register("serialNumber")}
+                id="serialNumber"
+                label="Número de série (não será publicado)"
+                type="text"
+                error={errors.serialNumber?.message as string}
+                placeholder="Digite..."
+                maxLength={100}
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Cor do mostrador</div>
-                <select
-                  {...register("dialColor")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.dialColor
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                >
-                  <option value="">Selecionar</option>
-                  <option value="Yellow">Amarelo</option>
-                  <option value="Blue">Azul</option>
-                  <option value="Bordeaux">Bordeaux</option>
-                  <option value="White">Branco</option>
-                  <option value="Bronze">Bronze</option>
-                  <option value="Brown">Castanho</option>
-                  <option value="Beige">Champanhe</option>
-                  <option value="Gray">Cinzento</option>
-                  <option value="Pink">Cor-de-rosa</option>
-                  <option value="Skeletonized">Esqueletizado</option>
-                  <option value="Orange">Laranja</option>
-                  <option value="MotherOfPearl">Madrepérola</option>
-                  <option value="Meteorite">Meteorito</option>
-                  <option value="Gold">Ouro</option>
-                  <option value="SolidGold">Ouro (maciço)</option>
-                  <option value="Silver">Prata</option>
-                  <option value="SolidSilver">Prata (maciça)</option>
-                  <option value="Black">Preto</option>
-                  <option value="Turquoise">Turquesa</option>
-                  <option value="Green">Verde</option>
-                  <option value="Red">Vermelho</option>
-                  <option value="Purple">Violeta</option>
-                </select>
-                <FieldError error={errors.dialColor} />
-              </label>
+              <Select
+                {...register("dialColor")}
+                id="dialColor"
+                label="Cor do mostrador"
+                placeholder="Selecione..."
+                error={errors.dialColor?.message}
+                options={dialColorOptions}
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Diâmetro (mm)</div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    step="0.1"
-                    {...register("caseWidth")}
-                    className={clsx(
-                      "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                      errors.caseWidth
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                    )}
-                    placeholder="40"
-                  />
-                  <span className="text-gray-500 text-sm">x</span>
-                  <input
-                    type="number"
-                    step="0.1"
-                    {...register("caseHeight")}
-                    className={clsx(
-                      "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                      errors.caseHeight
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                    )}
-                    placeholder="40"
-                  />
-                </div>
-                {(errors.caseWidth || errors.caseHeight) && (
-                  <span className="text-red-500 text-xs mt-1 block">
-                    {errors.caseWidth?.message || errors.caseHeight?.message}
-                  </span>
-                )}
-              </label>
+              <Select
+                {...register("movement")}
+                id="movement"
+                label="Movimento"
+                placeholder="Selecione..."
+                error={errors.movement?.message}
+              >
+                <option value="">Selecionar</option>
+                <option value="Automático">Automático</option>
+                <option value="Corda manual">Corda manual</option>
+                <option value="Quartzo">Quartzo</option>
+                <option value="Smartwatch">Smartwatch</option>
+                <option value="Solar">Solar</option>
+              </Select>
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Movimento</div>
-                <select
-                  {...register("movement")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.movement
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Automático">Automático</option>
-                  <option value="Corda manual">Corda manual</option>
-                  <option value="Quartzo">Quartzo</option>
-                  <option value="Smartwatch">Smartwatch</option>
-                  <option value="Solar">Solar</option>
-                </select>
-                <FieldError error={errors.movement} />
-              </label>
+              <Input
+                {...register("caseMaterial")}
+                id="caseMaterial"
+                label="Material da caixa"
+                type="text"
+                error={errors.caseMaterial?.message as string}
+                placeholder="Ex: Aço inoxidável, ouro, titânio..."
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Material da caixa</div>
-                <input
-                  type="text"
-                  {...register("caseMaterial")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.caseMaterial
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                  placeholder="Ex: Ouro rosa"
-                />
-                <FieldError error={errors.caseMaterial} />
-              </label>
+              <Input
+                {...register("caseDiameter")}
+                id="caseDiameter"
+                label="Diâmetro da caixa (mm)"
+                type="number"
+                error={errors.caseDiameter?.message as string}
+                placeholder="Ex: 42"
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Material do bracelete</div>
-                <input
-                  type="text"
-                  {...register("braceletMaterial")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.braceletMaterial
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                  placeholder="Ex: Couro"
-                />
-                <FieldError error={errors.braceletMaterial} />
-              </label>
+              <Input
+                {...register("braceletMaterial")}
+                id="braceletMaterial"
+                label="Material do bracelete"
+                type="text"
+                error={errors.braceletMaterial?.message as string}
+                placeholder="Ex: Aço, couro, borracha..."
+              />
 
-              <label className="block">
-                <div className="text-sm mb-2.5">Cor do bracelete</div>
-                <select
-                  {...register("braceletColor")}
-                  className={clsx(
-                    "w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                    errors.braceletColor
-                      ? "border-red-500 focus:border-red-500"
-                      : "border-[#EFEFEF] focus:border-[#D5A60A]"
-                  )}
-                >
-                  <option value="">Selecionar</option>
-                  <option value="Steel">Aço</option>
-                  <option value="Yellow">Amarelo</option>
-                  <option value="Blue">Azul</option>
-                  <option value="Beige">Bege</option>
-                  <option value="Bordeaux">Bordeaux</option>
-                  <option value="White">Branco</option>
-                  <option value="Bronze">Bronze</option>
-                  <option value="Brown">Castanho</option>
-                  <option value="Gray">Cinzento</option>
-                  <option value="Pink">Cor-de-rosa</option>
-                  <option value="Gold">Dourado</option>
-                  <option value="GoldSteel">Ouro/aço</option>
-                  <option value="Orange">Laranja</option>
-                  <option value="Silver">Prateado</option>
-                  <option value="Black">Preto</option>
-                  <option value="Green">Verde</option>
-                  <option value="Red">Vermelho</option>
-                  <option value="Purple">Violeta</option>
-                </select>
-                <FieldError error={errors.braceletColor} />
-              </label>
+              <Input
+                {...register("braceletColor")}
+                id="braceletColor"
+                //      label='Cor da pulseira' -> seria o correto
+                label="Cor do bracelete"
+                type="text"
+                error={errors.braceletColor?.message as string}
+                placeholder="Castanho"
+              />
+
+              <Input
+                {...register("claspType")}
+                id="claspType"
+                label="Tipo de fecho"
+                type="text"
+                error={errors.claspType?.message as string}
+                placeholder="Ex: Fecho Dobrável"
+              />
+
+              {/* <Input
+                {...register("waterResistance")}
+                id="waterResistance"
+                label="Resistência à água"
+                type="text"
+                error={errors.waterResistance?.message as string}
+                placeholder="Ex: Fecho Dobrável"
+              /> */}
+
+              {/* <Input
+                {...register("glassType")}
+                id="waterResistance"
+                label="Resistência à água"
+                type="text"
+                error={errors.waterResistance?.message as string}
+                placeholder="Ex: Cristal de Safira"
+              /> */}
             </div>
 
             {/* Upload de imagens */}
             <div>
-              <div className="text-sm mb-2.5">Imagens do relógio</div>
+              <div className="text-base mb-4">Imagens do relógio</div>
               <label className="block cursor-pointer">
                 <input
                   type="file"
@@ -674,90 +548,141 @@ export default function VenderRelogioPage() {
       case 4:
         return (
           <div>
-            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-6">
+            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-5">
               O que está incluído com seu relógio?
             </h2>
 
             <div className="space-y-4">
-              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
-                <span className="text-sm font-light">
-                  Caixa original e documentos originais
-                </span>
+              <label
+                className={`flex items-center justify-between py-1.5 pl-3.5 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
+                  watch("includedAccessories") === "box_and_docs"
+                    ? "font-normal"
+                    : "font-light"
+                }`}
+              >
+                <span className="text-sm">Caixa original e documentos originais</span>
                 <input
                   type="radio"
                   value="box_and_docs"
                   {...register("includedAccessories")}
-                  className="w-6 h-6 accent-white"
+                  className="appearance-none w-[30px] h-[30px] rounded-[6px] bg-transparent border-0 checked:bg-[#E7F6EB] checked:flex checked:items-center checked:justify-center relative
+                    after:content-[''] after:hidden checked:after:block after:absolute after:left-[9px] after:top-[5px] after:w-[10px] after:h-[16px] after:border-[#4CAF50] after:border-r-[3px] after:border-b-[3px] after:rotate-45"
                 />
               </label>
 
-              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
-                <span className="text-sm font-light">Caixa original</span>
+              <label
+                className={`flex items-center justify-between py-1.5 pl-3.5 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
+                  watch("includedAccessories") === "box_only"
+                    ? "font-normal"
+                    : "font-light"
+                }`}
+              >
+                <span className="text-sm">Caixa original</span>
                 <input
                   type="radio"
                   value="box_only"
                   {...register("includedAccessories")}
-                  className="w-6 h-6 accent-white"
+                  className="appearance-none w-[30px] h-[30px] rounded-[6px] bg-transparent border-0 checked:bg-[#E7F6EB] checked:flex checked:items-center checked:justify-center relative
+                    after:content-[''] after:hidden checked:after:block after:absolute after:left-[9px] after:top-[5px] after:w-[10px] after:h-[16px] after:border-[#4CAF50] after:border-r-[3px] after:border-b-[3px] after:rotate-45"
                 />
               </label>
 
-              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
-                <span className="text-sm font-light">Documentos originais</span>
+              <label
+                className={`flex items-center justify-between py-1.5 pl-3.5 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
+                  watch("includedAccessories") === "docs_only"
+                    ? "font-normal"
+                    : "font-light"
+                }`}
+              >
+                <span className="text-sm">Documentos originais</span>
                 <input
                   type="radio"
                   value="docs_only"
                   {...register("includedAccessories")}
-                  className="w-6 h-6 accent-white"
+                  className="appearance-none w-[30px] h-[30px] rounded-[6px] bg-transparent border-0 checked:bg-[#E7F6EB] checked:flex checked:items-center checked:justify-center relative
+                    after:content-[''] after:hidden checked:after:block after:absolute after:left-[9px] after:top-[5px] after:w-[10px] after:h-[16px] after:border-[#4CAF50] after:border-r-[3px] after:border-b-[3px] after:rotate-45"
                 />
               </label>
 
-              <label className="flex items-center justify-between gap-3 h-[42px] pl-[14px] pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer hover:bg-linear-50 transition-colors">
-                <span className="text-sm font-light">Sem mais acessórios</span>
+              <label
+                className={`flex items-center justify-between py-1.5 pl-3.5 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
+                  watch("includedAccessories") === "none" ? "font-normal" : "font-light"
+                }`}
+              >
+                <span className="text-sm">Sem mais acessórios</span>
                 <input
                   type="radio"
                   value="none"
                   {...register("includedAccessories")}
-                  className="w-6 h-6 accent-white"
+                  className="appearance-none w-[30px] h-[30px] rounded-[6px] bg-transparent border-0 checked:bg-[#E7F6EB] checked:flex checked:items-center checked:justify-center relative
+                    after:content-[''] after:hidden checked:after:block after:absolute after:left-[9px] after:top-[5px] after:w-[10px] after:h-[16px] after:border-[#4CAF50] after:border-r-[3px] after:border-b-[3px] after:rotate-45"
                 />
               </label>
             </div>
-
             <FieldError error={errors.includedAccessories} />
           </div>
         );
       case 5:
         return (
           <div>
-            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
+            <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-5">
               Indique o estado do seu relógio
             </h2>
-            <p className="text-gray-400 text-sm font-light lg:font-normal mb-6">
+
+            <p className="text-sm font-light lg:font-normal text-gray-400 mb-5">
               Sinais de utilização, tais como riscos ou amolgadelas.
             </p>
-            <div className="space-y-4">
-              <div className="text-sm">Seu relógio apresenta sinais de desgaste? *</div>
-              <div className="flex gap-6">
-                <label className="flex items-center w-[64px] h-[42px] gap-2 bg-[#F7F7F7] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
-                  <input
-                    type="radio"
-                    value="no"
-                    {...register("hasSignsOfWear")}
-                    className="accent-[#e7f6eb]"
-                    defaultChecked
-                  />
-                  <span className="text-sm font-light">Não</span>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm mb-3">
+                  Seu relógio apresenta sinais de desgaste?
                 </label>
-                <label className="flex items-center w-[64px] h-[42px] gap-2 bg-[#F7F7F7] rounded-lg cursor-pointer hover:border-[#D5A60A] transition-colors">
-                  <input
-                    type="radio"
-                    value="yes"
-                    {...register("hasSignsOfWear")}
-                    className="accent-[#e7f6eb]"
-                  />
-                  <span className="text-sm font-light">Sim</span>
-                </label>
+                <div className="flex gap-4">
+                  <label
+                    className={`flex items-center justify-between h-[42px] pl-4 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
+                      watch("hasSignsOfWear") === "yes" ? "font-normal" : "font-light"
+                    }`}
+                  >
+                    <span className="text-sm">Sim</span>
+                    <input
+                      type="radio"
+                      value="yes"
+                      {...register("hasSignsOfWear")}
+                      className="appearance-none w-[30px] h-full bg-transparent border-0 checked:flex checked:items-center checked:justify-center relative
+                        after:content-[''] after:hidden checked:after:block after:absolute after:left-[12px] after:top-[10px] after:w-[8px] after:h-[14px] after:border-[#4CAF50] after:border-r-[3px] after:border-b-[3px] after:rotate-45"
+                    />
+                  </label>
+
+                  <label
+                    className={`flex items-center justify-between h-[42px] pl-4 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
+                      watch("hasSignsOfWear") === "no" ? "font-normal" : "font-light"
+                    }`}
+                  >
+                    <span className="text-sm">Não</span>
+                    <input
+                      type="radio"
+                      value="no"
+                      {...register("hasSignsOfWear")}
+                      className="appearance-none w-[30px] h-full bg-transparent border-0 checked:flex checked:items-center checked:justify-center relative
+                        after:content-[''] after:hidden checked:after:block after:absolute after:left-[12px] after:top-[10px] after:w-[8px] after:h-[14px] after:border-[#4CAF50] after:border-r-[3px] after:border-b-[3px] after:rotate-45"
+                    />
+                  </label>
+                </div>
+                <FieldError error={errors.hasSignsOfWear} />
               </div>
-              <FieldError error={errors.hasSignsOfWear} />
+
+              <Select
+                {...register("condition")}
+                id="condition"
+                label="Estado de conservação *"
+                placeholder="Selecione..."
+                error={errors.condition?.message}
+              >
+                <option value="Novo">Novo</option>
+                <option value="Muito bom">Muito bom</option>
+                <option value="Bom">Bom</option>
+                <option value="Aceitável">Aceitável</option>
+              </Select>
             </div>
           </div>
         );
@@ -765,9 +690,9 @@ export default function VenderRelogioPage() {
         return (
           <div>
             <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em] mb-4">
-              Diga-nos mais sobre o seu relógio
+              Adicione uma descrição
             </h2>
-            <p className="font-light lg:font-normal text-gray-400 text-sm leading-[20px] mb-6">
+            <p className="text-gray-400 text-sm leading-[20px] mb-6">
               Uma descrição detalhada reforça a confiança dos potenciais compradores.
               Utilize esta oportunidade para comunicar o valor do seu relógio e aumentar
               as suas oportunidades de venda.
@@ -891,23 +816,25 @@ export default function VenderRelogioPage() {
       <MobileBackHeader title="Vender relógio" />
 
       <div className="hidden lg:block bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 lg:px-10 py-6">
           <Breadcrumbs
             items={[{ label: "Home", href: "/" }, { label: "Vender relógio" }]}
           />
-          <h1 className="text-3xl lg:text-[32px] leading-[100%] mt-2">Vender relógio</h1>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-5 lg:px-8 py-6">
-        <div className="bg-white lg:p-8 overflow-x-hidden">
-          {step > 1 && <StepIndicator />}
+      <div className="max-w-3xl mx-auto px-5 lg:px-0 py-6 lg:py-4">
+        <div className="bg-white lg:p-0 overflow-x-hidden">
+          {/* Indicador de progresso - só aparece após o step 0 (busca) */}
+          {step > 0 && <StepIndicator />}
+
           {/* @ts-ignore */}
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-8">{renderStep()}</div>
 
-            <div className="flex flex-col-reverse lg:flex-row lg:items-center lg:justify-between gap-4 pt-6 border-t border-gray-200">
-              {step > 1 && (
+            {/* Botões de navegação */}
+            {step > 0 && (
+              <div className="flex flex-col-reverse lg:flex-row lg:items-center lg:justify-between gap-4 pt-6 border-t border-gray-200">
                 <Button
                   variant="stroke"
                   type="button"
@@ -916,41 +843,39 @@ export default function VenderRelogioPage() {
                 >
                   Voltar
                 </Button>
-              )}
 
-              {step < steps.length ? (
-                <Button
-                  variant="gold"
-                  type="button"
-                  onClick={next}
-                  className={`w-full lg:w-auto lg:min-w-[200px] ${step > 1 ? "lg:ml-auto" : "lg:mx-auto"}`}
-                >
-                  Continuar
-                </Button>
-              ) : (
-                <Button
-                  variant="gold"
-                  type="submit"
-                  disabled={submitting || Object.keys(errors).length > 0}
-                  className="w-full lg:w-auto lg:min-w-[200px] lg:ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {submitting ? "Criando anúncio..." : "Criar anúncio"}
-                </Button>
-              )}
-            </div>
+                {step < steps.length ? (
+                  <Button
+                    variant="gold"
+                    type="button"
+                    onClick={next}
+                    className="w-full lg:w-auto lg:min-w-[200px] lg:ml-auto"
+                  >
+                    Continuar
+                  </Button>
+                ) : (
+                  <Button
+                    variant="gold"
+                    type="submit"
+                    disabled={submitting || Object.keys(errors).length > 0}
+                    className="w-full lg:w-auto lg:min-w-[200px] lg:ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? "Criando anúncio..." : "Criar anúncio"}
+                  </Button>
+                )}
+              </div>
+            )}
           </form>
         </div>
       </div>
 
       <style jsx global>{`
-        /* Previne scroll horizontal global */
         html,
         body {
           overflow-x: hidden;
           max-width: 100vw;
         }
 
-        /* Garante que inputs não ultrapassem o container */
         input:not([type="checkbox"]):not([type="radio"]),
         textarea,
         select {
@@ -958,7 +883,6 @@ export default function VenderRelogioPage() {
           box-sizing: border-box;
         }
 
-        /* Quebra de linha em elementos de texto */
         p,
         span,
         div,
@@ -973,12 +897,10 @@ export default function VenderRelogioPage() {
           word-break: break-word;
         }
 
-        /* Previne overflow em containers */
         * {
           box-sizing: border-box;
         }
 
-        /* Animações para notificações */
         @keyframes slideIn {
           from {
             transform: translateX(100%);

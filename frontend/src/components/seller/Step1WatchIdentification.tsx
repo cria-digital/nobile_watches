@@ -10,6 +10,8 @@ import {
   UseFormSetValue,
   UseFormWatch,
 } from "react-hook-form";
+import { Input } from "../ui";
+import { PreviewCard } from "./PreviewCard";
 
 interface Step1Props {
   setValue: UseFormSetValue<any>;
@@ -33,32 +35,33 @@ export function Step1WatchIdentification({
     null
   );
   const [manualMode, setManualMode] = useState(false);
-
+  console.log("manualMode", manualMode);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const formBrand = watch("brand");
   const formModel = watch("model");
 
   // Inicializa o campo de busca se houver valores no formulário (ao voltar ao step 1)
-  useEffect(() => {
-    if (formBrand && formModel && !searchQuery) {
-      setSearchQuery(`${formBrand} ${formModel}`);
-      setSelectedSuggestion({
-        id: 0,
-        label: `${formBrand} ${formModel}`,
-        brand: formBrand,
-        model: formModel,
-        referenceNumber: watch("referenceNumber") || "",
-        imageUrl: "",
-        caseMaterial: watch("caseMaterial") || "",
-        caseDiameter: watch("caseDiameter") || 0,
-        dialColor: watch("dialColor") || "",
-        movement: watch("movement") || "",
-        year: watch("year") || 0,
-        averagePrice: 0,
-      });
-    }
-  }, [formBrand, formModel, searchQuery, watch]);
+  // useEffect(() => {
+  //   if (formBrand && formModel && !searchQuery) {
+  //     console.log("EXECUTOU");
+  //     setSearchQuery(`${formBrand} ${formModel}`);
+  //     setSelectedSuggestion({
+  //       id: 0,
+  //       label: `${formBrand} ${formModel}`,
+  //       brand: formBrand,
+  //       model: formModel,
+  //       referenceNumber: watch("referenceNumber") || "",
+  //       imageUrl: "",
+  //       caseMaterial: watch("caseMaterial") || "",
+  //       caseDiameter: watch("caseDiameter") || 0,
+  //       dialColor: watch("dialColor") || "",
+  //       movement: watch("movement") || "",
+  //       year: watch("year") || 0,
+  //       averagePrice: 0,
+  //     });
+  //   }
+  // }, [formBrand, formModel, searchQuery, watch]);
 
   // Fecha as sugestões ao clicar fora
   useEffect(() => {
@@ -134,7 +137,7 @@ export function Step1WatchIdentification({
     setShowSuggestions(false);
     clearSuggestions();
   };
-
+  console.log("searchQuery", searchQuery);
   return (
     <div className="flex flex-col items-center">
       <Image
@@ -341,62 +344,43 @@ export function Step1WatchIdentification({
               <p>Preenchimento manual</p>
               <button
                 type="button"
-                onClick={() => setManualMode(false)}
+                onClick={() => {
+                  setManualMode(false);
+                  // Limpa os campos do formulário ao voltar para busca
+                  setValue("brand", "");
+                  setValue("model", "");
+                  setValue("referenceNumber", "");
+                  setSearchQuery("");
+                }}
                 className="text-sm text-[#D5A60A] hover:underline"
               >
                 ← Voltar para busca
               </button>
             </div>
 
-            <div>
-              <label className="block">
-                <div className="text-sm mb-2.5">Marca *</div>
-                <input
-                  type="text"
-                  {...register("brand")}
-                  className="w-full px-4 py-3 border border-[#EFEFEF] bg-[#F7F7F7] rounded-[12px] focus:outline-none focus:border-[#D5A60A] transition-colors"
-                />
-                {errors.brand && (
-                  <span className="text-red-500 text-xs mt-1 block">
-                    {errors.brand.message as string}
-                  </span>
-                )}
-              </label>
-            </div>
+            <Input
+              {...register("brand")}
+              id="brand"
+              label="Marca *"
+              type="text"
+              error={errors.brand?.message as string}
+            />
 
-            <div>
-              <label className="block">
-                <div className="text-sm mb-2.5">Modelo *</div>
-                <input
-                  type="text"
-                  {...register("model")}
-                  className="w-full px-4 py-3 border border-[#EFEFEF] bg-[#F7F7F7] rounded-[12px] focus:outline-none focus:border-[#D5A60A] transition-colors"
-                />
-                {errors.model && (
-                  <span className="text-red-500 text-xs mt-1 block">
-                    {errors.model.message as string}
-                  </span>
-                )}
-              </label>
-            </div>
+            <Input
+              {...register("model")}
+              id="model"
+              label="Modelo *"
+              type="text"
+              error={errors.model?.message as string}
+            />
 
-            <div>
-              <label className="block">
-                <div className="text-sm mb-2.5">Número de referência</div>
-                <input
-                  type="text"
-                  {...register("referenceNumber")}
-                  className="w-full px-4 py-3 border border-[#EFEFEF] bg-[#F7F7F7] rounded-[12px] focus:outline-none focus:border-[#D5A60A] transition-colors"
-                />
-              </label>
-            </div>
-
-            {/* <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 <strong>Dica:</strong> Você preencherá os demais detalhes do relógio
-                nos próximos passos.
-              </p>
-            </div> */}
+            <Input
+              {...register("referenceNumber")}
+              id="referenceNumber"
+              label="Número de referência"
+              type="text"
+              error={errors.referenceNumber?.message as string}
+            />
           </div>
         </>
       )}
@@ -512,38 +496,7 @@ export function Step1WatchIdentification({
       )}
 
       {manualMode && formBrand && formModel && (
-        <div className="relative mt-2 p-[14px] bg-[#F7F7F7] rounded-lg max-w-full">
-          <p className="text-sm mb-2">Pré-visualização</p>
-          <div className="flex gap-4">
-            <div className="w-18 h-24 rounded-lg overflow-hidden bg-[#EFEFEF] flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-10 h-10 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="text-sm leading-[20px] tracking-[-0.01em] mb-1">
-                {formBrand}
-              </div>
-              <h3 className="text-lg leading-[25px] tracking-[-0.01em] mb-1 truncate">
-                {formModel}
-              </h3>
-              <div className="text-sm leading-4 font-light">
-                Continue preenchendo os detalhes nos próximos passos
-              </div>
-            </div>
-          </div>
-        </div>
+        <PreviewCard brand={formBrand} model={formModel} className="mt-2 w-full" />
       )}
     </div>
   );

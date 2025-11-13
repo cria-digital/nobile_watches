@@ -21,6 +21,7 @@ export const watchSchema = z.object({
   // STEP 3 - Detalhes
   year: z
     .union([
+      z.literal(""), // Aceita string vazia
       z.string().regex(/^\d{4}$/, "Ano inválido (formato: AAAA)"),
       z
         .number()
@@ -29,7 +30,10 @@ export const watchSchema = z.object({
         .max(new Date().getFullYear(), "Ano não pode ser futuro"),
     ])
     .optional()
-    .transform(val => (val ? Number(val) : undefined)),
+    .transform(val => {
+      if (!val || val === "") return undefined;
+      return Number(val);
+    }),
   gender: z.enum(["Homem", "Mulher", "Unissex", ""]).optional(),
   serialNumber: z.string().max(100, "Número de série muito longo").optional(),
   dialColor: z.string().optional(),
@@ -37,27 +41,17 @@ export const watchSchema = z.object({
     .enum(["", "Automático", "Corda manual", "Quartzo", "Smartwatch", "Solar"])
     .optional(),
   caseMaterial: z.string().max(100, "Material muito longo").optional(),
-  caseWidth: z
-    .union([
-      z.string().regex(/^\d+(\.\d+)?$/, "Largura inválida"),
-      z.number().positive("Largura deve ser positiva"),
-    ])
-    .optional()
-    .transform(val => (val ? Number(val) : undefined)),
-  caseHeight: z
-    .union([
-      z.string().regex(/^\d+(\.\d+)?$/, "Altura inválida"),
-      z.number().positive("Altura deve ser positiva"),
-    ])
-    .optional()
-    .transform(val => (val ? Number(val) : undefined)),
   caseDiameter: z
     .union([
+      z.literal(""),
       z.string().regex(/^\d+(\.\d+)?$/, "Diâmetro inválido"),
       z.number().positive("Diâmetro deve ser positivo"),
     ])
     .optional()
-    .transform(val => (val ? Number(val) : undefined)),
+    .transform(val => {
+      if (!val || val === "") return undefined;
+      return Number(val);
+    }),
   braceletMaterial: z.string().max(100, "Material muito longo").optional(),
   braceletColor: z.string().optional(),
   claspType: z.string().max(50, "Tipo de fecho muito longo").optional(),
@@ -72,7 +66,13 @@ export const watchSchema = z.object({
 
   // STEP 5 - Estado (obrigatório)
   hasSignsOfWear: z.enum(["yes", "no"]).default("no"),
-  condition: z.string().min(3, "Condição é obrigatória").max(50, "Condição muito longa"),
+  condition: z
+    .string()
+    .min(1, "Essa informação é obrigatória")
+    .refine(
+      val => ["Novo", "Muito bom", "Bom", "Aceitável"].includes(val),
+      "Selecione uma condição válida"
+    ),
 
   // STEP 6 - Descrição (opcional)
   description: z

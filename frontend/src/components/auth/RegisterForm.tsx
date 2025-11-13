@@ -1,45 +1,46 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
+import { Button, Input, Select, Toast } from "@/components/ui";
+import { BRAZIL_STATES, CITIES_BY_STATE } from "@/lib/constants/brazilLocations";
 import { useAuth } from "@/lib/context/AuthContext";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Icon } from "../ui/Icon/Icon";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
-const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" || true;
+const useMockData = false;
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const { register: registerUser, mockLogin, isLoading } = useAuth();
+
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+  } | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    setError,
     watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
     defaultValues: {
       country: "Brasil",
-      phone: "+55 ",
+      phone: "",
     },
   });
 
-  // Observa os valores dos campos para controlar o estado do botão
+  // Observa os valores dos campos
   const name = watch("name");
   const email = watch("email");
   const password = watch("password");
@@ -48,8 +49,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const country = watch("country");
   const state = watch("state");
   const city = watch("city");
+  const selectedState = watch("state");
+  const availableCities = selectedState ? CITIES_BY_STATE[selectedState] || [] : [];
 
-  // Determina se o botão deve estar habilitado
   const isButtonEnabled = Boolean(
     name &&
       email &&
@@ -63,6 +65,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       !isLoading
   );
 
+  const showToast = (message: string, type: "success" | "error" | "info" | "warning") => {
+    setToast({ message, type });
+  };
+
   const onSubmit = async (data: RegisterFormData) => {
     try {
       useMockData
@@ -75,310 +81,237 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             country: data.country,
             state: data.state,
             city: data.city,
-            role: "BUYER", // Padrão: comprador
+            role: "BUYER",
           });
 
-      // Após registro bem-sucedido, redireciona para home
-      router.push("/");
-      onSuccess?.();
-    } catch (error: any) {
-      setError("root", {
-        message: error.message || "Erro ao criar conta. Tente novamente.",
-      });
+      showToast("Conta criada com sucesso! Redirecionando...", "success");
+
+      setTimeout(() => {
+        router.push("/");
+        onSuccess?.();
+      }, 1500);
+    } catch (err: any) {
+      // Detecta o tipo de erro e mostra mensagem apropriada
+      const errorMessage = err.message || "Erro ao criar conta. Tente novamente.";
+
+      if (
+        errorMessage.includes("já cadastrado") ||
+        errorMessage.includes("already exists")
+      ) {
+        showToast(
+          "Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.",
+          "error"
+        );
+      } else if (errorMessage.includes("senha")) {
+        showToast("A senha não atende aos requisitos mínimos de segurança.", "error");
+      } else {
+        showToast(errorMessage, "error");
+      }
     }
   };
 
   return (
-    <div className="w-full max-w-[500px]">
-      <div className="flex flex-col gap-3 mb-6">
-        <h1 className="text-[28px] leading-[28px]">Crie sua conta</h1>
-        <p className="text-gray-400 text-sm leading-[21px]">
-          Descubra as marcas mais exclusivas, negocie com segurança e acompanhe a
-          valorização das suas peças.
-        </p>
-      </div>
+    <>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          duration={toast.type === "error" ? 6000 : 3000}
+        />
+      )}
 
-      {/* Botões de login social */}
-      <div className="mb-8">
-        <div className="flex justify-center gap-3">
-          {/* Google */}
-          <button
-            type="button"
-            className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-offset-2"
-            aria-label="Entrar com Google"
-          >
-            <Image src="/icons/google.svg" alt="Google" width={40} height={40} />
-          </button>
-
-          {/* Apple */}
-          <button
-            type="button"
-            className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-offset-2"
-            aria-label="Entrar com Apple"
-          >
-            <Image src="/icons/apple.svg" alt="Apple" width={40} height={40} />
-          </button>
-        </div>
-      </div>
-
-      {/* Divisor */}
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#EFEFEF]" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-white text-gray-400">Ou</span>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Nome */}
-        <div className="w-full flex flex-col items-start gap-2.5">
-          <label htmlFor="name" className="text-sm text-pb-500">
-            Nome
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/user-outline.svg" alt="User" />
-            </div>
-            <input
-              {...register("name")}
-              type="text"
-              id="name"
-              placeholder="Digite seu nome completo"
-              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors"
-            />
-          </div>
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-          )}
+      <div className="w-full max-w-[500px]">
+        <div className="flex flex-col gap-3 mb-6">
+          <h1 className="text-[28px] leading-[28px]">Crie sua conta</h1>
+          <p className="text-gray-400 text-sm leading-[21px]">
+            Descubra as marcas mais exclusivas, negocie com segurança e acompanhe a
+            valorização das suas peças.
+          </p>
         </div>
 
-        {/* E-mail */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="email" className="text-sm text-pb-500">
-            E-mail
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/envelope-outline.svg" alt="Envelope" />
-            </div>
-            <input
-              {...register("email")}
-              type="email"
-              id="email"
-              placeholder="Digite seu e-mail..."
-              autoComplete="email"
-              inputMode="email"
-              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
-            />
-          </div>
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
-        </div>
-
-        {/* Senha */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="password" className="text-sm text-pb-500">
-            Senha
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/password-lock.svg" alt="Password" />
-            </div>
-            <input
-              {...register("password")}
-              type={showPassword ? "text" : "password"}
-              id="password"
-              placeholder="Digite sua senha..."
-              autoComplete="new-password"
-              enterKeyHint="next"
-              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
-            />
+        {/* Botões de login social */}
+        <div className="mb-8">
+          <div className="flex justify-center gap-3">
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Entrar com Google"
             >
-              {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-pb-500" />
-              ) : (
-                <EyeIcon className="h-5 w-5 text-pb-500" />
-              )}
+              <Image src="/icons/google.svg" alt="Google" width={40} height={40} />
             </button>
-          </div>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
-
-        {/* Confirmar senha */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="confirmPassword" className="text-sm text-pb-500">
-            Confirme sua senha
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/password-lock.svg" alt="Password" />
-            </div>
-            <input
-              {...register("confirmPassword")}
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmPassword"
-              placeholder="Confirme sua senha..."
-              autoComplete="new-password"
-              enterKeyHint="done"
-              className="w-full pl-12.5 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
-            />
             <button
               type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Entrar com Apple"
             >
-              {showConfirmPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-pb-500" />
-              ) : (
-                <EyeIcon className="h-5 w-5 text-pb-500" />
-              )}
+              <Image src="/icons/apple.svg" alt="Apple" width={40} height={40} />
             </button>
           </div>
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
-          )}
         </div>
 
-        {/* Telefone */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="phone" className="text-sm text-pb-500">
-            Número
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/phone.svg" alt="Location" />
-            </div>
-            <input
-              {...register("phone")}
-              type="tel"
-              id="phone"
-              placeholder="Digite seu número..."
-              autoComplete="tel"
-              inputMode="tel"
-              className="w-full pl-10 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
-            />
+        {/* Divisor */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-[#EFEFEF]" />
           </div>
-          {errors.phone && (
-            <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-          )}
+          <div className="relative flex justify-center text-sm">
+            <span className="px-3 bg-white text-gray-400">Ou</span>
+          </div>
         </div>
 
-        {/* Localização - País ocupa 100% da largura */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="country" className="text-sm text-pb-500">
-            País
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/map-pin.svg" alt="Location" />
-            </div>
-            <select
-              {...register("country")}
-              id="country"
-              autoComplete="country-name"
-              className="w-full pl-10 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors appearance-none bg-[#F7F7F7]"
-            >
-              <option value="Brasil">Brasil</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg
-                className="h-5 w-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Nome */}
+          <Input
+            {...register("name")}
+            id="name"
+            label="Nome"
+            type="text"
+            placeholder="Digite seu nome completo"
+            icon="/icons/user-outline.svg"
+            iconAlt="User"
+            error={errors.name?.message}
+          />
+
+          {/* E-mail */}
+          <Input
+            {...register("email")}
+            id="email"
+            label="E-mail"
+            type="email"
+            placeholder="Digite seu e-mail..."
+            icon="/icons/envelope-outline.svg"
+            iconAlt="Envelope"
+            autoComplete="email"
+            inputMode="email"
+            error={errors.email?.message}
+          />
+
+          {/* Senha */}
+          <Input
+            {...register("password")}
+            id="password"
+            label="Senha"
+            type="password"
+            placeholder="Digite sua senha..."
+            icon="/icons/password-lock.svg"
+            iconAlt="Password"
+            autoComplete="new-password"
+            showPasswordToggle
+            error={errors.password?.message}
+          />
+
+          {/* Confirmar senha */}
+          <Input
+            {...register("confirmPassword")}
+            id="confirmPassword"
+            label="Confirme sua senha"
+            type="password"
+            placeholder="Confirme sua senha..."
+            icon="/icons/password-lock.svg"
+            iconAlt="Password"
+            autoComplete="new-password"
+            showPasswordToggle
+            error={errors.confirmPassword?.message}
+          />
+
+          {/* Telefone com bandeira */}
+          <Input
+            {...register("phone")}
+            id="phone"
+            label="Número"
+            type="tel"
+            placeholder="21 986567654"
+            autoComplete="tel"
+            inputMode="tel"
+            leftElement={
+              <div className="flex items-center gap-1">
+                <Image
+                  src="/icons/flag-br-input.svg"
+                  alt="Brasil flag"
+                  width={24}
+                  height={24}
                 />
-              </svg>
+                <span className="text-sm text-[#0E121B] tracking-[-0.006em]">+55</span>
+              </div>
+            }
+            className="pl-[90px]"
+            error={errors.phone?.message}
+          />
+
+          {/* País - Select com opções hardcoded */}
+          <Select
+            {...register("country")}
+            id="country"
+            label="País"
+            placeholder="Selecione o país"
+            error={errors.country?.message}
+          >
+            <option value="Brasil">Brasil</option>
+          </Select>
+
+          {/* Estado - Select com array de options */}
+          <Select
+            {...register("state")}
+            id="state"
+            label="Estado"
+            placeholder="Selecione o estado"
+            options={BRAZIL_STATES}
+            error={errors.state?.message}
+          />
+
+          {/* Cidade - Select dinâmico */}
+          <Select
+            {...register("city")}
+            id="city"
+            label="Cidade"
+            placeholder={
+              selectedState ? "Selecione a cidade" : "Selecione um estado primeiro"
+            }
+            options={availableCities}
+            disabled={!selectedState || availableCities.length === 0}
+            error={errors.city?.message}
+          />
+
+          {/* Checkbox - Aceitar termos */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <input
+                type="checkbox"
+                id="terms"
+                className="w-5 h-5 rounded-full border-[#D9D9D9] text-[#D5A60A] focus:ring-[#D5A60A]"
+              />
+              <label htmlFor="terms" className="text-sm text-pb-500">
+                Aceitar termos de uso
+              </label>
             </div>
+            <Link
+              href="#"
+              className="text-sm text-[#D5A60A] font-normal underline leading-[140%]"
+            >
+              Termos de uso
+            </Link>
           </div>
-          {errors.country && (
-            <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
-          )}
-        </div>
 
-        {/* Estado */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="state" className="text-sm text-pb-500">
-            Estado
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/map-pin.svg" alt="Location" />
-            </div>
-            <input
-              {...register("state")}
-              type="text"
-              id="state"
-              placeholder="Digite seu estado..."
-              className="w-full pl-10 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
-            />
+          {/* Botão de cadastro */}
+          <Button
+            type="submit"
+            variant="gold"
+            className="w-full h-[54px] mt-3"
+            isLoading={isLoading}
+            disabled={!isButtonEnabled}
+          >
+            Criar conta
+          </Button>
+
+          {/* Link para login */}
+          <div className="text-center">
+            <Link href="/login" className="font-bold text-pb-500 transition-colors">
+              Login
+            </Link>
           </div>
-          {errors.state && (
-            <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
-          )}
-        </div>
-
-        {/* Cidade */}
-        <div className="flex flex-col items-start gap-2.5">
-          <label htmlFor="city" className="text-sm text-pb-500">
-            Cidade
-          </label>
-          <div className="w-full relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Icon src="/icons/map-pin.svg" alt="Location" />
-            </div>
-            <input
-              {...register("city")}
-              type="text"
-              id="city"
-              placeholder="Digite sua cidade..."
-              className="w-full pl-10 pr-3 py-3 border border-[#EFEFEF] rounded-[12px] focus:outline-none transition-colors"
-            />
-          </div>
-          {errors.city && (
-            <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
-          )}
-        </div>
-
-        {/* Erro geral */}
-        {errors.root && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{errors.root.message}</p>
-          </div>
-        )}
-
-        {/* Botão de cadastro */}
-        <Button
-          type="submit"
-          variant="gold"
-          className="w-full h-[54px]"
-          isLoading={isLoading}
-          disabled={!isButtonEnabled}
-        >
-          Criar conta
-        </Button>
-
-        {/* Link para login */}
-        <div className="text-center">
-          <Link href="/login" className="font-bold text-pb-500 transition-colors">
-            Login
-          </Link>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </>
   );
 }

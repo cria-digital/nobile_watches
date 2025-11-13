@@ -35,8 +35,8 @@ function ProductHeader({
         <h3 className="font-erstoria text-xl lg:text-2xl leading-[31px] mb-2">
           {product.model}
         </h3>
-        <p className="font-lato text-sm md:text-base font-normal text-gray-400 leading-[140%] line-clamp-2">
-          {product.description}
+        <p className="text-xs lg:text-base text-gray-400 leading-[22px] line-clamp-1">
+          {product.description || "\u00A0"}
         </p>
       </Link>
 
@@ -185,7 +185,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 {product.model}
               </h3>
               <p className="text-xs lg:text-base text-gray-400 leading-[22px] line-clamp-1">
-                {product.description}
+                {product.description || "\u00A0"}
               </p>
             </div>
 
