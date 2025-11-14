@@ -8,7 +8,7 @@ import { Edit2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function ProfilePage() {
+export default function Profile() {
   const { data, isLoading, error } = useUserProfile();
 
   if (isLoading) {
@@ -103,7 +103,7 @@ export default function ProfilePage() {
 
               {/* Botão editar */}
               {/* <Link
-                href="/perfil/editar"
+                href="/account/profile/edit"
                 className="absolute bottom-6 right-8 p-3 rounded-lg border border-gray-200 hover:bg-white transition-colors"
               >
                 <Edit2 className="w-5 h-5 text-pb-500" />
@@ -178,7 +178,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <Link href="/perfil/editar" className="mt-auto">
+            <Link href="/account/profile/edit" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>
@@ -251,7 +251,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <Link href="/perfil/editar" className="mt-auto">
+            <Link href="/account/profile/edit" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>
@@ -332,7 +332,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <Link href="/perfil/editar" className="mt-auto">
+            <Link href="/account/profile/edit" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>
@@ -461,7 +461,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <Link href="/perfil/editar" className="mt-auto">
+            <Link href="/account/profile/edit" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>
@@ -538,7 +538,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <Link href="/perfil/editar" className="mt-auto">
+            <Link href="/account/profile/edit" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>
@@ -621,7 +621,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <Link href="/perfil/editar" className="mt-auto">
+            <Link href="/account/profile/edit" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>

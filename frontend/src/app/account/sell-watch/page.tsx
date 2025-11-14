@@ -24,7 +24,6 @@ interface Notification {
   message: string;
 }
 
-// Steps do fluxo (sem contar a busca inicial)
 const steps = [
   { id: 1, title: "Identificação" },
   { id: 2, title: "Título & Destaque" },
@@ -35,7 +34,7 @@ const steps = [
   { id: 7, title: "Preço & Envio" },
 ];
 
-export default function VenderRelogioPage() {
+export default function SellWatchPage() {
   // step 0 = busca inicial (não faz parte dos 7 steps)
   // steps 1-7 = fluxo de criação do anúncio
   const [step, setStep] = useState<number>(0);

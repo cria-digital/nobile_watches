@@ -22,8 +22,7 @@ const authApi = axios.create({
 // Interceptor para inserir token JWT automaticamente em requisições autenticadas
 authApi.interceptors.request.use(
   config => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("nobile_token") : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,7 +38,7 @@ authApi.interceptors.response.use(
     // Se receber 401 Unauthorized, limpa o token e redireciona para login
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("nobile_token");
+        localStorage.removeItem("token");
         localStorage.removeItem("nobile_user");
         // Não redireciona automaticamente para não interferir no fluxo
       }
@@ -102,7 +101,7 @@ class AuthService {
 
       // Salva o token no localStorage
       if (response.data.token) {
-        localStorage.setItem("nobile_token", response.data.token);
+        localStorage.setItem("token", response.data.token);
       }
 
       // Salva os dados do usuário no localStorage
@@ -166,7 +165,7 @@ class AuthService {
    */
   getToken(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("nobile_token");
+    return localStorage.getItem("token");
   }
 
   /**
@@ -184,7 +183,7 @@ class AuthService {
   logout(): void {
     if (typeof window === "undefined") return;
 
-    localStorage.removeItem("nobile_token");
+    localStorage.removeItem("token");
     localStorage.removeItem("nobile_user");
     localStorage.removeItem("mock_auth_token"); // Remove também o token mock se existir
   }

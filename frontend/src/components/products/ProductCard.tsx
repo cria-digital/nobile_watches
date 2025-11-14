@@ -36,7 +36,7 @@ function ProductHeader({
           {product.model}
         </h3>
         <p className="text-xs lg:text-base text-gray-400 leading-[22px] line-clamp-1">
-          {product.description || "\u00A0"}
+          {product?.customTitleSuffix || product?.description || "\u00A0"}
         </p>
       </Link>
 
@@ -185,7 +185,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 {product.model}
               </h3>
               <p className="text-xs lg:text-base text-gray-400 leading-[22px] line-clamp-1">
-                {product.description || "\u00A0"}
+                {product?.customTitleSuffix || product?.description || "\u00A0"}
               </p>
             </div>
 

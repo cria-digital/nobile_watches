@@ -2,7 +2,7 @@
 
 import { User } from "@/lib/auth/auth";
 import { USER_MENU_ITEMS } from "@/lib/config/user-menu-items";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -46,7 +46,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
   const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
 
   // Avatar padrão se não houver
-  const avatarUrl = user.avatar || "/images/avatar-placeholder2.jpg";
+  const avatarUrl = user.avatar || "/images/mock/avatar-placeholder.jpg";
 
   useEffect(() => {
     const handleLogoutRequest = () => logout();
@@ -66,25 +66,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
           <Image src={avatarUrl} alt={user.name} fill className="object-cover" />
         </div>
 
-        {isOpen ? (
-          <XMarkIcon className="h-6 w-6 text-gray-900" />
-        ) : (
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="text-gray-900"
-          >
-            <path
-              d="M3 12H21M3 6H21M3 18H21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
+        {isOpen ? <XMarkIcon className="size-7" /> : <Bars3Icon className="size-7" />}
       </button>
 
       {/* Full Width Menu */}
@@ -93,9 +75,9 @@ export function UserMenu({ user, logout }: UserMenuProps) {
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
-          {/* Menu Panel - Fixed positioning aligned with header */}
-          <div className="absolute right-0 top-full z-50 bg-white shadow-lg w-screen max-w-7xl">
-            <div className="bg-white mx-auto px-5 sm:px-6 lg:px-8">
+          {/* Menu Panel */}
+          <div className="absolute -right-8 top-full z-50 bg-white shadow-lg w-screen max-w-7xl">
+            <div className="bg-white mx-auto px-5 sm:px-6 lg:px-8 ">
               <div className="bg-white py-[48px] overflow-hidden">
                 {/* Grid Layout */}
                 <div className="grid grid-cols-[auto_1fr_auto] gap-3">

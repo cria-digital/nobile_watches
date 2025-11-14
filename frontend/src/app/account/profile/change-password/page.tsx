@@ -44,7 +44,7 @@ export default function ChangePasswordPage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       alert("Senha alterada com sucesso!");
-      router.push("/perfil");
+      router.push("/account/profile");
     } catch (error) {
       console.error("Erro ao alterar senha:", error);
       alert("Erro ao alterar senha. Tente novamente.");

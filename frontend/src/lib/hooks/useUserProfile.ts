@@ -1,7 +1,7 @@
 import { UserActivity, UserProfileData } from "@/types/user";
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 /**
  * Dados mockados para desenvolvimento
@@ -20,7 +20,7 @@ const MOCK_USER_PROFILE_DATA: UserProfileData = {
     isVerified: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    avatar: "/images/avatar-placeholder2.jpg",
+    avatar: "/images/mock/avatar-placeholder.jpg",
   },
   activity: {
     vendidos: 3,

@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const TOKEN_NAME = "nobile_token";
+const TOKEN_NAME = "token";
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export async function POST(request: NextRequest) {

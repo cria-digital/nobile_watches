@@ -22,40 +22,39 @@
         "name": "next"
       }
     ],
-    "baseUrl": "./src",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ],
       "@/components/*": [
-        "components/*"
+        "./src/components/*"
       ],
       "@/modules/*": [
-        "modules/*"
+        "./src/modules/*"
       ],
       "@/lib/*": [
-        "lib/*"
+        "./src/lib/*"
       ],
       "@/types/*": [
-        "types/*"
+        "./src/types/*"
       ],
       "@/styles/*": [
-        "styles/*"
+        "./src/styles/*"
       ],
       "@/hooks/*": [
-        "lib/hooks/*"
+        "./src/lib/hooks/*"
       ],
       "@/utils/*": [
-        "lib/utils/*"
+        "./src/lib/utils/*"
       ],
       "@/api/*": [
-        "lib/api/*"
+        "./src/lib/api/*"
       ],
       "@/config/*": [
-        "lib/config/*"
+        "./src/lib/config/*"
       ],
       "@/components/ui/*": [
-        "components/ui/*"
+        "./src/components/ui/*"
       ]
     },
     // Configurações adicionais para melhor DX

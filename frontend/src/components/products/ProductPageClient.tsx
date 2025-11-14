@@ -347,19 +347,17 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
               </div>
 
               {/* Título do produto */}
-              <div className="">
-                <h1 className="text-2xl lg:text-[32px] font-normal leading-[34px] tracking-[-0.01em] mb-2">
-                  {product.model}
-                </h1>
-                <p className="text-sm lg:text-base text-gray-400 leading-[22px] mb-2">
-                  {product?.description}
+              <div>
+                <h1 className="text-2xl lg:text-[32px] mb-2.5">{product.model}</h1>
+                <p className="text-sm lg:text-base text-gray-400 leading-[140%] mb-2.5">
+                  {product?.customTitleSuffix || product.description}
                 </p>
 
                 {/* Referência e WebID */}
                 <div className="flex items-center gap-2 text-gray-400 leading-[22px] tracking-[-0.03em]">
-                  <span>REF: {product.referenceNumber}</span>
+                  REF: {product.referenceNumber}
                   <span>|</span>
-                  <span>WEBID: {product.id}</span>
+                  WEBID: {product.id}
                 </div>
               </div>
 

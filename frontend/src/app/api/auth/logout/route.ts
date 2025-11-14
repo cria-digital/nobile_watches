@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const TOKEN_NAME = "nobile_token";
+const TOKEN_NAME = "token";
 
 export async function POST() {
   try {

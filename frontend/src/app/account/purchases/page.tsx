@@ -9,7 +9,7 @@ import { useState } from "react";
 
 type TabType = "em_transito" | "entregue";
 
-export default function MinhasComprasPage() {
+export default function PurchasesPage() {
   const { orders, isLoading, error } = useUserOrders();
   const [activeTab, setActiveTab] = useState<TabType>("em_transito");
 

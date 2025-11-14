@@ -21,8 +21,7 @@ const api = axios.create({
 // Interceptor para inserir token JWT automaticamente
 api.interceptors.request.use(
   config => {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("nobile_token") : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +36,7 @@ api.interceptors.request.use(
 //   response => response,
 //   error => {
 //     if (error.response?.status === 401) {
-//       localStorage.removeItem("nobile_token");
+//       localStorage.removeItem("token");
 //       if (typeof window !== "undefined") window.location.href = "/login";
 //     }
 //     return Promise.reject(error);
@@ -64,13 +63,13 @@ class NobileService {
   async login(email: string, password: string) {
     const response = await api.post("/auth/login", { email, password });
     if (response.data.token) {
-      localStorage.setItem("nobile_token", response.data.token);
+      localStorage.setItem("token", response.data.token);
     }
     return response.data;
   }
 
   logout() {
-    localStorage.removeItem("nobile_token");
+    localStorage.removeItem("token");
   }
 
   // relógios

@@ -8,6 +8,7 @@ export interface Product {
   condition: string;
   price: number;
   description?: string;
+  customTitleSuffix?: string;
   images: string[];
   sellerId: number;
   createdAt: string;

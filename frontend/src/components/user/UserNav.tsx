@@ -8,22 +8,22 @@ export function UserNav() {
   const navItems = [
     {
       label: "Minha coleção",
-      href: "/colecao",
+      href: "/account/collection",
       icon: "/icons/watch.svg",
     },
     {
       label: "Meus anúncios",
-      href: "/meus-anuncios",
+      href: "/account/listings",
       icon: "/icons/tag.svg",
     },
     {
       label: "Minhas compras",
-      href: "/minhas-compras",
+      href: "/account/purchases",
       icon: "/icons/shopping-bag.svg",
     },
     {
       label: "Meu carrinho",
-      href: "/carrinho",
+      href: "/account/cart",
       icon: "/icons/shopping-cart.svg",
     },
   ];

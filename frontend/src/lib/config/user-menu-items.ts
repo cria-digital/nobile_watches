@@ -10,13 +10,13 @@ export const USER_MENU_ITEMS: MenuItem[] = [
   {
     icon: "/icons/shopping-cart.svg",
     label: "Meu carrinho",
-    href: "/carrinho",
+    href: "/account/cart",
     section: "gerenciamento",
   },
   {
     icon: "/icons/shopping-bag.svg",
     label: "Minhas compras",
-    href: "/minhas-compras",
+    href: "/account/purchases",
     section: "gerenciamento",
   },
   {
@@ -29,25 +29,25 @@ export const USER_MENU_ITEMS: MenuItem[] = [
   {
     icon: "/icons/watch.svg",
     label: "Minha coleção",
-    href: "/colecao",
+    href: "/account/collection",
     section: "meusDados",
   },
   {
     icon: "/icons/user-outline.svg",
     label: "Meu perfil",
-    href: "/perfil",
+    href: "/account/profile",
     section: "meusDados",
   },
   {
     icon: "/icons/hand-user.svg",
     label: "Vender",
-    href: "/vender-relogio",
+    href: "/account/sell-watch",
     section: "meusDados",
   },
   {
     icon: "/icons/tag.svg",
     label: "Meus anúncios",
-    href: "/meus-anuncios",
+    href: "/account/listings",
     section: "meusDados",
   },
   // Opções

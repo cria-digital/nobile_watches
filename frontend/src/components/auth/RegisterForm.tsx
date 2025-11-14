@@ -15,7 +15,7 @@ interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
-const useMockData = false;
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" || true;
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const router = useRouter();

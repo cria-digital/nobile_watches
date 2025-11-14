@@ -109,7 +109,7 @@ export default function EditProfilePage() {
         email: formData.email,
         phone: formData.phone,
       });
-      router.push("/perfil");
+      router.push("/account/profile");
     } catch (error) {
       console.error("Erro ao salvar:", error);
       alert("Erro ao salvar alterações. Tente novamente.");
@@ -445,7 +445,7 @@ export default function EditProfilePage() {
         {/* Alterar senha */}
         <button
           type="button"
-          onClick={() => router.push("/perfil/alterar-senha")}
+          onClick={() => router.push("/account/profile/change-password")}
           className="w-full h-[56px] rounded-full border-2 border-pb-500 text-pb-500 font-medium mb-4 hover:bg-pb-500 hover:text-white transition-colors"
         >
           Alterar minha senha

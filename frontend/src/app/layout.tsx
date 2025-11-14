@@ -1,3 +1,4 @@
+import { MockAuthSync } from "@/components/auth/MockAuthSync";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import type { Metadata } from "next";
 import { Lato } from "next/font/google";
@@ -77,6 +78,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className={`${lato.className} antialiased`}>
         <AuthProvider>
+          <MockAuthSync />
           {children}
           {/* <SimulateLoginButton /> */}
         </AuthProvider>
