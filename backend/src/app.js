@@ -5,6 +5,7 @@ dotenv.config();
 const app = express();
 const prisma = require("./config/prisma");
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 const watchRoutes = require("./routes/watchRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const messageRoutes = require("./routes/messageRoutes");
@@ -12,6 +13,7 @@ const collectionRoutes = require("./routes/collectionRoutes");
 const priceHistoryRoutes = require("./routes/priceHistoryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const adminLogRoutes = require("./routes/adminLogRoutes");
+const searchRoutes = require("./routes/searchRoutes");
 const stripeController = require("./controllers/stripeController");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swaggerConfig");
@@ -21,6 +23,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/watches", watchRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/messages", messageRoutes);
@@ -28,6 +31,7 @@ app.use("/api/collections", collectionRoutes);
 app.use("/api/price-history", priceHistoryRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin", adminLogRoutes);
+app.use("/api/search", searchRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // rota raiz
@@ -54,9 +58,7 @@ app.get("/teste-bd", async (req, res) => {
     });
   } catch (err) {
     console.error("Erro ao acessar tabelas:", err);
-    res
-      .status(500)
-      .json({ erro: "Falha ao consultar tabelas", detalhes: err.message });
+    res.status(500).json({ erro: "Falha ao consultar tabelas", detalhes: err.message });
   }
 });
 
