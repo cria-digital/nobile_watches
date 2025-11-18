@@ -24,6 +24,11 @@ model User {
   city              String?
   role              Role       @default(BUYER)
   isVerified        Boolean    @default(false)
+  verificationStatus String?   // "pending", "approved", "rejected"
+  documentFrontUrl   String?   
+  documentBackUrl    String?   
+  selfieUrl          String?  
+  verificationSubmittedAt DateTime?
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
