@@ -48,9 +48,9 @@ export interface UserProfile {
   state?: string;
   city?: string;
   role: "BUYER" | "SELLER" | "ADMIN";
-  isVerified: boolean;
+  isVerified?: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 
   // não existe
   avatar?: string;

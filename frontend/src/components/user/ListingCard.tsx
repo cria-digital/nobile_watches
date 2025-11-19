@@ -1,79 +1,122 @@
+import { formatCurrency } from "@/lib/utils/format";
+import { stringToSlug } from "@/lib/utils/stringUtils";
 import { WatchListingWithStats } from "@/types/listing";
+import { Watch } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [matches, query]);
+
+  return matches;
+}
 
 interface ListingCardProps {
   listing: WatchListingWithStats;
-  onDelete?: (id: number) => void;
-  onPause?: (id: number) => void;
-  onActivate?: (id: number) => void;
 }
 
-export function ListingCard({
-  listing,
-  onDelete,
-  onPause,
-  onActivate,
-}: ListingCardProps) {
-  const statusLabels = {
-    ativo: "Ativo",
-    vendido: "Vendido",
-    pausado: "Pausado",
-    removido: "Removido",
-  };
+/**
+ * Verifica se existe uma imagem válida no array de imagens
+ */
+function hasValidImage(images: string[] | undefined): boolean {
+  return !!(images && images.length > 0 && images[0]);
+}
 
-  const statusColors = {
-    ativo: "text-green-600 bg-green-50",
-    vendido: "text-blue-600 bg-blue-50",
-    pausado: "text-yellow-600 bg-yellow-50",
-    removido: "text-red-600 bg-red-50",
-  };
+export function ListingCard({ listing }: ListingCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const hasImage = hasValidImage(listing.images);
+
+  const listingUrl = `/${stringToSlug(listing.brand)}/${stringToSlug(
+    listing.model
+  )}-${listing.id}`;
 
   return (
-    <div className="bg-[#F7F7F7] rounded-[12px] p-4 hover:shadow-md transition-shadow">
-      <div className="flex gap-4 h-[116px] mb-4">
-        {/* Imagem do relógio */}
-        <div className="w-[116px] relative bg-[#EFEFEF] rounded-[5px] overflow-hidden">
-          <Image
-            src={listing.images[0] || "/placeholder-watch.jpg"}
-            alt={`${listing.brand} ${listing.model}`}
-            fill
-            className="object-cover"
-          />
+    <div
+      className="relative bg-[#F7F7F7] rounded-[12px] p-4 transition-all duration-300"
+      onMouseEnter={() => !isDesktop && setIsHovered(true)}
+      onMouseLeave={() => !isDesktop && setIsHovered(false)}
+    >
+      {/* Borda dourada com transição suave */}
+      <div
+        className={`
+          absolute inset-0 border-2 border-[#D5A60A] rounded-[12px] pointer-events-none 
+          transition-opacity duration-300 ease-in-out
+          ${isHovered ? "opacity-100" : "opacity-0"}
+        `}
+      ></div>
+
+      <div className="flex gap-4 mb-4">
+        {/* Imagem do relógio ou placeholder */}
+        <div className="w-[116px] h-[116px] relative bg-[#EFEFEF] rounded-[5px] overflow-hidden flex-shrink-0">
+          {hasImage ? (
+            <Image
+              //@ts-ignore
+              src={listing.images[0]}
+              alt={`${listing.brand} ${listing.model}`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 0px"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[#E5E5E5]">
+              <Watch className="w-12 h-12 text-[#999999]" strokeWidth={1.5} />
+            </div>
+          )}
         </div>
 
         {/* Informações do anúncio */}
-        <div className="flex-1 py-2.5 min-w-0">
+        <div className="flex-1 min-w-0 py-2.5">
           {/* Marca e Modelo */}
           <div className="min-w-0">
-            <h3 className="text-[18px] leading-[140%] tracking-[-1%] truncate">
+            <h3 className="text-lg leading-[140%] tracking-[-0.01em] mb-1 truncate">
               {listing.brand} {listing.model}
             </h3>
-            <p className="text-sm text-gray-600">{listing.condition}</p>
-            {listing.referenceNumber && (
-              <p className="text-xs text-gray-500 mt-1">Ref: {listing.referenceNumber}</p>
+
+            {/* Condição */}
+            <p className="text-sm text-[#666666] leading-[140%] tracking-[-0.01em] mb-2 truncate">
+              {listing?.condition}
+            </p>
+
+            {/* Número de referência, se disponível */}
+            {listing?.referenceNumber && (
+              <p className="text-xs text-gray-500">Ref: {listing.referenceNumber}</p>
             )}
           </div>
 
           {/* Preço */}
-          <div>
-            <p className="text-[18px] font-medium">
-              R$ {listing.price.toLocaleString("pt-BR")}
-            </p>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#666666]">Total:</span>
+            <span className="text-base font-medium">{formatCurrency(listing.price)}</span>
           </div>
         </div>
       </div>
 
-      {/* Ações */}
-      <div className="flex md:flex-col justify-center items-center gap-2">
-        <Link
-          href={`/produto/${listing.id}`}
-          className="w-full h-[52px] flex items-center justify-center rounded-full border-2 border-pb-500 text-pb-500 text-base font-bold tracking-[2%] hover:bg-gray-50 transition-colors whitespace-nowrap"
+      {/* Botão "Visualizar anúncio" com transição suave */}
+      <Link href={listingUrl}>
+        <button
+          className={`
+          w-full py-3.5 bg-white border-2 border-[#141414] rounded-full text-base font-medium 
+          transition-all duration-500 ease-in-out
+          hover:bg-[#141414] hover:text-white
+          ${isHovered || isDesktop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}
+        `}
         >
           Visualizar anúncio
-        </Link>
-
-        {/* {listing.status === "ativo" && onPause && (
+        </button>
+      </Link>
+      {/* {listing.status === "ativo" && onPause && (
           <button
             onClick={() => onPause(listing.id)}
             className="px-6 py-2 border border-yellow-300 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-50 transition-colors whitespace-nowrap w-full md:w-auto"
@@ -103,7 +146,6 @@ export function ListingCard({
             Excluir
           </button>
         )} */}
-      </div>
     </div>
   );
 }

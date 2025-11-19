@@ -76,7 +76,7 @@ export default function CheckoutPage() {
               Adicione itens ao carrinho antes de finalizar a compra
             </p>
             <button
-              onClick={() => router.push("/carrinho")}
+              onClick={() => router.push("/account/cart")}
               className="px-6 py-3 bg-[#D5A60A] text-white rounded-full font-medium hover:bg-[#B88F08] transition-colors"
             >
               Ir para o carrinho
@@ -107,7 +107,7 @@ export default function CheckoutPage() {
               <Breadcrumbs
                 items={[
                   { label: "Home", href: "/" },
-                  { label: "Meu carrinho", href: "/carrinho" },
+                  { label: "Meu carrinho", href: "/account/cart" },
                   { label: "Finalizar pedido" },
                 ]}
               />

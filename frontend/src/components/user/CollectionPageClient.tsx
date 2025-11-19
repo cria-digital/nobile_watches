@@ -33,7 +33,7 @@ export default function CollectionPageClient() {
   const userBrands = getBrands();
   const breadcrumbItems = [
     { label: "Home", href: "/" },
-    { label: "Sua coleção", href: "/colecao" },
+    { label: "Sua coleção", href: "/account/collection" },
   ];
 
   // Contar total de itens por marca
@@ -223,7 +223,7 @@ export default function CollectionPageClient() {
             </Link>
 
             <Link
-              href="/minhas-compras"
+              href="/account/purchases"
               className="flex flex-col items-center gap-1"
               aria-label="Carrinho"
             >
@@ -256,7 +256,7 @@ export default function CollectionPageClient() {
             </Link>
 
             <Link
-              href="/meus-anuncios"
+              href="/account/listings"
               className="flex flex-col items-center gap-1"
               aria-label="Relógios"
             >

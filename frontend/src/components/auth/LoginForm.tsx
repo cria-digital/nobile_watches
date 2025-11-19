@@ -14,7 +14,7 @@ interface LoginFormProps {
   onSuccess?: () => void;
 }
 
-const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" || true;
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter();
@@ -37,8 +37,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const isButtonEnabled = Boolean(email && password && isValid && !isLoading);
 
   const onSubmit = async (data: LoginFormData) => {
-    mockLogin();
-
     try {
       useMockData ? mockLogin() : await login(data.email, data.password);
 

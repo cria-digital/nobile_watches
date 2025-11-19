@@ -20,7 +20,7 @@ interface UserNavigationTabsProps {
 const navigationTabs: UserNavigationTab[] = [
   {
     label: "Minha coleção",
-    href: "/colecao",
+    href: "/account/collection",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path
@@ -34,7 +34,7 @@ const navigationTabs: UserNavigationTab[] = [
   },
   {
     label: "Meus anúncios",
-    href: "/meus-anuncios",
+    href: "/account/listings",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path
@@ -48,7 +48,7 @@ const navigationTabs: UserNavigationTab[] = [
   },
   {
     label: "Minhas compras",
-    href: "/minhas-compras",
+    href: "/account/purchases",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path
@@ -62,7 +62,7 @@ const navigationTabs: UserNavigationTab[] = [
   },
   {
     label: "Meu carrinho",
-    href: "/carrinho",
+    href: "/account/cart",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path

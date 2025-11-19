@@ -11,20 +11,19 @@ import { MobileUserMenu } from "./MobileUserMenu";
 import { SearchBar } from "./SearchBar";
 import { UserMenu } from "./UserMenu";
 
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isAuthenticated, mockLogin, mockLogout } = useAuth();
+  const { user, isAuthenticated, mockLogout, logout } = useAuth();
   const pathname = usePathname();
 
-  // Detecta se está na página vendedor
   const isVendedorPage = pathname === "/vendedor";
 
   return (
-    <div className="relative inset-x-0 z-150 group">
+    <div className="relative inset-x-0 z-120 group">
       <header
         className={`relative mx-auto duration-200 ${
-          // Mobile: transparente e absoluto na página vendedor
-          // Desktop: sempre com fundo branco
           isVendedorPage
             ? "h-16 md:h-24 absolute lg:relative w-full bg-transparent lg:bg-white"
             : "h-[120px] md:h-24 bg-white"
@@ -95,7 +94,7 @@ export function Header() {
               <SearchBar className="md:w-[420px]" />
 
               {isAuthenticated && user ? (
-                <UserMenu user={user} logout={mockLogout} />
+                <UserMenu user={user} logout={useMockData ? mockLogout : logout} />
               ) : (
                 <Link href="/login">
                   <Button
@@ -112,7 +111,7 @@ export function Header() {
             {/* Mobile Auth Actions or Menu Toggle */}
             <div className="md:hidden flex items-center gap-3">
               {isAuthenticated && user ? (
-                <Link href="/meu-perfil">
+                <Link href="/account/profile">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
                       isVendedorPage
@@ -170,14 +169,14 @@ export function Header() {
       />
 
       {/* DEV ONLY: Toggle para testar estados */}
-      <div className="hidden md:block fixed bottom-4 right-4 z-[9999] bg-black/80 text-white p-3 rounded-lg text-sm">
+      {/* <div className="hidden md:block fixed bottom-4 right-4 z-[9999] bg-black/80 text-white p-3 rounded-lg text-sm">
         <button
           onClick={() => (isAuthenticated ? mockLogout() : mockLogin())}
           className="hover:underline"
         >
           {isAuthenticated ? "Simular Logout" : "Simular Login"}
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

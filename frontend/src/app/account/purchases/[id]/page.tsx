@@ -38,7 +38,7 @@ export default function OrderDetailsPage() {
     // TODO: Implementar cancelamento de pedido
     if (window.confirm("Tem certeza que deseja cancelar este pedido?")) {
       console.log("Cancelar pedido");
-      router.push("/minhas-compras");
+      router.push("/account/purchases");
     }
   };
 
@@ -72,7 +72,7 @@ export default function OrderDetailsPage() {
             <p className="text-gray-600 mb-6">
               Não foi possível encontrar os detalhes deste pedido.
             </p>
-            <Button onClick={() => router.push("/minhas-compras")}>
+            <Button onClick={() => router.push("/account/purchases")}>
               Ver todos os pedidos
             </Button>
           </div>
@@ -92,7 +92,7 @@ export default function OrderDetailsPage() {
               <Breadcrumbs
                 items={[
                   { label: "Home", href: "/" },
-                  { label: "Minhas compras", href: "/minhas-compras" },
+                  { label: "Minhas compras", href: "/account/purchases" },
                   { label: "Detalhes do pedido" },
                 ]}
               />

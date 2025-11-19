@@ -7,7 +7,7 @@ export function ConfirmationStep() {
   const router = useRouter();
 
   const handleTrackOrder = () => {
-    router.push("/minhas-compras");
+    router.push("/account/purchases");
   };
 
   return (

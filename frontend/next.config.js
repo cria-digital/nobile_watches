@@ -9,10 +9,19 @@ const nextConfig = {
 
   // Configuração de imagens
   images: {
-    domains: [
-      "localhost",
-      "images.unsplash.com", // Imagens placeholder durante desenvolvimento
-      "res.cloudinary.com", // Cloudinary para imagens de produção
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com", // Imagens placeholder durante desenvolvimento
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com", // Cloudinary para imagens de produção
+      },
     ],
     formats: ["image/webp", "image/avif"],
     dangerouslyAllowSVG: true,
@@ -56,7 +65,7 @@ const nextConfig = {
   //       permanent: true,
   //     },
   //   ];
-  // },
+  // },'
 };
 
 module.exports = nextConfig;

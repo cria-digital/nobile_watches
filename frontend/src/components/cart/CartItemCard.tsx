@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-// Hook elegante para detectar se é desktop
+// Hook para detectar se é desktop
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
 

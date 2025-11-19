@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandCard } from "@/components/brand/BrandCard";
 import { ProductCard } from "@/components/products";
 import { mockProducts } from "@/lib/data/mockProducts";
 import nobileService from "@/lib/services/nobile.service";
@@ -19,7 +20,7 @@ interface Marca {
   href: string;
 }
 
-const useMockData = false; // ➜ altere para true para forçar modo mock local
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 // Mock de fallback (mantido do código atual)
 const mockMarcas: Marca[] = [
@@ -241,7 +242,8 @@ export function Hero() {
                         className="w-full h-[152px] md:h-full object-cover rounded-[16px] md:rounded-[48px]"
                         width={1200}
                         height={518}
-                        priority={index === 1}
+                        //  priority={index === 1}
+                        priority
                       />
                     </Link>
                     <button className="hidden absolute bottom-8 left-5 md:bottom-32 md:left-22 bg-white hover:bg-gray-50 font-lato text-[#141414] rounded-full lg:flex items-center justify-center gap-2 text-[12px] lg:text-[16px] font-normal md:font-bold transition-colors w-[128px] h-[32px] md:w-[200px] md:h-[56px]">
@@ -277,25 +279,13 @@ export function Hero() {
               }}
             >
               <div className="h-auto md:h-[116px] flex items-center gap-4 md:gap-6 lg:gap-[30px] px-4 md:px-8 min-w-max">
-                {marcas.map((marca, index) => (
-                  <Link
-                    href={marca.href}
-                    key={index}
-                    className="h-auto md:h-full flex flex-col items-center justify-between gap-2 group transition-all duration-300 hover:scale-105 flex-shrink-0"
-                  >
-                    <div className="w-12 h-12 md:w-22 md:h-22 bg-[#EFEFEF] rounded-full flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                      <Image
-                        src={marca.img}
-                        alt={`Logo ${marca.nome}`}
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 md:w-10 md:h-10 object-contain filter grayscale group-hover:grayscale-0 transition-all"
-                      />
-                    </div>
-                    <p className="font-erstoria mt-2 text-xs md:text-sm text-[#0F0F0F] text-center font-medium group-hover:text-gray-900 transition-colors whitespace-nowrap">
-                      {marca.nome}
-                    </p>
-                  </Link>
+                {marcas.map(brand => (
+                  <BrandCard
+                    key={brand.nome}
+                    href={brand.href}
+                    name={brand.nome}
+                    image={brand.img}
+                  />
                 ))}
               </div>
             </div>
@@ -339,8 +329,9 @@ export function Hero() {
                 alt="Caixa Rolex com relógio e documentação"
                 width={1200}
                 height={660}
-                className="absolute"
+                className="absolute w-auto h-auto" // Mantém aspect ratio
                 priority
+                sizes="(min-width: 1024px) 100vw, 0px"
               />
 
               {/* Conteúdo - Desktop */}
@@ -382,6 +373,7 @@ export function Hero() {
                     alt="Caixa Rolex com relógio e documentação"
                     fill
                     className="object-fill"
+                    sizes="(max-width: 1024px) 100vw, 0px"
                   />
                 </div>
               </div>
@@ -479,10 +471,11 @@ export function Hero() {
                   fill
                   className="object-cover max-h-[439px] rounded-[8px]"
                   priority
+                  sizes="(max-width: 1024px) 100vw, 0px"
                 />
               </div>
 
-              <p className="font-lato text-base text-[#777777] mt-[14px] leading-[140%] block lg:hidden">
+              <p className="text-gray-400 mt-[14px] leading-[140%] block lg:hidden">
                 Oferecemos uma plataforma segura, elegante e com visibilidade
                 internacional para que você possa vender suas peças com confiança.
               </p>

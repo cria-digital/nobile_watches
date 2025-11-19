@@ -2,8 +2,9 @@
 
 import { Breadcrumbs, Toast } from "@/components/ui";
 import { usePurchase } from "@/hooks/usePurchase";
+import { useProduct } from "@/lib/hooks/useProduct";
 import { stringToSlug } from "@/lib/utils/stringUtils";
-import { Product } from "@/types/product";
+import { AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { MouseEvent, useEffect, useRef, useState } from "react";
@@ -13,16 +14,24 @@ import { ProductCard } from "./ProductCard";
 import { ProductSpecs } from "./ProductSpecs";
 
 interface ProductPageClientProps {
-  product: Product;
-  relatedProducts: Product[];
+  productId: string | number;
 }
 
-export function ProductPageClient({ product, relatedProducts }: ProductPageClientProps) {
+export function ProductPageClient({ productId }: ProductPageClientProps) {
+  // ✅ Busca produto usando hook refatorado
+  const { product, relatedProducts, isLoading, isError } = useProduct({ productId });
+
+  // Estados de UI
   const [selectedImage, setSelectedImage] = useState(0);
   const [showAllImages, setShowAllImages] = useState(false);
 
   // Hook de compra
-  const { isLoading, message, addToCartAndRedirect, clearMessage } = usePurchase();
+  const {
+    isLoading: isPurchasing,
+    message,
+    addToCartAndRedirect,
+    clearMessage,
+  } = usePurchase();
 
   // Estados para controle do zoom
   const [isZooming, setIsZooming] = useState(false);
@@ -35,10 +44,56 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
   const [canScrollRight, setCanScrollRight] = useState(false);
   const thumbnailsContainerRef = useRef<HTMLDivElement>(null);
 
-  // Prepara array de imagens
-  const images = product.images && product.images.length > 0 ? product.images : [];
+  // ✅ Estado de loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#D5A60A]"></div>
+          <p className="mt-4 text-gray-600">Carregando produto...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Dados mock para evolução do valor
+  // ✅ Estado de erro
+  if (isError || !product) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-center px-6">
+          <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+            Produto não encontrado
+          </h2>
+          <p className="text-gray-500 mb-6">
+            O produto que você está procurando não existe ou foi removido.
+          </p>
+          <div className="flex gap-4">
+            <Link
+              href="/all"
+              className="px-6 py-3 bg-[#D5A60A] text-white rounded-lg hover:bg-[#C09609] transition-colors"
+            >
+              Ver todos os produtos
+            </Link>
+            <button
+              onClick={() => window.history.back()}
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Voltar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Prepara array de imagens
+  const images =
+    product.images && product.images.length > 0
+      ? product.images
+      : ["/placeholder-watch.jpg"];
+
+  // Dados mock para evolução do valor (TODO: buscar da API quando disponível)
   const priceEvolution = {
     current: product.price,
     change: 24938,
@@ -88,7 +143,7 @@ export function ProductPageClient({ product, relatedProducts }: ProductPageClien
     const container = thumbnailsContainerRef.current;
     if (!container) return;
 
-    const scrollAmount = container.clientWidth * 0.8; // Scroll 80% da largura visível
+    const scrollAmount = container.clientWidth * 0.8;
     const newScrollPosition =
       direction === "left"
         ? container.scrollLeft - scrollAmount

@@ -1,7 +1,6 @@
 import { ProductPageClient } from "@/components/products/ProductPageClient";
-import { mockProducts } from "@/lib/data/mockProducts";
+import nobileService from "@/lib/services/nobile.service";
 import { extractProductIdFromSlug } from "@/lib/utils/productUrlUtils";
-import { stringToSlug } from "@/lib/utils/stringUtils";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -12,14 +11,55 @@ interface ProductPageProps {
   }>;
 }
 
+// Flag para usar API ou mock
+const USE_API = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "true";
+
+/**
+ * Busca produto da API usando nobileService
+ */
+async function fetchProduct(productId: string) {
+  try {
+    // ✅ Usa nobileService ao invés de fetch direto
+    const product = await nobileService.getWatchById(Number(productId));
+    return product;
+  } catch (error) {
+    console.error("Erro ao buscar produto da API:", error);
+    return null;
+  }
+}
+
+/**
+ * Busca produtos relacionados da API (mesma marca)
+ */
+async function fetchRelatedProducts(brand: string, excludeId: number) {
+  try {
+    // ✅ Usa nobileService ao invés de fetch direto
+    const allProducts = await nobileService.getWatches();
+
+    // Filtra produtos da mesma marca, excluindo o produto atual
+    return allProducts
+      .filter(
+        (p: any) => p.id !== excludeId && p.brand?.toLowerCase() === brand?.toLowerCase()
+      )
+      .slice(0, 4);
+  } catch (error) {
+    console.error("Erro ao buscar produtos relacionados:", error);
+    return [];
+  }
+}
+
 export async function generateMetadata(props: ProductPageProps): Promise<Metadata> {
   const params = await props.params;
-
-  // Extrai o ID do slug (ex: "gmt-master-ii-abc123" -> "abc123")
   const productId = extractProductIdFromSlug(params.slug);
 
-  // Encontra o produto pelo ID
-  const product = productId ? mockProducts.find(p => p.id === Number(productId)) : null;
+  if (!productId) {
+    return {
+      title: "Produto não encontrado",
+    };
+  }
+
+  // Busca produto para gerar metadata
+  const product = await fetchProduct(productId);
 
   if (!product) {
     return {
@@ -31,7 +71,7 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
     title: `${product.brand} ${product.model} - Nobile`,
     description:
       product.description ||
-      `${product.brand} ${product.model} - ${product.referenceNumber}`,
+      `${product.brand} ${product.model} - ${product.referenceNumber || ""}`,
     openGraph: {
       title: `${product.brand} ${product.model}`,
       description: product.description || "",
@@ -42,27 +82,39 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
 
 export default async function ProductPage(props: ProductPageProps) {
   const params = await props.params;
-
-  // Extrai o ID do slug
   const productId = extractProductIdFromSlug(params.slug);
 
   if (!productId) {
     notFound();
   }
 
-  // Busca o produto pelo ID
-  // Busca o produto pelo ID
-  const product = mockProducts.find(p => p.id === Number(productId));
+  // Se usar API, busca do backend
+  // Se usar mock, o componente client vai buscar com o hook
+  let product = null;
+  let relatedProducts: any[] = [];
 
-  // Valida se o produto existe e se a marca corresponde
-  if (!product || stringToSlug(product.brand) !== params.brand) {
-    notFound();
+  if (USE_API) {
+    // Busca produto da API
+    product = await fetchProduct(productId);
+
+    if (!product) {
+      notFound();
+    }
+
+    // Valida se a marca corresponde ao slug da URL
+    const brandSlug = params.brand.toLowerCase();
+
+    const productBrandSlug = product.brand.toLowerCase().replace(/\s+/g, "-");
+
+    if (productBrandSlug !== brandSlug) {
+      notFound();
+    }
+
+    // Busca produtos relacionados
+    relatedProducts = await fetchRelatedProducts(product.brand, product.id);
   }
 
-  // Busca produtos relacionados (mesma marca ou similares)
-  const relatedProducts = mockProducts
-    .filter(p => p.id !== product.id && p.brand === product.brand)
-    .slice(0, 4);
-
-  return <ProductPageClient product={product} relatedProducts={relatedProducts} />;
+  // Passa productId para o componente client buscar via hook
+  // Isso permite que o componente client gerencie loading/error states
+  return <ProductPageClient productId={productId} />;
 }

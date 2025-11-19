@@ -1,6 +1,6 @@
 "use client";
 
-import { USER_MENU_ITEMS } from "@/config/user-menu-items";
+import { USER_MENU_ITEMS } from "@/lib/config/user-menu-items";
 import { useAuth } from "@/lib/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,8 +12,10 @@ interface MobileUserMenuProps {
   onClose: () => void;
 }
 
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+
 export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
-  const { isAuthenticated, mockLogin, mockLogout } = useAuth();
+  const { isAuthenticated, mockLogin, mockLogout, logout } = useAuth();
 
   const gerenciamentoItems = USER_MENU_ITEMS.filter(
     item => item.section === "gerenciamento"
@@ -22,10 +24,10 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
   const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
 
   const handleClick = (e: React.MouseEvent) => {
-    onClose(); // fecha o menu
+    onClose();
 
-    e.preventDefault(); // impede redirecionamento
-    mockLogout(); // executa logout
+    e.preventDefault();
+    useMockData ? mockLogout() : logout();
   };
 
   if (!isOpen) return null;
@@ -52,7 +54,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
             className="w-auto h-auto flex items-center justify-center rounded-lg hover:bg-gray-50 transition-colors"
             aria-label="Fechar menu"
           >
-            <Image src="/icons/XSquare.svg" alt="Fechar" width={32} height={32} />
+            <Image src="/icons/close-icon.svg" alt="Fechar" width={32} height={32} />
           </button>
         </div>
 
@@ -131,7 +133,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
             </div>
 
             {/* DEV ONLY: Simular Logout - apenas no mobile */}
-            <div className="mt-6 py-6 border-t border-gray-200">
+            {/* <div className="mt-6 py-6 border-t border-gray-200">
               <button
                 onClick={() => {
                   mockLogout();
@@ -141,7 +143,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
               >
                 [DEV] Simular Logout
               </button>
-            </div>
+            </div> */}
           </div>
         ) : (
           // Menu para usuário não autenticado

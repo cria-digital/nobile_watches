@@ -14,7 +14,7 @@ export default function CartPage() {
     // Criar checkout apenas para este item
     const item = items.find(i => i.id === itemId);
     if (item) {
-      router.push(`/checkout?items=${itemId}`);
+      router.push(`/account/checkout?items=${itemId}`);
     }
   };
 

@@ -104,7 +104,7 @@ export function OrderCard({ order, showTrackButton = true }: OrderCardProps) {
       {/* Ações */}
       {showTrackButton && (
         <Link
-          href={`/minhas-compras/${order.id}`}
+          href={`/account/purchases/${order.id}`}
           className="w-full h-[52px] flex items-center justify-center rounded-full border-2 border-pb-500 text-pb-500 text-base font-bold tracking-[2%] hover:bg-gray-50 transition-colors whitespace-nowrap"
         >
           {statusButton[order.status]}

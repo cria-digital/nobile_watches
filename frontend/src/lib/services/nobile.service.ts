@@ -1,4 +1,5 @@
-import {
+import { apiClient, extractErrorMessage } from "@/lib/api";
+import type {
   AdminLog,
   Collection,
   Message,
@@ -6,193 +7,324 @@ import {
   PriceHistory,
   Watch,
 } from "@/types/nobile";
-import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Interceptor para inserir token JWT automaticamente
-api.interceptors.request.use(
-  config => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => Promise.reject(error)
-);
-
-// Interceptor global de respostas (tratamento de erros)
-// remover comentário depois
-// api.interceptors.response.use(
-//   response => response,
-//   error => {
-//     if (error.response?.status === 401) {
-//       localStorage.removeItem("token");
-//       if (typeof window !== "undefined") window.location.href = "/login";
-//     }
-//     return Promise.reject(error);
-//   }
-// );
-
-// Classe principal do serviço de integração com o backend Nobile
 class NobileService {
-  // autenticação
-  async register(data: {
-    name: string;
-    email: string;
-    password: string;
-    phone?: string;
-    country?: string;
-    state?: string;
-    city?: string;
-    role?: "BUYER" | "SELLER" | "ADMIN";
-  }) {
-    const response = await api.post("/auth/register", data);
-    return response.data;
-  }
+  // ===============================================
+  // WATCHES (RELÓGIOS)
+  // ===============================================
 
-  async login(email: string, password: string) {
-    const response = await api.post("/auth/login", { email, password });
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+  /**
+   * Busca todos os relógios
+   */
+  async getWatches(params?: {
+    brand?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    condition?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<Watch[]> {
+    try {
+      const response = await apiClient.get<Watch[]>("/watches", { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar relógios"));
     }
-    return response.data;
   }
 
-  logout() {
-    localStorage.removeItem("token");
+  /**
+   * Busca relógio por ID
+   */
+  async getWatchById(id: number): Promise<Watch> {
+    try {
+      const response = await apiClient.get<Watch>(`/watches/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar relógio"));
+    }
   }
 
-  // relógios
-  async getWatches(): Promise<Watch[]> {
-    const response = await api.get("/watches");
-    return response.data;
+  /**
+   * Cria novo relógio
+   */
+  async createWatch(data: Partial<Watch>): Promise<Watch> {
+    try {
+      const response = await apiClient.post<Watch>("/watches", data);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao criar relógio"));
+    }
   }
 
-  async getWatch(id: number): Promise<Watch> {
-    const response = await api.get(`/watches/${id}`);
-    return response.data;
+  /**
+   * Atualiza relógio existente
+   */
+  async updateWatch(id: number, data: Partial<Watch>): Promise<Watch> {
+    try {
+      const response = await apiClient.put<Watch>(`/watches/${id}`, data);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao atualizar relógio"));
+    }
   }
 
-  async createWatch(formData: FormData) {
-    const response = await api.post("/watches", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
+  /**
+   * Deleta relógio
+   */
+  async deleteWatch(id: number): Promise<void> {
+    try {
+      await apiClient.delete(`/watches/${id}`);
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao deletar relógio"));
+    }
   }
 
-  async updateWatch(id: number, data: Partial<Watch>) {
-    const response = await api.put(`/watches/${id}`, data);
-    return response.data;
+  /**
+   * Busca relógios do vendedor
+   */
+  async getSellerWatches(sellerId: number): Promise<Watch[]> {
+    try {
+      const response = await apiClient.get<Watch[]>(`/sellers/${sellerId}/watches`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar relógios do vendedor"));
+    }
   }
 
-  async deleteWatch(id: number) {
-    const response = await api.delete(`/watches/${id}`);
-    return response.data;
+  // ===============================================
+  // ORDERS (PEDIDOS)
+  // ===============================================
+
+  /**
+   * Cria novo pedido
+   */
+  async createOrder(data: Partial<Order>): Promise<Order> {
+    try {
+      const response = await apiClient.post<Order>("/orders", data);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao criar pedido"));
+    }
   }
 
-  // pedidos
-  async createOrder(watchId: number) {
-    const response = await api.post("/orders", { watchId });
-    return response.data;
+  /**
+   * Busca pedidos do usuário
+   */
+  async getUserOrders(): Promise<Order[]> {
+    try {
+      const response = await apiClient.get<Order[]>("/orders/me");
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar pedidos"));
+    }
   }
 
-  async getOrders(): Promise<Order[]> {
-    const response = await api.get("/orders");
-    return response.data;
+  /**
+   * Busca pedido por ID
+   */
+  async getOrderById(id: number): Promise<Order> {
+    try {
+      const response = await apiClient.get<Order>(`/orders/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar pedido"));
+    }
   }
 
-  async updateOrderStatus(id: number, status: string) {
-    const response = await api.put(`/orders/${id}`, { status });
-    return response.data;
+  /**
+   * Atualiza status do pedido
+   */
+  async updateOrderStatus(id: number, status: Order["status"]): Promise<Order> {
+    try {
+      const response = await apiClient.patch<Order>(`/orders/${id}/status`, { status });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao atualizar status do pedido"));
+    }
   }
 
-  async createCheckout(orderId: number) {
-    const response = await api.post(`/orders/checkout/${orderId}`);
-    return response.data;
+  // ===============================================
+  // COLLECTIONS (COLEÇÕES)
+  // ===============================================
+
+  /**
+   * Busca todas as coleções
+   */
+  async getCollections(): Promise<Collection[]> {
+    try {
+      const response = await apiClient.get<Collection[]>("/collections");
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar coleções"));
+    }
   }
 
-  async verifyPayment(sessionId: string) {
-    const response = await api.get("/orders/verificar-pagamento", {
-      params: { sessionId },
-    });
-    return response.data;
+  /**
+   * Busca coleção por ID
+   */
+  async getCollectionById(id: number): Promise<Collection> {
+    try {
+      const response = await apiClient.get<Collection>(`/collections/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar coleção"));
+    }
   }
 
-  async confirmDelivery(orderId: number) {
-    const response = await api.put(`/orders/${orderId}/confirm-delivery`);
-    return response.data;
+  /**
+   * Cria nova coleção
+   */
+  async createCollection(data: Partial<Collection>): Promise<Collection> {
+    try {
+      const response = await apiClient.post<Collection>("/collections", data);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao criar coleção"));
+    }
   }
 
-  async processPayout(orderId: number) {
-    const response = await api.post(`/orders/payout/${orderId}`);
-    return response.data;
-  }
+  // ===============================================
+  // MESSAGES (MENSAGENS)
+  // ===============================================
 
-  // mensagens
+  /**
+   * Envia mensagem
+   */
   async sendMessage(data: {
-    toUserId: number;
+    recipientId: number;
     content: string;
     watchId?: number;
   }): Promise<Message> {
-    const response = await api.post("/messages", data);
-    return response.data;
+    try {
+      const response = await apiClient.post<Message>("/messages", data);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao enviar mensagem"));
+    }
   }
 
-  async getMessages(): Promise<Message[]> {
-    const response = await api.get("/messages");
-    return response.data;
+  /**
+   * Busca conversas do usuário
+   */
+  async getConversations(): Promise<Message[]> {
+    try {
+      const response = await apiClient.get<Message[]>("/messages/conversations");
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar conversas"));
+    }
   }
 
-  // coleções
-  async addToCollection(watchId: number, estimatedValue?: number) {
-    const response = await api.post("/collections", {
-      watchId,
-      estimatedValue,
-    });
-    return response.data;
+  /**
+   * Busca mensagens de uma conversa
+   */
+  async getConversationMessages(userId: number): Promise<Message[]> {
+    try {
+      const response = await apiClient.get<Message[]>(`/messages/conversation/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar mensagens"));
+    }
   }
 
-  async getCollection(): Promise<Collection[]> {
-    const response = await api.get("/collections");
-    return response.data;
-  }
+  // ===============================================
+  // PRICE HISTORY (HISTÓRICO DE PREÇOS)
+  // ===============================================
 
-  async updateCollectionValue(id: number, estimatedValue: number) {
-    const response = await api.put(`/collections/${id}`, { estimatedValue });
-    return response.data;
-  }
-
-  async removeFromCollection(watchId: number) {
-    const response = await api.delete(`/collections/${watchId}`);
-    return response.data;
-  }
-
-  // histórico de preço
+  /**
+   * Busca histórico de preços de um relógio
+   */
   async getPriceHistory(watchId: number): Promise<PriceHistory[]> {
-    const response = await api.get(`/price-history/${watchId}`);
-    return response.data;
+    try {
+      const response = await apiClient.get<PriceHistory[]>(
+        `/watches/${watchId}/price-history`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar histórico de preços"));
+    }
   }
 
-  // admin
-  async getReports() {
-    const response = await api.get("/admin/reports");
-    return response.data;
+  // ===============================================
+  // ADMIN LOGS
+  // ===============================================
+
+  /**
+   * Busca logs administrativos
+   */
+  async getAdminLogs(params?: {
+    page?: number;
+    limit?: number;
+    action?: string;
+  }): Promise<AdminLog[]> {
+    try {
+      const response = await apiClient.get<AdminLog[]>("/admin/logs", { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar logs administrativos"));
+    }
   }
 
-  async getAdminLogs(): Promise<AdminLog[]> {
-    const response = await api.get("/admin/logs");
-    return response.data;
+  // ===============================================
+  // FAVORITOS
+  // ===============================================
+
+  /**
+   * Adiciona relógio aos favoritos
+   */
+  async addToFavorites(watchId: number): Promise<void> {
+    try {
+      await apiClient.post(`/favorites/${watchId}`);
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao adicionar aos favoritos"));
+    }
+  }
+
+  /**
+   * Remove relógio dos favoritos
+   */
+  async removeFromFavorites(watchId: number): Promise<void> {
+    try {
+      await apiClient.delete(`/favorites/${watchId}`);
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao remover dos favoritos"));
+    }
+  }
+
+  /**
+   * Busca favoritos do usuário
+   */
+  async getFavorites(): Promise<Watch[]> {
+    try {
+      const response = await apiClient.get<Watch[]>("/favorites");
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar favoritos"));
+    }
+  }
+
+  // ===============================================
+  // BUSCA
+  // ===============================================
+
+  /**
+   * Busca relógios por termo
+   */
+  async searchWatches(query: string, limit = 10): Promise<Watch[]> {
+    try {
+      const response = await apiClient.get<Watch[]>("/watches/search", {
+        params: { q: query, limit },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar relógios"));
+    }
   }
 }
 
-export default new NobileService();
+// Exporta instância singleton
+const nobileService = new NobileService();
+export default nobileService;
+
+// Exporta a classe para testes
+export { NobileService };

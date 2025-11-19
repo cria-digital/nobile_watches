@@ -168,12 +168,6 @@
   }
 }
 
-/* Transição suave para mudanças de grid/flex */
-/* [class*="grid"],
-[class*="flex"] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-} */
-
 /* Banner Slider Dots - Posicionados abaixo do slider */
 .banner-dots {
   position: relative !important;
@@ -353,4 +347,32 @@ a.remove-ef:active {
 
 .model-card .model-image-container img {
   transition: transform 0.3s;
+}
+
+/* Correção de acessibilidade para react-slick */
+/* Slides com aria-hidden não devem ter elementos focáveis */
+.slick-slide[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.slick-slide[aria-hidden="true"] * {
+  visibility: hidden !important;
+}
+
+/* Garante que apenas o slide ativo seja interativo */
+.slick-slide[aria-hidden="true"] a,
+.slick-slide[aria-hidden="true"] button,
+.slick-slide[aria-hidden="true"] input,
+.slick-slide[aria-hidden="true"] [tabindex] {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Volta ao normal para slides ativos */
+.slick-slide:not([aria-hidden="true"]) {
+  visibility: visible;
+}
+
+.slick-slide:not([aria-hidden="true"]) * {
+  visibility: visible;
 }

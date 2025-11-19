@@ -1,16 +1,8 @@
-/**
- * Hook para buscar e gerenciar anúncios do vendedor
- * Integra com a API real quando disponível e usa mock quando não disponível
- */
-
-import { getUserId } from "@/lib/auth/auth";
-
+import { apiClient, extractErrorMessage } from "@/lib/api";
+import { authService } from "@/lib/services/auth.service";
 import { WatchListingWithStats } from "@/types/listing";
 import { useEffect, useState } from "react";
 import { mockListings } from "../data/mockListings";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
 /**
  * Interface do relógio retornado pela API
@@ -60,7 +52,7 @@ export function useUserListings() {
       model: watch.model,
       price: watch.price,
       condition: watch.condition,
-      images: watch.images.length > 0 ? watch.images : ["/placeholder-watch.jpg"],
+      images: watch.images,
       sellerId: watch.sellerId,
       status: "ativo", // Backend não tem status ainda, assumindo ativo
       createdAt: watch.createdAt,
@@ -88,57 +80,46 @@ export function useUserListings() {
     return listing;
   };
 
+  const isMockActive = (): boolean => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("mock_auth_token") === "mock_token_active";
+  };
+
   const fetchListings = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
       // Se estiver em modo mock, usa dados mockados
-      if (USE_MOCK) {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay da API
+      if (isMockActive()) {
+        console.log("📊 Usando dados mockados do perfil/anúncios");
+        await new Promise(resolve => setTimeout(resolve, 500));
         setListings(mockListings);
         return;
       }
 
-      // Tenta buscar da API real
-      try {
-        // Obter userId através da API Route
-        const userId = await getUserId();
+      // Obter userId através do authService
+      const userId = authService.getUserId();
 
-        if (!userId) {
-          throw new Error("Usuário não autenticado");
-        }
-
-        // Buscar todos os relógios
-        const response = await fetch(`${API_BASE_URL}/watches`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Erro ${response.status}: ${response.statusText}`);
-        }
-
-        const allWatches: ApiWatch[] = await response.json();
-
-        // Filtrar apenas os relógios do usuário atual
-        const userWatches = allWatches.filter(watch => watch.sellerId === userId);
-
-        // Mapear para o formato esperado
-        const listingsWithStats = userWatches.map(mapApiWatchToListing);
-
-        setListings(listingsWithStats);
-      } catch (apiError) {
-        // Se API falhar, usa mock como fallback
-        console.warn("API indisponível, usando dados mockados:", apiError);
-        setListings(mockListings);
+      if (!userId) {
+        throw new Error("Usuário não autenticado");
       }
+
+      // Buscar todos os relógios usando apiClient
+      const response = await apiClient.get<ApiWatch[]>("/watches");
+      console.log("Resposta da API de relógios:", response);
+      const allWatches = response.data;
+
+      // Filtrar apenas os relógios do usuário atual
+      const userWatches = allWatches.filter(watch => watch.sellerId === userId);
+
+      // Mapear para o formato esperado
+      const listingsWithStats = userWatches.map(mapApiWatchToListing);
+
+      setListings(listingsWithStats);
     } catch (err) {
       console.error("Erro ao buscar anúncios:", err);
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      setError(extractErrorMessage(err, "Erro ao carregar anúncios"));
       // Em caso de erro, usa mock
       setListings(mockListings);
     } finally {
@@ -146,84 +127,10 @@ export function useUserListings() {
     }
   };
 
-  const deleteListing = async (id: number) => {
-    try {
-      // Se estiver em modo mock, apenas atualiza localmente
-      if (USE_MOCK) {
-        setListings(prev => prev.filter(listing => listing.id !== id));
-        return;
-      }
-
-      // Tenta deletar na API real
-      const response = await fetch(`${API_BASE_URL}/watches/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao excluir anúncio");
-      }
-
-      // Atualizar lista localmente
-      setListings(prev => prev.filter(listing => listing.id !== id));
-    } catch (err) {
-      console.error("Erro ao deletar anúncio:", err);
-      throw err;
-    }
-  };
-
-  const pauseListing = async (id: number) => {
-    try {
-      // TODO: Backend ainda não tem endpoint para pausar
-      // Por enquanto, apenas atualiza localmente
-      setListings(prev =>
-        prev.map(listing =>
-          listing.id === id ? { ...listing, status: "pausado" as const } : listing
-        )
-      );
-
-      // Quando backend implementar:
-      // const response = await fetch(`${API_BASE_URL}/watches/${id}/pause`, {
-      //   method: "PUT",
-      //   credentials: "include",
-      // });
-    } catch (err) {
-      console.error("Erro ao pausar anúncio:", err);
-      throw err;
-    }
-  };
-
-  const activateListing = async (id: number) => {
-    try {
-      // TODO: Backend ainda não tem endpoint para ativar
-      // Por enquanto, apenas atualiza localmente
-      setListings(prev =>
-        prev.map(listing =>
-          listing.id === id ? { ...listing, status: "ativo" as const } : listing
-        )
-      );
-
-      // Quando backend implementar:
-      // const response = await fetch(`${API_BASE_URL}/watches/${id}/activate`, {
-      //   method: "PUT",
-      //   credentials: "include",
-      // });
-    } catch (err) {
-      console.error("Erro ao ativar anúncio:", err);
-      throw err;
-    }
-  };
-
   return {
     listings,
     isLoading,
     error,
-    deleteListing,
-    pauseListing,
-    activateListing,
     refetch: fetchListings,
   };
 }

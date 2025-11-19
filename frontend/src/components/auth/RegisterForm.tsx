@@ -15,7 +15,7 @@ interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
-const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" || true;
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const router = useRouter();
@@ -33,7 +33,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: {
       country: "Brasil",
       phone: "",
@@ -41,29 +41,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   });
 
   // Observa os valores dos campos
-  const name = watch("name");
-  const email = watch("email");
-  const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
-  const phone = watch("phone");
-  const country = watch("country");
-  const state = watch("state");
-  const city = watch("city");
   const selectedState = watch("state");
   const availableCities = selectedState ? CITIES_BY_STATE[selectedState] || [] : [];
 
-  const isButtonEnabled = Boolean(
-    name &&
-      email &&
-      password &&
-      confirmPassword &&
-      phone &&
-      country &&
-      state &&
-      city &&
-      isValid &&
-      !isLoading
-  );
+  const isButtonEnabled = Boolean(isValid && !isLoading);
 
   const showToast = (message: string, type: "success" | "error" | "info" | "warning") => {
     setToast({ message, type });
@@ -168,7 +149,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             label="Nome"
             type="text"
             placeholder="Digite seu nome completo"
-            icon="/icons/user-outline.svg"
+            icon="/icons/user.svg"
             iconAlt="User"
             error={errors.name?.message}
           />
@@ -274,14 +255,25 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           />
 
           {/* Checkbox - Aceitar termos */}
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <input
+                {...register("terms")}
                 type="checkbox"
                 id="terms"
-                className="w-5 h-5 rounded-full border-[#D9D9D9] text-[#D5A60A] focus:ring-[#D5A60A]"
+                className="w-5 h-5 max-h-5 rounded-full border-[1.5px] border-[#777777]
+                   appearance-none cursor-pointer
+                   checked:bg-[#D5A60A] checked:border-[#777777]
+                   focus:ring-2 focus:ring-[#D5A60A] focus:ring-offset-2
+                   relative
+                   after:content-['']
+                   after:absolute after:inset-0
+                   after:bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEw0LjUgNy41TDExIDEiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')]
+                   after:bg-center after:bg-no-repeat
+                   after:hidden
+                   checked:after:block"
               />
-              <label htmlFor="terms" className="text-sm text-pb-500">
+              <label htmlFor="terms" className="text-sm text-pb-500 cursor-pointer">
                 Aceitar termos de uso
               </label>
             </div>
@@ -291,7 +283,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             >
               Termos de uso
             </Link>
-          </div>
+          </div> */}
 
           {/* Botão de cadastro */}
           <Button

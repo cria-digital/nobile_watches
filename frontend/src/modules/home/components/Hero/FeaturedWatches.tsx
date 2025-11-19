@@ -56,6 +56,7 @@ export default function FeaturedWatches() {
           alt="Relógios em destaque"
           fill
           className="object-cover"
+          sizes="182px"
         />
         <h2 className="font-lato text-xs lg:text-[26px] text-center text-[#D5A60A] font-bold uppercase">
           Relógios em destaque

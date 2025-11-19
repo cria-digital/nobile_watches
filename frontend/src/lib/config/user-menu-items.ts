@@ -33,7 +33,7 @@ export const USER_MENU_ITEMS: MenuItem[] = [
     section: "meusDados",
   },
   {
-    icon: "/icons/user-outline.svg",
+    icon: "/icons/user.svg",
     label: "Meu perfil",
     href: "/account/profile",
     section: "meusDados",

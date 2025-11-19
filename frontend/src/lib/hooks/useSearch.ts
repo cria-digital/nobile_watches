@@ -1,11 +1,7 @@
-/**
- * Hook para busca de relógios com suporte a API e Mock
- */
-
-import { apiService } from "@/lib/api/api";
 import { mockProducts } from "@/lib/data/mockProducts";
 import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
+import nobileService from "../services/nobile.service";
 
 // Flag para alternar entre mock e API real
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
@@ -64,7 +60,7 @@ export function useSearch({
         } else {
           // Busca via API com fallback para mock
           try {
-            searchResults = await apiService.searchWatches(query, limit);
+            searchResults = await nobileService.searchWatches(query, limit);
           } catch (apiError) {
             console.warn("Erro na API, usando dados mock:", apiError);
             searchResults = searchMockProducts(query, limit);

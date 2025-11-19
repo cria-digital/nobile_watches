@@ -1,7 +1,9 @@
+import { apiClient, extractErrorMessage } from "@/lib/api";
+import { authService } from "@/lib/services/auth.service";
 import { UserActivity, UserProfileData } from "@/types/user";
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+type VerificationStatus = "pending" | "approved" | "rejected" | null;
 
 /**
  * Dados mockados para desenvolvimento
@@ -16,8 +18,8 @@ const MOCK_USER_PROFILE_DATA: UserProfileData = {
     country: "Brasil",
     state: "Rio Grande do Sul",
     city: "Porto Alegre",
-    role: "BUYER",
-    isVerified: true,
+    role: "SELLER",
+    isVerified: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     avatar: "/images/mock/avatar-placeholder.jpg",
@@ -79,14 +81,20 @@ export function useUserProfile() {
   const [data, setData] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
-  /**
-   * Verifica se o mock login está ativo
-   */
+  // Busca o status de verificação quando o usuário não está verificado
+  useEffect(() => {
+    if (data?.user && !data.user.isVerified) {
+      fetchVerificationStatus();
+    }
+  }, [data?.user?.isVerified]);
+
   const isMockActive = (): boolean => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("mock_auth_token") === "mock_token_active";
@@ -97,38 +105,34 @@ export function useUserProfile() {
       setIsLoading(true);
       setError(null);
 
-      // Se mock está ativo, retornar dados mockados
       if (isMockActive()) {
         console.log("📊 Usando dados mockados do perfil");
-        // Simula delay de rede para realismo
         await new Promise(resolve => setTimeout(resolve, 500));
         setData(MOCK_USER_PROFILE_DATA);
         setIsLoading(false);
         return;
       }
 
-      // Caso contrário, buscar dados reais da API
       // Buscar dados do usuário atual
-      const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: "include",
-      });
-
-      if (!userResponse.ok) {
-        throw new Error("Erro ao buscar dados do usuário");
-      }
-
-      const { user } = await userResponse.json();
+      const userResponse = await apiClient.get("/users/me");
+      const user = userResponse.data;
 
       // Buscar atividade do usuário (pedidos, anúncios, coleção)
-      const [ordersRes, watchesRes, collectionRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/orders`, { credentials: "include" }),
-        fetch(`${API_BASE_URL}/watches?sellerId=${user.id}`, { credentials: "include" }),
-        fetch(`${API_BASE_URL}/collections`, { credentials: "include" }),
-      ]);
+      // Usando Promise.allSettled para não quebrar se algum endpoint falhar
+      const [ordersResponse, watchesResponse, collectionResponse] =
+        await Promise.allSettled([
+          apiClient.get("/orders"),
+          apiClient.get(`/watches?sellerId=${user.id}`),
+          apiClient.get("/collections"),
+        ]);
 
-      const orders = ordersRes.ok ? await ordersRes.json() : [];
-      const watches = watchesRes.ok ? await watchesRes.json() : [];
-      const collection = collectionRes.ok ? await collectionRes.json() : [];
+      // Extrair dados ou usar array vazio em caso de erro
+      const orders =
+        ordersResponse.status === "fulfilled" ? ordersResponse.value.data : [];
+      const watches =
+        watchesResponse.status === "fulfilled" ? watchesResponse.value.data : [];
+      const collection =
+        collectionResponse.status === "fulfilled" ? collectionResponse.value.data : [];
 
       const activity: UserActivity = {
         vendidos: watches.filter((w: any) => w.status === "vendido").length,
@@ -136,27 +140,16 @@ export function useUserProfile() {
         colecao: collection.length,
       };
 
-      // Buscar métodos de pagamento e endereços de cobrança
-      const [paymentMethodsRes, billingAddressesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/payment-methods`, { credentials: "include" }),
-        fetch(`${API_BASE_URL}/billing-addresses`, { credentials: "include" }),
-      ]);
-
-      const paymentMethods = paymentMethodsRes.ok ? await paymentMethodsRes.json() : [];
-      const billingAddresses = billingAddressesRes.ok
-        ? await billingAddressesRes.json()
-        : [];
-
       const profileData: UserProfileData = {
         user,
         activity,
-        paymentMethods,
-        billingAddresses,
+        paymentMethods: [],
+        billingAddresses: [],
       };
 
       setData(profileData);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      const errorMessage = extractErrorMessage(err, "Erro ao buscar perfil do usuário");
       console.error("Erro ao buscar perfil:", errorMessage);
       setError(errorMessage);
     } finally {
@@ -164,12 +157,29 @@ export function useUserProfile() {
     }
   };
 
+  const fetchVerificationStatus = async () => {
+    if (isMockActive()) {
+      console.log("📊 Modo mock ativo - pulando verificação de status");
+      return;
+    }
+
+    setIsLoadingStatus(true);
+    try {
+      const response = await authService.getVerificationStatus();
+      setVerificationStatus(response.user.verificationStatus);
+    } catch (error) {
+      console.error("Erro ao buscar status de verificação:", error);
+      // Em caso de erro, mantém null para permitir que o usuário tente
+      setVerificationStatus(null);
+    } finally {
+      setIsLoadingStatus(false);
+    }
+  };
+
   const updateUserData = async (updatedData: Partial<UserProfileData["user"]>) => {
     try {
-      // Se mock está ativo, simular atualização
       if (isMockActive()) {
         console.log("📝 Simulando atualização de dados:", updatedData);
-        // Simula delay de rede
         await new Promise(resolve => setTimeout(resolve, 300));
 
         // Atualiza dados localmente no mock
@@ -189,179 +199,34 @@ export function useUserProfile() {
         return;
       }
 
-      // Caso contrário, atualizar via API real
-      const response = await fetch(`${API_BASE_URL}/users/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao atualizar dados do usuário");
-      }
+      await apiClient.patch("/users/profile", updatedData);
 
       // Recarregar dados atualizados
       await fetchUserProfile();
       console.log("✅ Dados atualizados com sucesso");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao atualizar dados";
+      const errorMessage = extractErrorMessage(err, "Erro ao atualizar dados do usuário");
       console.error("Erro ao atualizar perfil:", errorMessage);
-      throw err;
+      throw new Error(errorMessage);
     }
   };
 
-  /**
-   * Adiciona um novo método de pagamento
-   */
-  const addPaymentMethod = async (
-    paymentMethod: Omit<UserProfileData["paymentMethods"][0], "id">
-  ) => {
-    if (isMockActive()) {
-      console.log("💳 Simulando adição de método de pagamento:", paymentMethod);
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      setData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          paymentMethods: [
-            ...prev.paymentMethods,
-            { ...paymentMethod, id: `pm-${Date.now()}` },
-          ],
-        };
-      });
-
-      console.log("✅ Método de pagamento adicionado no mock");
-      return;
-    }
-
-    // API real
-    const response = await fetch(`${API_BASE_URL}/payment-methods`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(paymentMethod),
-    });
-
-    if (!response.ok) throw new Error("Erro ao adicionar método de pagamento");
-    await fetchUserProfile();
+  const refetch = () => {
+    fetchUserProfile();
   };
 
-  /**
-   * Remove um método de pagamento
-   */
-  const removePaymentMethod = async (paymentMethodId: string) => {
-    if (isMockActive()) {
-      console.log("🗑️ Simulando remoção de método de pagamento:", paymentMethodId);
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      setData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          paymentMethods: prev.paymentMethods.filter(pm => pm.id !== paymentMethodId),
-        };
-      });
-
-      console.log("✅ Método de pagamento removido no mock");
-      return;
-    }
-
-    // API real
-    const response = await fetch(`${API_BASE_URL}/payment-methods/${paymentMethodId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-
-    if (!response.ok) throw new Error("Erro ao remover método de pagamento");
-    await fetchUserProfile();
-  };
-
-  /**
-   * Adiciona um novo endereço de cobrança
-   */
-  const addBillingAddress = async (
-    address: Omit<UserProfileData["billingAddresses"][0], "id">
-  ) => {
-    if (isMockActive()) {
-      console.log("📍 Simulando adição de endereço:", address);
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      setData(prev => {
-        if (!prev) return prev;
-        // Se novo endereço é default, desmarcar outros
-        const updatedAddresses = address.isDefault
-          ? prev.billingAddresses.map(addr => ({ ...addr, isDefault: false }))
-          : prev.billingAddresses;
-
-        return {
-          ...prev,
-          billingAddresses: [
-            ...updatedAddresses,
-            { ...address, id: `addr-${Date.now()}` },
-          ],
-        };
-      });
-
-      console.log("✅ Endereço adicionado no mock");
-      return;
-    }
-
-    // API real
-    const response = await fetch(`${API_BASE_URL}/billing-addresses`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(address),
-    });
-
-    if (!response.ok) throw new Error("Erro ao adicionar endereço");
-    await fetchUserProfile();
-  };
-
-  /**
-   * Remove um endereço de cobrança
-   */
-  const removeBillingAddress = async (addressId: string) => {
-    if (isMockActive()) {
-      console.log("🗑️ Simulando remoção de endereço:", addressId);
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      setData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          billingAddresses: prev.billingAddresses.filter(addr => addr.id !== addressId),
-        };
-      });
-
-      console.log("✅ Endereço removido no mock");
-      return;
-    }
-
-    // API real
-    const response = await fetch(`${API_BASE_URL}/billing-addresses/${addressId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-
-    if (!response.ok) throw new Error("Erro ao remover endereço");
-    await fetchUserProfile();
+  const refetchVerificationStatus = () => {
+    fetchVerificationStatus();
   };
 
   return {
     data,
     isLoading,
     error,
-    refetch: fetchUserProfile,
+    verificationStatus,
+    isLoadingStatus,
+    refetch,
+    refetchVerificationStatus,
     updateUserData,
-    addPaymentMethod,
-    removePaymentMethod,
-    addBillingAddress,
-    removeBillingAddress,
-    isMockMode: isMockActive(),
   };
 }

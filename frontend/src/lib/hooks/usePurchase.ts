@@ -45,7 +45,7 @@ export function usePurchase() {
         if (redirectAfter) {
           // Aguardar um pouco para o usuário ver a mensagem
           setTimeout(() => {
-            router.push("/carrinho");
+            router.push("/account/cart");
           }, 500);
         }
       } else {
@@ -57,7 +57,7 @@ export function usePurchase() {
           });
 
           setTimeout(() => {
-            router.push("/carrinho");
+            router.push("/account/cart");
           }, 500);
         } else {
           setMessage({

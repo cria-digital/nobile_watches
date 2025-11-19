@@ -34,7 +34,7 @@ export function MobileBackHeader({
         >
           <ArrowLeft className="w-[26px] h-[26px] text-pb-500" strokeWidth={1.5} />
         </Link>
-        <h1 className="font-erstoria text-[20px] text-pb-500 font-medium">{title}</h1>
+        <h1 className="text-[20px] text-pb-500 font-medium">{title}</h1>
       </div>
     </div>
   );

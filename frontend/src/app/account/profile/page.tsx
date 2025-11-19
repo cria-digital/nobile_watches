@@ -3,13 +3,47 @@
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
 import { Breadcrumbs, Button } from "@/components/ui";
 import { UserNav } from "@/components/user/UserNav";
+import { VerificationModal } from "@/components/verification/VerificationModal";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Edit2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Profile() {
-  const { data, isLoading, error } = useUserProfile();
+  const {
+    data,
+    isLoading,
+    error,
+    verificationStatus,
+    isLoadingStatus,
+    refetch,
+    refetchVerificationStatus,
+  } = useUserProfile();
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+
+  const handleVerificationSubmitted = () => {
+    // Recarrega os dados do perfil e o status de verificação
+    refetch();
+    refetchVerificationStatus();
+  };
+
+  const getVerificationButtonText = () => {
+    if (isLoadingStatus) return "Verificando...";
+
+    switch (verificationStatus) {
+      case "pending":
+        return "Verificação em análise";
+      case "rejected":
+        return "Reenviar verificação";
+      default:
+        return "Realizar verificação";
+    }
+  };
+
+  const isVerificationButtonDisabled = () => {
+    return isLoadingStatus || verificationStatus === "pending";
+  };
 
   if (isLoading) {
     return (
@@ -38,21 +72,16 @@ export default function Profile() {
   const { user, activity, paymentMethods, billingAddresses } = data;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white lg:py-8">
       <MobileBackHeader title="Perfil" />
-      {/* ==================== HEADER DESKTOP ==================== */}
-      <div className="hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div className="h-[56px] flex items-center justify-between">
-            <div>
-              <Breadcrumbs
-                items={[{ label: "Home", href: "/" }, { label: "Meu perfil" }]}
-              />
-              <h1 className="text-3xl lg:text-[32px] leading-[100%]">Meu perfil</h1>
-            </div>
-            <UserNav />
-          </div>
+
+      {/* Desktop */}
+      <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto px-8">
+        <div>
+          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Meu perfil" }]} />
+          <h1 className="text-[32px] leading-[100%]">Meu perfil</h1>
         </div>
+        <UserNav />
       </div>
 
       {/* ==================== LAYOUT DESKTOP ==================== */}
@@ -61,7 +90,7 @@ export default function Profile() {
           {/* Card de perfil principal - Desktop */}
           <div className="relative col-span-4 bg-[#F7F7F7] rounded-[12px] py-6 px-8">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-7">
                 {/* Avatar */}
                 <div className="relative w-[118px] h-[118px] rounded-full overflow-hidden bg-gray-200">
                   {user.avatar ? (
@@ -70,9 +99,10 @@ export default function Profile() {
                       alt={user.name}
                       fill
                       className="object-cover"
+                      sizes="118px"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gold-500 text-white text-4xl font-medium">
+                    <div className="w-full h-full flex items-center justify-center bg-gold-500 text-white text-5xl font-medium">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -83,9 +113,11 @@ export default function Profile() {
                   Olá, <span className="font-semibold">{user.name}!</span>
                 </h2>
               </div>
-              {user.isVerified && (
+
+              {/* Verificação Status */}
+              {user.isVerified ? (
                 <div className="flex items-center gap-1 bg-[#EFEFEF] px-2.5 h-[34px] rounded-[4px]">
-                  <div className="">
+                  <div>
                     <Image
                       src="/icons/verified-badge.svg"
                       alt="Verificado"
@@ -99,15 +131,16 @@ export default function Profile() {
                       : "Usuário verificado"}
                   </span>
                 </div>
+              ) : (
+                <Button
+                  onClick={() => setIsVerificationModalOpen(true)}
+                  variant="gold"
+                  className="w-[260px]"
+                  disabled={isVerificationButtonDisabled()}
+                >
+                  {getVerificationButtonText()}
+                </Button>
               )}
-
-              {/* Botão editar */}
-              {/* <Link
-                href="/account/profile/edit"
-                className="absolute bottom-6 right-8 p-3 rounded-lg border border-gray-200 hover:bg-white transition-colors"
-              >
-                <Edit2 className="w-5 h-5 text-pb-500" />
-              </Link> */}
             </div>
           </div>
 
@@ -349,7 +382,13 @@ export default function Profile() {
           <div className="relative mb-4">
             <div className="relative w-[126px] h-[126px] rounded-full overflow-hidden bg-gray-200">
               {user.avatar ? (
-                <Image src={user.avatar} alt={user.name} fill className="object-cover" />
+                <Image
+                  src={user.avatar}
+                  alt={user.name}
+                  fill
+                  className="object-cover"
+                  sizes="126px"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gold-500 text-white text-4xl font-medium">
                   {user.name.charAt(0).toUpperCase()}
@@ -369,17 +408,30 @@ export default function Profile() {
             Olá, <span className="font-semibold">{user.name}!</span>
           </h2>
 
-          {/* Badge de verificação */}
-          {user.isVerified && (
-            <div className="flex items-center gap-1.5">
-              <Image
-                src="/icons/verified-badge.svg"
-                alt="Verificado"
-                width={16}
-                height={16}
-              />
-              <span className="font-lato text-sm text-pb-500">Vendedor verificado</span>
+          {/* Verificação Status */}
+          {user.isVerified ? (
+            <div className="flex items-center gap-1.5 h-6 px-2 bg-[#EFEFEF] rounded-sm">
+              <div>
+                <Image
+                  src="/icons/verified-badge.svg"
+                  alt="Verificado"
+                  width={16}
+                  height={16}
+                />
+              </div>
+              <span className="text-xs">
+                {user.role === "SELLER" ? "Vendedor verificado" : "Usuário verificado"}
+              </span>
             </div>
+          ) : (
+            <Button
+              onClick={() => setIsVerificationModalOpen(true)}
+              variant="gold"
+              className="w-[220px] h-[56px] mt-2.5"
+              disabled={isVerificationButtonDisabled()}
+            >
+              {getVerificationButtonText()}
+            </Button>
           )}
         </div>
 
@@ -629,6 +681,14 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Verificação */}
+
+      <VerificationModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        onVerificationSubmitted={handleVerificationSubmitted}
+      />
     </div>
   );
 }

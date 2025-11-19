@@ -63,7 +63,13 @@ export function UserMenu({ user, logout }: UserMenuProps) {
         aria-label="Menu do usuário"
       >
         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-          <Image src={avatarUrl} alt={user.name} fill className="object-cover" />
+          <Image
+            src={avatarUrl}
+            alt={user.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 0px"
+          />
         </div>
 
         {isOpen ? <XMarkIcon className="size-7" /> : <Bars3Icon className="size-7" />}

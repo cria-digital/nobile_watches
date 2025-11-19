@@ -241,7 +241,7 @@ export default function SellWatchPage() {
       // Código real comentado:
       // const result = await nobileService.createWatch(form);
       // addNotification("success", "Anúncio criado com sucesso!", "...");
-      // setTimeout(() => router.push("/meus-anuncios"), 2000);
+      // setTimeout(() => router.push("/account/listings"), 2000);
     } catch (error: any) {
       addNotification("error", "Erro ao criar anúncio", error.message);
     } finally {
