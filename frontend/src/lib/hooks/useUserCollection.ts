@@ -1,118 +1,9 @@
 "use client";
 
+import nobileService from "@/lib/services/nobile.service";
 import { CollectionItem, CollectionStats } from "@/types/collection";
 import { useEffect, useState } from "react";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-/**
- * Dados mockados para desenvolvimento
- * Usado quando o mock login está ativo
- */
-const MOCK_COLLECTION_DATA: CollectionItem[] = [
-  {
-    id: 1,
-    userId: 1,
-    watchId: 1,
-    estimatedValue: 63752.89,
-    addedAt: "2024-10-15T10:30:00.000Z",
-    watch: {
-      id: 1,
-      brand: "Rolex",
-      model: "Datejust 36",
-      referenceNumber: "126234",
-      movement: "Automático",
-      year: 2023,
-      condition: "Novo",
-      price: 63752.89,
-      description:
-        "With its limited production run, the Patek Philippe Perpetual Calendar Chronograph Ref. 5970P in platinum stands as an exceptional find for serious collectors. It is estimated that fewer than 400 pieces of this model were produced in platinum between 2009 and 2010. This watch features a substantial yet balanced case measuring 40mm in diameter, with sapphire crystals on both front and back. It is worn on a classic black leather strap and features an elegantly complex yet legible dial in black. Displayed on the dial are the day and month at 12 o'clock, 30-minute chronograph counter with leap year at 3, moon phase and date at 6, and a continuous seconds counter with 24-hour display at 9. This coveted timepiece is powered by the hand-wound CH 27-70 Q movement with a power reserve of approximately 60 hours. This pre-owned Patek Philippe Perpetual Calendar Chronograph Platinum Watch 5970P-001 is presented in the manufacturer's wooden box, inclusive of papers and a bifold leather wallet.",
-      images: [
-        "/images/mock/rolex-datejust-36.jpg",
-        "/images/mock/rolex-datejust-36-2.jpg",
-      ],
-      caseMaterial: "Ouro Branco",
-      caseDiameter: 31,
-      waterResistance: "100m",
-      glassType: "Oystersteel",
-      dialColor: "Verde",
-      braceletMaterial: "Ouro Branco",
-      braceletColor: "Prata",
-      claspType: "Fecho dobrado",
-      gender: "Masculino",
-    },
-    priceChange: {
-      percentage: 21,
-      trend: "up",
-    },
-  },
-  {
-    id: 2,
-    userId: 1,
-    watchId: 2,
-    estimatedValue: 87392.3,
-    addedAt: "2024-09-20T14:20:00.000Z",
-    watch: {
-      id: 2,
-      brand: "Patek Philippe",
-      model: "Patek Philippe Nautilus",
-      referenceNumber: "5968R-001",
-      movement: "Automático",
-      year: 2022,
-      condition: "Seminovo",
-      price: 87392.3,
-      description:
-        "With its limited production run, the Patek Philippe Perpetual Calendar Chronograph Ref. 5970P in platinum stands as an exceptional find for serious collectors. It is estimated that fewer than 400 pieces of this model were produced in platinum between 2009 and 2010. This watch features a substantial yet balanced case measuring 40mm in diameter, with sapphire crystals on both front and back. It is worn on a classic black leather strap and features an elegantly complex yet legible dial in black. Displayed on the dial are the day and month at 12 o'clock, 30-minute chronograph counter with leap year at 3, moon phase and date at 6, and a continuous seconds counter with 24-hour display at 9. This coveted timepiece is powered by the hand-wound CH 27-70 Q movement with a power reserve of approximately 60 hours. This pre-owned Patek Philippe Perpetual Calendar Chronograph Platinum Watch 5970P-001 is presented in the manufacturer's wooden box, inclusive of papers and a bifold leather wallet.",
-      images: ["/images/mock/patek-nautilus.png", "/images/mock/nautilus2.jpg"],
-      caseMaterial: "Ouro rosa",
-      caseDiameter: 22,
-      waterResistance: "120m",
-      glassType: "Vidro safira",
-      dialColor: "Marrom",
-      braceletMaterial: "Borracha",
-      braceletColor: "Marrom",
-      claspType: "Fecho pin",
-      gender: "Masculino",
-    },
-    priceChange: {
-      percentage: 24,
-      trend: "up",
-    },
-  },
-  {
-    id: 3,
-    userId: 1,
-    watchId: 3,
-    estimatedValue: 45250.0,
-    addedAt: "2024-08-10T09:15:00.000Z",
-    watch: {
-      id: 3,
-      brand: "Omega",
-      model: "De Ville Prestige",
-      referenceNumber: "310.30.42.50.01.001",
-      movement: "Manual",
-      year: 2021,
-      condition: "Novo",
-      price: 45250.0,
-      description:
-        "The legendary Omega Speedmaster Professional Moonwatch, the first watch worn on the moon. Features a black dial with three chronograph subdials, tachymeter bezel, and manual-winding movement. Complete with box and papers.",
-      images: ["/images/mock/omega1.jpg", "/images/mock/omega3.jpg"],
-      caseMaterial: "Aço inoxidável",
-      caseDiameter: 42,
-      waterResistance: "50m",
-      glassType: "Hesalita",
-      dialColor: "Preto",
-      braceletMaterial: "Aço inoxidável",
-      braceletColor: "Prata",
-      claspType: "Fecho dobrado",
-      gender: "Masculino",
-    },
-    priceChange: {
-      percentage: 8,
-      trend: "up",
-    },
-  },
-];
+import { MOCK_COLLECTION_DATA } from "../data/mockCollection";
 
 /**
  * Hook para buscar e gerenciar a coleção de relógios do usuário
@@ -151,19 +42,8 @@ export function useUserCollection() {
         return;
       }
 
-      // Caso contrário, buscar dados reais da API
-      const response = await fetch(`${API_BASE_URL}/collections`, {
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao buscar coleção");
-      }
-
-      const data = await response.json();
+      // Caso contrário, buscar dados reais usando nobileService
+      const data = await nobileService.getCollections();
 
       // Mapear dados da API para o formato do CollectionItem
       const collectionItems: CollectionItem[] = data.map((item: any) => ({
@@ -229,20 +109,13 @@ export function useUserCollection() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/collections`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ watchId, estimatedValue }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao adicionar à coleção");
+      // Construir objeto de dados sem undefined
+      const data: { watchId: number; estimatedValue?: number } = { watchId };
+      if (estimatedValue !== undefined) {
+        data.estimatedValue = estimatedValue;
       }
 
+      await nobileService.createCollection(data);
       await fetchCollection(); // Recarrega a coleção
     } catch (err) {
       throw err;
@@ -260,18 +133,9 @@ export function useUserCollection() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/collections/${watchId}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao remover da coleção");
-      }
-
+      // Nota: Assumindo que o backend tem endpoint DELETE /collections/watch/{watchId}
+      // Se o endpoint for diferente, ajuste o nobileService conforme necessário
+      await nobileService.removeWatchFromCollection(watchId);
       setCollection(prev => prev.filter(item => item.watchId !== watchId));
     } catch (err) {
       throw err;
@@ -293,20 +157,7 @@ export function useUserCollection() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/collections/${collectionId}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ estimatedValue }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao atualizar valor estimado");
-      }
-
+      await nobileService.updateCollection(collectionId, { estimatedValue });
       setCollection(prev =>
         prev.map(item => (item.id === collectionId ? { ...item, estimatedValue } : item))
       );

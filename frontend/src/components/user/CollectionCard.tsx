@@ -40,100 +40,42 @@ export function CollectionCard({ item, onRemove }: CollectionCardProps) {
   ].filter(Boolean);
 
   return (
-    <div className="w-full rounded-2xl overflow-hidden lg:flex">
+    <div className="w-full rounded-2xl overflow-hidden lg:flex lg:rounded-none">
       {/* Imagem com navegação */}
-      <div className="relative aspect-square bg-gradient-to-b from-transparent to-[#0D0D0D]/50 overflow-hidden lg:w-[50%] lg:h-[600px]">
+      <div className="relative aspect-square bg-gradient-to-b from-transparent to-[#0D0D0D]/50 overflow-hidden lg:w-[50%] lg:h-[600px] lg:rounded-2xl">
         <Image
           src={watch.images[currentImageIndex] || "/images/placeholder-watch.jpg"}
           alt={`${watch.brand} ${watch.model}`}
           fill
+          priority
+          sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover"
         />
 
         {/* Botões de navegação de imagem - apenas se houver múltiplas imagens */}
-        {watch.images.length > 1 && (
-          <>
-            <button
-              onClick={handlePrevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors z-10"
-              aria-label="Imagem anterior"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M15 18L9 12L15 6"
-                  stroke="#141414"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
-            <button
-              onClick={handleNextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors z-10"
-              aria-label="Próxima imagem"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 18L15 12L9 6"
-                  stroke="#141414"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
-            {/* Indicadores de imagem */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {watch.images.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-1 rounded-full transition-all ${
-                    index === currentImageIndex ? "w-6 bg-[#D5A60A]" : "w-1 bg-white/30"
-                  }`}
-                />
-              ))}
-            </div>
-          </>
-        )}
       </div>
 
       {/* Conteúdo */}
-      <div className="py-6 lg:p-8 lg:w-[41%]">
+      <div className="py-6 lg:py-1 lg:px-8 lg:pt-[120px] lg:w-[41%]">
         {/* Header com marca e modelo */}
-        <div className="mb-4">
-          <Link href={productUrl}>
-            <h3 className="font-erstoria text-2xl lg:text-[32px] leading-[120%] mb-2">
-              {watch.brand}
-            </h3>
-            <p className="font-erstoria text-xl lg:text-2xl leading-[120%]">
-              {watch.model}
-            </p>
-          </Link>
+
+        <div className="mb-5">
+          <h3 className="font-erstoria text-xl text-[#D5A60A] leading-[120%] mb-2">
+            {watch.brand}
+          </h3>
+          <p className="font-erstoria text-xl lg:text-3xl leading-[120%]">
+            {watch.model}
+          </p>
         </div>
 
         {/* Preço e valorização */}
         <div className="mb-6">
-          <div className="flex items-end gap-3 mb-2">
-            <p className="font-lato text-[18px] font-semibold">
+          <div className="flex items-end justify-between h-5 mb-2">
+            <p className="font-lato text-[18px]">
               R$ {displayPrice.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </p>
             {priceChange && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-6">
                 {/* Mini gráfico de tendência */}
                 <svg
                   width="32"
@@ -151,9 +93,11 @@ export function CollectionCard({ item, onRemove }: CollectionCardProps) {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="font-lato text-base font-semibold text-[#10B981]">
-                  +{priceChange.percentage}%
-                </span>
+                <div className="flex items-center h-5 px-2.5 rounded-lg bg-[#edf8f0]">
+                  <span className="text-xs text-[#17A83D]">
+                    +{priceChange.percentage}%
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -171,7 +115,7 @@ export function CollectionCard({ item, onRemove }: CollectionCardProps) {
         {/* Descrição */}
         <div className="mb-6">
           <p
-            className={`font-lato text-sm lg:text-base leading-[160%] ${
+            className={`text-sm text-gray-400 leading-[160%] ${
               !showFullDescription ? "line-clamp-3" : ""
             }`}
           >

@@ -376,3 +376,26 @@ a.remove-ef:active {
 .slick-slide:not([aria-hidden="true"]) * {
   visibility: visible;
 }
+
+/* Scrollbar minimalista e fina para modais */
+.scrollbar-minimal {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e5e5 transparent;
+}
+
+.scrollbar-minimal::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb {
+  background-color: #e5e5e5;
+  border-radius: 2px;
+}
+
+.scrollbar-minimal::-webkit-scrollbar-thumb:hover {
+  background-color: #d4d4d4;
+}

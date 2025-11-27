@@ -33,7 +33,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <div className="w-full relative">
           <select
             ref={ref}
-            className={`w-full h-[48px] px-4 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors appearance-none text-sm bg-[#F7F7F7] disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full h-[48px] px-4 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors appearance-none text-sm bg-[#F7F7F7] disabled:opacity-90 disabled:cursor-not-allowed ${
               error ? "border-[#E81F33]" : ""
             } ${className}`}
             {...props}

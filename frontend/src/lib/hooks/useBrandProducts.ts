@@ -1,8 +1,8 @@
 import { getAllProducts, getProductsByBrand } from "@/lib/data/mockProducts";
+import { areStringsEquivalentFuzzy } from "@/lib/utils/stringUtils";
 import useSWR from "swr";
 import nobileService from "../services/nobile.service";
 
-// Flag para alternar entre API real e dados mock
 const USE_API = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "true";
 
 export function useBrandProducts(brandName: string) {
@@ -30,12 +30,31 @@ export function useBrandProducts(brandName: string) {
         return watches;
       }
 
-      // Caso contrário, filtra pela marca específica
-      const filtered = watches.filter(
-        (watch: any) => watch.brand?.toLowerCase() === brandName.toLowerCase()
-      );
+      // ✅ CORREÇÃO PRINCIPAL: Usa matching fuzzy para comparação
+      // Isso ignora diferenças de case, acentos E caracteres especiais como parênteses
+      const filtered = watches.filter((watch: any) => {
+        if (!watch.brand) return false;
+
+        const matches = areStringsEquivalentFuzzy(watch.brand, brandName);
+
+        if (matches) {
+          console.log(
+            `✓ Match encontrado: "${watch.brand}" corresponde a "${brandName}"`
+          );
+        }
+
+        return matches;
+      });
 
       console.log(`✅ Retornando produtos da marca ${brandName}:`, filtered.length);
+
+      if (filtered.length === 0) {
+        console.warn(
+          `⚠️ Nenhum produto encontrado para marca "${brandName}". ` +
+            `Verifique se o nome está correto ou se há produtos cadastrados.`
+        );
+      }
+
       return filtered;
     },
     {

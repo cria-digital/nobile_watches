@@ -46,7 +46,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
   const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
 
   // Avatar padrão se não houver
-  const avatarUrl = user.avatar || "/images/mock/avatar-placeholder.jpg";
+  //const avatarUrl = user.avatar || "/images/mock/avatar-placeholder.jpg";
 
   useEffect(() => {
     const handleLogoutRequest = () => logout();
@@ -62,7 +62,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
         className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         aria-label="Menu do usuário"
       >
-        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+        {/* <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200">
           <Image
             src={avatarUrl}
             alt={user.name}
@@ -70,6 +70,12 @@ export function UserMenu({ user, logout }: UserMenuProps) {
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 0px"
           />
+        </div> */}
+
+        <div className="relative w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[#F7F7F7]">
+          <span className="font-lato text-base font-medium text-gray-700">
+            {user.name.charAt(0).toUpperCase()}
+          </span>
         </div>
 
         {isOpen ? <XMarkIcon className="size-7" /> : <Bars3Icon className="size-7" />}
@@ -86,7 +92,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
             <div className="bg-white mx-auto px-5 sm:px-6 lg:px-8 ">
               <div className="bg-white py-[48px] overflow-hidden">
                 {/* Grid Layout */}
-                <div className="grid grid-cols-[auto_1fr_auto] gap-3">
+                <div className="grid grid-cols-[auto_1fr_auto] gap-4">
                   {/* Gerenciamento Section */}
                   <div className="min-w-0">
                     <div className="mb-3">
@@ -94,7 +100,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                         Gerenciamento
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-4">
                       {gerenciamentoItems.map(item => (
                         <MenuItemButton
                           key={item.label}
@@ -108,11 +114,11 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                   {/* Meus Dados Section */}
                   <div className="min-w-0">
                     <div className="mb-3">
-                      <h3 className="font-lato text-[14px] font-normal text-[#141414] leading-[148%] whitespace-nowrap">
+                      <h3 className="font-lato text-[14px] font-normal leading-[148%] whitespace-nowrap">
                         Meus dados
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-4">
                       {meusDadosItems.map(item => (
                         <MenuItemButton
                           key={`meus-dados-${item.label}`}
@@ -175,7 +181,7 @@ function MenuItemButton({
       onClick={handleClick}
       className={`flex flex-col items-center justify-center gap-2 border border-[#EFEFEF] rounded-[12px] px-8 py-6 bg-[#F7F7F7] hover:bg-gray-50 transition-colors ${
         isLogout
-          ? "text-red-600 hover:bg-red-50 min-w-[120px]"
+          ? "text-red-600 hover:bg-red-50 min-w-[140px]"
           : "text-pb-500 min-w-[140px]"
       }`}
     >

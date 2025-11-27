@@ -1,4 +1,5 @@
-import { BrandPageClient } from "@/components/products/BrandPageClient";
+import { BrandPageClient } from "@/components/brand";
+import { slugToTitle } from "@/lib/utils/stringUtils";
 import { Metadata } from "next";
 
 interface BrandPageProps {
@@ -10,20 +11,7 @@ interface BrandPageProps {
  * Exemplo: "vacheron-constantin-(inspired)" -> "Vacheron Constantin (inspired)"
  */
 function slugToBrandName(slug: string): string {
-  if (slug === "all") return "all";
-
-  // Converte hífens para espaços e capitaliza cada palavra
-  return slug
-    .split("-")
-    .map(word => {
-      // Mantém parênteses como estão
-      if (word.startsWith("(") && word.endsWith(")")) {
-        return word;
-      }
-      // Capitaliza primeira letra de cada palavra
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(" ");
+  return slugToTitle(slug);
 }
 
 export async function generateMetadata(props: BrandPageProps): Promise<Metadata> {
@@ -50,9 +38,6 @@ export default async function BrandPage(props: BrandPageProps) {
   const params = await props.params;
 
   const brandName = slugToBrandName(params.brand);
-
-  // Não validamos se a marca existe aqui - deixamos o BrandPageClient
-  // buscar da API e mostrar mensagem apropriada se não houver produtos
 
   return <BrandPageClient brandName={brandName} />;
 }

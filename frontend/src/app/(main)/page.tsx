@@ -1,6 +1,13 @@
-import { Hero } from "@/modules/home"; //FeaturedProducts
+import {
+  BecomeSeller,
+  BuyerProtection,
+  FeaturedWatches,
+  FeaturedWatchesDesktop,
+  Hero,
+  HowItWorks,
+  SellerSpotlight,
+} from "@/modules/home";
 import { Metadata } from "next";
-// import FeaturedProducts from "@modules/home/components/featured-products"
 
 export const metadata: Metadata = {
   title: "Nobile - Relógios de Luxo Autênticos",
@@ -44,16 +51,30 @@ export const metadata: Metadata = {
 };
 
 export default async function Home(props: { params: Promise<{ countryCode: string }> }) {
-  const params = await props.params;
-
   return (
     <>
       <Hero />
-      {/* <div className="py-12">
-        <ul className="flex flex-col gap-x-6">
-          <FeaturedProducts />
-        </ul>
-      </div> */}
+
+      {/* Seguro do Comprador */}
+      <BuyerProtection />
+
+      {/* Relógios em Destaque */}
+      <div className="block lg:hidden">
+        <FeaturedWatches />
+      </div>
+
+      <div className="hidden lg:block">
+        <FeaturedWatchesDesktop />
+      </div>
+
+      {/* Vendedores Destaque */}
+      <SellerSpotlight />
+
+      {/* Torne-se um Vendedor */}
+      <BecomeSeller />
+
+      {/* Como Funciona */}
+      <HowItWorks />
     </>
   );
 }

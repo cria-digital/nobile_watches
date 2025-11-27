@@ -22,7 +22,7 @@ export const USER_MENU_ITEMS: MenuItem[] = [
   {
     icon: "/icons/heart-outline.svg",
     label: "Lista de desejos",
-    href: "#",
+    href: "/account/wishlist",
     section: "gerenciamento",
   },
   // Meus dados
@@ -38,12 +38,12 @@ export const USER_MENU_ITEMS: MenuItem[] = [
     href: "/account/profile",
     section: "meusDados",
   },
-  {
-    icon: "/icons/hand-user.svg",
-    label: "Vender",
-    href: "/account/sell-watch",
-    section: "meusDados",
-  },
+  // {
+  //   icon: "/icons/hand-user.svg",
+  //   label: "Vender",
+  //   href: "/account/sell-watch",
+  //   section: "meusDados",
+  // },
   {
     icon: "/icons/tag.svg",
     label: "Meus anúncios",

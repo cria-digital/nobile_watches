@@ -19,20 +19,19 @@ export function GuestRoute({ children }: GuestRouteProps) {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Mostra loading enquanto verifica autenticação
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pb-500" />
-      </div>
-    );
-  }
-
   // Se estiver autenticado, não renderiza nada (vai redirecionar)
   if (isAuthenticated) {
     return null;
   }
 
-  // Se não estiver autenticado, renderiza o conteúdo normalmente
-  return <>{children}</>;
+  // Renderiza o conteúdo com transição suave
+  // Durante o isLoading inicial (agora muito curto), o conteúdo fica levemente opaco
+  return (
+    <div
+      className="transition-opacity duration-200"
+      style={{ opacity: isLoading ? 0.6 : 1 }}
+    >
+      {children}
+    </div>
+  );
 }

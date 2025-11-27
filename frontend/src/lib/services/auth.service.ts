@@ -155,13 +155,14 @@ class AuthService {
   }
 
   /**
-   * Envia documentos para verificação de identidade
+   * Envia documentos para verificação de identidade com suporte a progresso de upload
    * Endpoint: POST /auth/submit-verification
    */
   async submitVerification(
     documentFront: File,
     documentBack: File,
-    selfie: File
+    selfie: File,
+    onProgress?: (progress: number) => void
   ): Promise<VerificationResponse> {
     try {
       const formData = new FormData();
@@ -175,6 +176,14 @@ class AuthService {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: progressEvent => {
+            if (progressEvent.total && onProgress) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onProgress(percentCompleted);
+            }
           },
         }
       );

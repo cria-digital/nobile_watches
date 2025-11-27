@@ -20,22 +20,21 @@ export function Step1Identification({
   const formReference = watch("referenceNumber");
 
   return (
-    <div className="space-y-5 lg:space-y-6">
-      <h2 className="text-2xl lg:text-3xl leading-[30px] tracking-[-0.01em]">
+    <div className="space-y-5 lg:w-[572px] lg:max-w-[572px]">
+      <h2 className="text-2xl leading-[30px] tracking-[-0.01em]">
         Identificação do relógio
       </h2>
-      <p className="text-gray-600 text-sm mb-8">
+      <p className="text-gray-400 text-sm mb-6">
         Confirme ou edite as informações básicas do relógio que você deseja anunciar
       </p>
 
-      <div className="space-y-4 lg:space-y-6">
+      <div className="space-y-4">
         <Input
           {...register("brand")}
           id="brand"
           label="Marca *"
           type="text"
           error={errors.brand?.message as string}
-          placeholder="Ex: Rolex, Omega, Patek Philippe"
         />
 
         <Input
@@ -44,7 +43,6 @@ export function Step1Identification({
           label="Modelo *"
           type="text"
           error={errors.model?.message as string}
-          placeholder="Ex: Submariner, Speedmaster, Nautilus"
         />
 
         <Input
@@ -53,7 +51,6 @@ export function Step1Identification({
           label="Número de referência (Opcional)"
           type="text"
           error={errors.referenceNumber?.message as string}
-          placeholder="Ex: 126610LN, 310.30.42.50.01.001"
         />
       </div>
 

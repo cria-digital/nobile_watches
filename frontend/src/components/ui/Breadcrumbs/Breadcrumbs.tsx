@@ -13,7 +13,7 @@ interface BreadcrumbsProps {
 export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
   return (
     <nav
-      className={`flex items-center gap-2 text-[18px] leading-[100%] font-erstoria mb-2 lg:mb-3 ${className}`}
+      className={`flex items-center gap-2 text-[18px] leading-[100%] font-erstoria mb-2 lg:mb-2.5 ${className}`}
       aria-label="Breadcrumb"
     >
       {items.map((item, index) => {

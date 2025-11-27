@@ -4,6 +4,7 @@ import { USER_MENU_ITEMS } from "@/lib/config/user-menu-items";
 import { useAuth } from "@/lib/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 import { Button } from "../ui/Button";
 import { SearchBar } from "./SearchBar";
 
@@ -15,7 +16,7 @@ interface MobileUserMenuProps {
 const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
-  const { isAuthenticated, mockLogin, mockLogout, logout } = useAuth();
+  const { isAuthenticated, mockLogout, logout } = useAuth();
 
   const gerenciamentoItems = USER_MENU_ITEMS.filter(
     item => item.section === "gerenciamento"
@@ -30,19 +31,51 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
     useMockData ? mockLogout() : logout();
   };
 
+  // Prevenir scroll do body quando o menu está aberto
+  useEffect(() => {
+    if (isOpen) {
+      // Salvar a posição atual do scroll
+      const scrollY = window.scrollY;
+
+      // Adicionar classes para prevenir scroll
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+    } else {
+      // Restaurar scroll quando fechar
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 z-[9998] md:hidden"
+        className="fixed inset-0 bg-black/50 z-[9998] lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Drawer */}
-      <div className="fixed inset-y-0 left-0 right-0 bg-white z-[9999] overflow-y-auto md:hidden">
+      <div className="fixed inset-0 bg-white z-[9999] md:hidden h-screen overflow-y-auto">
         {/* Header do menu */}
         <div className="flex h-16 items-center justify-between px-5">
           <Link href="/" onClick={onClose}>
@@ -182,18 +215,6 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                   Cadastro
                 </Button>
               </Link>
-            </div>
-            {/* DEV ONLY: Simular Login */}
-            <div className="pt-4 space-y-3">
-              <button
-                onClick={() => {
-                  mockLogin();
-                  onClose();
-                }}
-                className="w-full py-3 px-4 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
-                [DEV] Simular Login
-              </button>
             </div>
           </div>
         )}

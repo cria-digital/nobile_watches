@@ -34,7 +34,7 @@ const MOCK_USER: User = {
   email: "teste@nobile.com",
   name: "Lohan Marçal",
   role: "SELLER",
-  isVerified: false,
+  isVerified: true,
   phone: "+55 51 99999-8888",
   // cpf: "123.456.789-00",
   createdAt: new Date().toISOString(),

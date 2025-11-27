@@ -57,7 +57,7 @@ export const watchSchema = z.object({
   claspType: z.string().max(50, "Tipo de fecho muito longo").optional(),
 
   // STEP 3 - Imagens
-  images: z.any().optional(),
+  image: z.any().optional(),
 
   // Step 4 - Acessórios inclusos (ATUALIZADO)
   includedAccessories: z
@@ -83,18 +83,22 @@ export const watchSchema = z.object({
   // STEP 7 - Preço & Envio (obrigatório)
   price: z
     .union([
+      z.literal(""), // Permite string vazia
       z.string().regex(/^\d+(\.\d{1,2})?$/, "Preço inválido (use formato: 12345.67)"),
       z.number().positive("O preço deve ser maior que zero"),
     ])
-    .refine(val => {
-      const num = typeof val === "string" ? parseFloat(val) : val;
-      return num >= 100;
-    }, "O preço mínimo é R$ 100,00")
-    .refine(val => {
-      const num = typeof val === "string" ? parseFloat(val) : val;
-      return num <= 10000000;
-    }, "O preço máximo é R$ 10.000.000,00")
-    .transform(val => (typeof val === "string" ? parseFloat(val) : val)),
+    .refine(
+      val => {
+        // Se for string vazia, passa (campo ainda não preenchido)
+        if (val === "") return true;
+
+        const num = typeof val === "string" ? parseFloat(val) : val;
+        return !isNaN(num) && num > 0;
+      },
+      { message: "O preço deve ser maior que zero" }
+    )
+    // Validação final: quando for submeter, não pode estar vazio
+    .refine(val => val !== "", { message: "O preço é obrigatório" }),
 });
 
 export type CreateWatchFormValues = z.infer<typeof watchSchema>;

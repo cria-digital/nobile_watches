@@ -19,7 +19,7 @@ const MOCK_USER_PROFILE_DATA: UserProfileData = {
     state: "Rio Grande do Sul",
     city: "Porto Alegre",
     role: "SELLER",
-    isVerified: false,
+    isVerified: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     avatar: "/images/mock/avatar-placeholder.jpg",

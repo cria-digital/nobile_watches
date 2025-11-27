@@ -1,7 +1,8 @@
 "use client";
 
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface ToastProps {
   message: string;
@@ -10,17 +11,16 @@ interface ToastProps {
   duration?: number;
 }
 
-/**
- * Componente Toast para exibir mensagens de feedback
- * Desaparece automaticamente após a duração especificada
- */
 export function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
+  const [mounted, setMounted] = useState(false);
+
+  // Garante que o Portal só é renderizado no cliente
+  useEffect(() => setMounted(true), []);
+
+  // Timer para desaparecer automaticamente
   useEffect(() => {
     if (duration > 0) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, duration);
-
+      const timer = setTimeout(onClose, duration);
       return () => clearTimeout(timer);
     }
   }, [duration, onClose]);
@@ -91,9 +91,15 @@ export function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
     ),
   };
 
-  return (
+  const toast = (
     <div
-      className="fixed top-4 right-4 z-50 animate-slide-in-right max-w-md w-full"
+      className={`
+    fixed top-4 right-4 left-4 md:left-auto
+    max-w-[calc(100%-2rem)]
+    w-fit md:w-auto
+    z-[99999]
+    animate-slide-in-right
+  `}
       role="alert"
       aria-live="assertive"
     >
@@ -136,4 +142,8 @@ export function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
       `}</style>
     </div>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(toast, document.body);
 }

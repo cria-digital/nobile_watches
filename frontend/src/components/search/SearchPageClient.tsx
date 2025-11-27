@@ -1,11 +1,10 @@
 "use client";
 
-import { FilterModal } from "@/components/products/FilterModal";
-import { ProductCard } from "@/components/products/ProductCard";
+import { FilterModal } from "@/components/brand/FilterModal";
+import { ProductCard } from "@/components/product/ProductCard";
 import { Breadcrumbs, Button } from "@/components/ui";
-import { useAuth } from "@/lib/context/AuthContext";
-import { getFilterOptions } from "@/lib/data/mockProducts";
 import { useFilteredProducts } from "@/lib/hooks/useFilteredProducts";
+import { useFilterOptions } from "@/lib/hooks/useFilterOptions";
 import { useProductFilters } from "@/lib/hooks/useProductFilters";
 import { useSearch } from "@/lib/hooks/useSearch";
 import { AppliedFilters } from "@/types/filters";
@@ -20,7 +19,6 @@ interface SearchPageClientProps {
 }
 
 export function SearchPageClient({ query }: SearchPageClientProps) {
-  const { isAuthenticated } = useAuth();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortBy, setSortBy] = useState<string>("relevance");
@@ -32,20 +30,19 @@ export function SearchPageClient({ query }: SearchPageClientProps) {
     limit: 50,
   });
 
+  const { filterOptions, isLoading: isLoadingFilters } = useFilterOptions();
+
   // Hook para gerenciar filtros
   const {
     filters,
-    toggleArrayFilter,
-    updatePriceRange,
-    clearAllFilters,
+    // toggleArrayFilter,
+    // updatePriceRange,
+    // clearAllFilters,
     setAllFilters,
     summary,
   } = useProductFilters({
-    initialFilters: {}, // Sem filtro inicial
+    initialFilters: {},
   });
-
-  // Opções de filtro baseadas nos resultados da busca
-  const filterOptions = getFilterOptions(searchResults);
 
   // Hook para produtos filtrados (aplica filtros sobre os resultados da busca)
   const {
@@ -349,7 +346,7 @@ export function SearchPageClient({ query }: SearchPageClientProps) {
       </div>
 
       {/* Modal de Filtros */}
-      {hasResults && (
+      {filterOptions && (
         <FilterModal
           isOpen={isFilterModalOpen}
           onClose={() => setIsFilterModalOpen(false)}

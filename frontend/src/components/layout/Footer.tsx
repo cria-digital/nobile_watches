@@ -85,7 +85,8 @@ export function Footer() {
               <ul className="space-y-4">
                 <li>
                   <Link
-                    href="/sobre-nos"
+                    href="#"
+                    //    href="/sobre-nos"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Sobre nós
@@ -93,7 +94,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/como-funciona"
+                    href="#"
+                    //  href="/como-funciona"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Como funciona
@@ -101,7 +103,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/contato"
+                    href="#"
+                    //   href="/contato"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Contato
@@ -109,7 +112,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/perguntas-frequentes"
+                    href="#"
+                    //  href="/perguntas-frequentes"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Perguntas frequentes
@@ -117,7 +121,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/politicas-termos"
+                    href="#"
+                    //   href="/politicas-termos"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Políticas e termos
@@ -134,7 +139,8 @@ export function Footer() {
               <ul className="space-y-4">
                 <li>
                   <Link
-                    href="/seguro-comprador"
+                    href="#"
+                    //  href="/seguro-comprador"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Seguro do comprador
@@ -142,7 +148,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/garantia-autenticidade"
+                    href="#"
+                    //   href="/garantia-autenticidade"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Garantia de autenticidade
@@ -158,7 +165,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/politicas-termos"
+                    href="#"
+                    // href="/politicas-termos"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Políticas e termos
@@ -175,7 +183,8 @@ export function Footer() {
               <ul className="space-y-4">
                 <li>
                   <Link
-                    href="/guia-vendedores"
+                    // href="/guia-vendedores"
+                    href="#"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Guia para vendedores
@@ -183,7 +192,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/vender-relogio"
+                    href="/vendedor"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Vender relógios como particular
@@ -191,7 +200,8 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/avaliacao-autenticidade"
+                    href="#"
+                    //  href="/avaliacao-autenticidade"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Avaliação de autenticidade

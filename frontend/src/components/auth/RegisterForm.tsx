@@ -33,10 +33,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    mode: "onBlur",
+    mode: "onChange",
     defaultValues: {
       country: "Brasil",
       phone: "",
+      state: "",
+      city: "",
     },
   });
 
@@ -64,9 +66,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             city: data.city,
             role: "BUYER",
           });
-
       showToast("Conta criada com sucesso! Redirecionando...", "success");
-
       setTimeout(() => {
         router.push("/");
         onSuccess?.();
@@ -203,7 +203,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             label="Número"
             type="tel"
             placeholder="21 986567654"
-            autoComplete="tel"
+            autoComplete="off"
             inputMode="tel"
             leftElement={
               <div className="flex items-center gap-1">
@@ -246,6 +246,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             {...register("city")}
             id="city"
             label="Cidade"
+            autoComplete="off"
             placeholder={
               selectedState ? "Selecione a cidade" : "Selecione um estado primeiro"
             }

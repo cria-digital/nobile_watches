@@ -18,7 +18,10 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
             fill
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 0vw"
-            priority
+            priority={false}
+            loading="eager"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNGN0Y3RjciLz48L3N2Zz4="
           />
 
           {/* Header mobile com logo */}
@@ -38,6 +41,9 @@ export default function RegisterLayout({ children }: RegisterLayoutProps) {
             sizes="(min-width: 1024px) 100vw"
             className="object-cover"
             priority
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMwQTBBMEEiLz48L3N2Zz4="
+            quality={85}
           />
 
           <div className="absolute inset-0 bg-black/10"></div>

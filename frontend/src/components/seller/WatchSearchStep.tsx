@@ -66,7 +66,7 @@ export function WatchSearchStep({ setValue, onContinue }: WatchSearchStepProps) 
     if (suggestion.dialColor) setValue("dialColor", suggestion.dialColor);
     if (suggestion.movement) setValue("movement", suggestion.movement);
     if (suggestion.year) setValue("year", suggestion.year);
-    if (suggestion.averagePrice > 0) setValue("price", suggestion.averagePrice);
+    //  if (suggestion.averagePrice > 0) setValue("price", suggestion.averagePrice);
 
     clearSuggestions();
     setShowSuggestions(false);
@@ -85,18 +85,20 @@ export function WatchSearchStep({ setValue, onContinue }: WatchSearchStepProps) 
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center lg:items-start">
       <Image
         src="/images/seller/seller-box.svg"
-        alt="Caixa do vendedor"
+        alt="Seller box"
         width={178}
         height={178}
+        className="w-[178px] h-[178px] lg:w-[102px] lg:h-[102px]"
         priority
       />
-      <h2 className="text-2xl lg:text-3xl mt-2 mb-4 leading-[30px] tracking-[-0.01em] text-center">
+
+      <h2 className="text-2xl mt-2 mb-3 lg:mb-2.5 leading-[30px] tracking-[-0.01em] text-center">
         Qual relógio você deseja anunciar?
       </h2>
-      <p className="text-gray-400 text-sm leading-[20px] mb-6 text-center max-w-md">
+      <p className="text-gray-400 text-sm font-light leading-[20px] mb-5 lg:mb-4 text-center lg:text-left max-w-md lg:max-w-lg">
         Digite a marca, modelo ou referência do seu relógio para facilitar o preenchimento
         automático das informações.
       </p>
@@ -287,7 +289,7 @@ export function WatchSearchStep({ setValue, onContinue }: WatchSearchStepProps) 
 
       {/* Card de relógio selecionado */}
       {selectedSuggestion && (
-        <div className="mt-6 w-full max-w-2xl p-4 bg-gray-50 rounded-lg border border-[#EFEFEF]">
+        <div className="mt-6 lg:mt-3 w-full max-w-2xl p-4 bg-gray-50 rounded-lg border border-[#EFEFEF]">
           <div className="flex items-start gap-3">
             {/* Imagem do relógio selecionado */}
             <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-white">
@@ -320,10 +322,8 @@ export function WatchSearchStep({ setValue, onContinue }: WatchSearchStepProps) 
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="text-sm font-semibold text-gray-600 mb-1">
-                    {selectedSuggestion.brand}
-                  </div>
-                  <div className="text-lg font-semibold text-gray-900 mb-1">
+                  <div className="text-sm 0 mb-1">{selectedSuggestion.brand}</div>
+                  <div className="font-erstoria text-md mb-1">
                     {selectedSuggestion.model}
                   </div>
                   {selectedSuggestion.referenceNumber && (

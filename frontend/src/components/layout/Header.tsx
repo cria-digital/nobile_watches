@@ -15,7 +15,7 @@ const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isAuthenticated, mockLogout, logout } = useAuth();
+  const { user, isAuthenticated, mockLogin, mockLogout, logout } = useAuth();
   const pathname = usePathname();
 
   const isVendedorPage = pathname === "/vendedor";
@@ -167,16 +167,6 @@ export function Header() {
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
-
-      {/* DEV ONLY: Toggle para testar estados */}
-      {/* <div className="hidden md:block fixed bottom-4 right-4 z-[9999] bg-black/80 text-white p-3 rounded-lg text-sm">
-        <button
-          onClick={() => (isAuthenticated ? mockLogout() : mockLogin())}
-          className="hover:underline"
-        >
-          {isAuthenticated ? "Simular Logout" : "Simular Login"}
-        </button>
-      </div> */}
     </div>
   );
 }

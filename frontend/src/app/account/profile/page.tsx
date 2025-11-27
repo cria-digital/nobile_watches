@@ -1,7 +1,7 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs, Button } from "@/components/ui";
+import { Breadcrumbs, Button, VerifiedBadge } from "@/components/ui";
 import { UserNav } from "@/components/user/UserNav";
 import { VerificationModal } from "@/components/verification/VerificationModal";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -114,23 +114,8 @@ export default function Profile() {
                 </h2>
               </div>
 
-              {/* Verificação Status */}
               {user.isVerified ? (
-                <div className="flex items-center gap-1 bg-[#EFEFEF] px-2.5 h-[34px] rounded-[4px]">
-                  <div>
-                    <Image
-                      src="/icons/verified-badge.svg"
-                      alt="Verificado"
-                      width={18}
-                      height={18}
-                    />
-                  </div>
-                  <span className="text-sm text-pb-500 leading-[140%]">
-                    {user.role === "SELLER"
-                      ? "Vendedor verificado"
-                      : "Usuário verificado"}
-                  </span>
-                </div>
+                <VerifiedBadge role={user.role} />
               ) : (
                 <Button
                   onClick={() => setIsVerificationModalOpen(true)}
@@ -681,8 +666,6 @@ export default function Profile() {
           </div>
         </div>
       </div>
-
-      {/* Modal de Verificação */}
 
       <VerificationModal
         isOpen={isVerificationModalOpen}

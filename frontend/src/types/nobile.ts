@@ -1,3 +1,5 @@
+import { Product } from "./product";
+
 // src/types/nobile.ts
 export type Role = "BUYER" | "SELLER" | "ADMIN";
 
@@ -86,6 +88,14 @@ export interface Collection {
   watch?: Watch;
 }
 
+export interface WishlistItem {
+  id: number;
+  userId: number;
+  watchId: number;
+  addedAt: string;
+  watch: Product;
+}
+
 export interface PriceHistory {
   id: number;
   watchModel: string;
@@ -103,5 +113,112 @@ export interface AdminLog {
     id: number;
     name: string;
     email: string;
+  };
+}
+
+// ===============================================
+// TIPOS PARA LISTINGS
+// ===============================================
+
+/**
+ * Status possíveis de um anúncio
+ */
+export enum ListingStatus {
+  DRAFT = "DRAFT", // Rascunho
+  ACTIVE = "ACTIVE", // Ativo
+  PAUSED = "PAUSED", // Pausado
+  CANCELLED = "CANCELLED", // Cancelado
+  SOLD = "SOLD", // Vendido
+}
+
+/**
+ * Interface principal de um anúncio
+ */
+export interface Listing {
+  id: number;
+  watchId: number;
+  status: ListingStatus;
+  shippingInfo?: string;
+  returnPolicy?: string;
+  deliveryTime?: string;
+  negotiable: boolean;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+  pausedAt?: string;
+  cancelledAt?: string;
+  soldAt?: string;
+  watch?: Watch;
+}
+
+/**
+ * Request para criar novo anúncio
+ */
+export interface CreateListingRequest {
+  watchId: number;
+  shippingInfo?: string;
+  returnPolicy?: string;
+  deliveryTime?: string;
+  negotiable?: boolean;
+  publishNow: boolean; // Se true, publica imediatamente; se false, cria como rascunho
+}
+
+/**
+ * Request para atualizar anúncio
+ */
+export interface UpdateListingRequest {
+  shippingInfo?: string;
+  returnPolicy?: string;
+  deliveryTime?: string;
+  negotiable?: boolean;
+}
+
+/**
+ * Response padrão de operações de listing
+ */
+export interface ListingResponse {
+  message: string;
+  listing: Listing;
+}
+
+/**
+ * Response de listagem de anúncios ativos (com paginação)
+ */
+export interface ActiveListingsResponse {
+  listings: Listing[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+}
+
+/**
+ * Response de deleção de anúncio
+ */
+export interface DeleteListingResponse {
+  message: string;
+}
+
+export interface SearchFilterOptions {
+  brands: string[];
+  caseMaterials: string[];
+  braceletMaterials: string[];
+  movements: string[];
+  conditions: string[];
+  dialColors: string[];
+  genders: string[];
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  yearRange: {
+    min: number;
+    max: number;
+  };
+  diameterRange: {
+    min: number;
+    max: number;
   };
 }

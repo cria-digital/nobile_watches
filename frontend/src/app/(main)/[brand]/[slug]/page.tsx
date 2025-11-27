@@ -1,4 +1,4 @@
-import { ProductPageClient } from "@/components/products/ProductPageClient";
+import { ProductPageClient } from "@/components/product";
 import nobileService from "@/lib/services/nobile.service";
 import { extractProductIdFromSlug } from "@/lib/utils/productUrlUtils";
 import { Metadata } from "next";
@@ -11,7 +11,6 @@ interface ProductPageProps {
   }>;
 }
 
-// Flag para usar API ou mock
 const USE_API = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "true";
 
 /**
@@ -19,7 +18,6 @@ const USE_API = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "true";
  */
 async function fetchProduct(productId: string) {
   try {
-    // ✅ Usa nobileService ao invés de fetch direto
     const product = await nobileService.getWatchById(Number(productId));
     return product;
   } catch (error) {
@@ -28,9 +26,6 @@ async function fetchProduct(productId: string) {
   }
 }
 
-/**
- * Busca produtos relacionados da API (mesma marca)
- */
 async function fetchRelatedProducts(brand: string, excludeId: number) {
   try {
     // ✅ Usa nobileService ao invés de fetch direto
@@ -55,6 +50,14 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
   if (!productId) {
     return {
       title: "Produto não encontrado",
+    };
+  }
+
+  // ✅ Só busca produto da API se USE_API for true
+  if (!USE_API) {
+    return {
+      title: "Produto - Nobile",
+      description: "Relógio de luxo disponível na Nobile",
     };
   }
 
@@ -88,13 +91,10 @@ export default async function ProductPage(props: ProductPageProps) {
     notFound();
   }
 
-  // Se usar API, busca do backend
-  // Se usar mock, o componente client vai buscar com o hook
   let product = null;
   let relatedProducts: any[] = [];
 
   if (USE_API) {
-    // Busca produto da API
     product = await fetchProduct(productId);
 
     if (!product) {
@@ -103,7 +103,6 @@ export default async function ProductPage(props: ProductPageProps) {
 
     // Valida se a marca corresponde ao slug da URL
     const brandSlug = params.brand.toLowerCase();
-
     const productBrandSlug = product.brand.toLowerCase().replace(/\s+/g, "-");
 
     if (productBrandSlug !== brandSlug) {
