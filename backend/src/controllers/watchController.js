@@ -37,7 +37,7 @@ const criarRelogio = async (req, res) => {
         year: year ? Number(year) : null,
         caseMaterial,
         caseDiameter: caseDiameter ? Number(caseDiameter) : null,
-        waterResistance: waterResistance ? Number(waterResistance) : null,
+        waterResistance,
         glassType,
         dialColor,
         braceletMaterial,

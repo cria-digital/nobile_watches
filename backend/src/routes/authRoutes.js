@@ -8,7 +8,13 @@ const {
   getVerificationStatus,
 } = require("../controllers/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { upload } = require("../config/cloudinary");
+const { uploadVerification } = require("../config/cloudinary");
+
+const {
+  authLimiter,
+  authIpLimiter,
+  verificationLimiter,
+} = require("../config/rateLimiter");
 
 /**
  * @swagger
@@ -43,7 +49,7 @@ const { upload } = require("../config/cloudinary");
  *       400:
  *         description: Dados inválidos ou e-mail já existente
  */
-router.post("/register", register);
+router.post("/register", authIpLimiter, authLimiter, register);
 
 /**
  * @swagger
@@ -71,7 +77,7 @@ router.post("/register", register);
  *       401:
  *         description: Credenciais inválidas
  */
-router.post("/login", login);
+router.post("/login", authIpLimiter, authLimiter, login);
 
 /**
  * @swagger
@@ -113,7 +119,8 @@ router.post("/login", login);
 router.post(
   "/submit-verification",
   authMiddleware,
-  upload.fields([
+  verificationLimiter,
+  uploadVerification.fields([
     { name: "documentFront", maxCount: 1 },
     { name: "documentBack", maxCount: 1 },
     { name: "selfie", maxCount: 1 },

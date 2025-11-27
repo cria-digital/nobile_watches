@@ -10,9 +10,12 @@ const {
 } = require("../controllers/watchController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
-const { upload } = require("../config/cloudinary");
+const { uploadWatch } = require("../config/cloudinary");
+const { uploadLimiter } = require("../config/rateLimiter");
 
-// Públicas:
+// ============================================
+// ROTAS PÚBLICAS
+// ============================================
 
 /**
  * @swagger
@@ -47,7 +50,9 @@ router.get("/", listarRelogios);
  */
 router.get("/:id", buscarRelogioPorId);
 
-// Privadas (exigem token):
+// ============================================
+// ROTAS PRIVADAS (exigem autenticação)
+// ============================================
 
 /**
  * @swagger
@@ -80,8 +85,16 @@ router.get("/:id", buscarRelogioPorId);
  *         description: Relógio criado com sucesso
  *       400:
  *         description: Erro na criação do relógio
+ *       429:
+ *         description: Limite de uploads atingido
  */
-router.post("/", authMiddleware, upload.single("image"), criarRelogio);
+router.post(
+  "/",
+  authMiddleware,
+  uploadLimiter, // Rate limit para uploads
+  uploadWatch.single("image"),
+  criarRelogio
+);
 
 /**
  * @swagger

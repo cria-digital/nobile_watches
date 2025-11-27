@@ -17,7 +17,6 @@ const buscarSugestoes = async (req, res) => {
       return res.json({ suggestions: [] });
     }
 
-    // REMOVIDO .toLowerCase() - é redundante já que usamos mode: "insensitive"
     const searchTerm = query.trim();
 
     const relogios = await prisma.watch.findMany({
@@ -96,7 +95,7 @@ const buscaAvancada = async (req, res) => {
       order = "desc",
     } = req.query;
 
-    // ADICIONADO: Validação de paginação com limites seguros
+    // Validação de paginação com limites seguros
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.min(MAX_LIMIT, Math.max(1, parseInt(limit) || DEFAULT_LIMIT));
     const skip = (pageNum - 1) * limitNum;
@@ -120,7 +119,7 @@ const buscaAvancada = async (req, res) => {
       where.brand = { equals: brand, mode: "insensitive" };
     }
 
-    // MELHORADO: Filtro por faixa de preço com validação
+    // Filtro por faixa de preço com validação
     if (minPrice || maxPrice) {
       where.price = {};
       const parsedMinPrice = parseFloat(minPrice);
@@ -178,7 +177,7 @@ const buscaAvancada = async (req, res) => {
       }
     }
 
-    // MELHORADO: Filtro por diâmetro com validação
+    // Filtro por diâmetro com validação
     if (minDiameter || maxDiameter) {
       where.caseDiameter = {};
       const parsedMinDiameter = parseFloat(minDiameter);
@@ -288,7 +287,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { brand: true },
         distinct: ["brand"],
-        where: { brand: { not: null } },
         orderBy: { brand: "asc" },
       }),
 
@@ -296,7 +294,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { caseMaterial: true },
         distinct: ["caseMaterial"],
-        where: { caseMaterial: { not: null } },
         orderBy: { caseMaterial: "asc" },
       }),
 
@@ -304,7 +301,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { braceletMaterial: true },
         distinct: ["braceletMaterial"],
-        where: { braceletMaterial: { not: null } },
         orderBy: { braceletMaterial: "asc" },
       }),
 
@@ -312,7 +308,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { movement: true },
         distinct: ["movement"],
-        where: { movement: { not: null } },
         orderBy: { movement: "asc" },
       }),
 
@@ -320,7 +315,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { condition: true },
         distinct: ["condition"],
-        where: { condition: { not: null } },
         orderBy: { condition: "asc" },
       }),
 
@@ -328,7 +322,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { dialColor: true },
         distinct: ["dialColor"],
-        where: { dialColor: { not: null } },
         orderBy: { dialColor: "asc" },
       }),
 
@@ -336,7 +329,6 @@ const obterFiltrosDisponiveis = async (req, res) => {
       prisma.watch.findMany({
         select: { gender: true },
         distinct: ["gender"],
-        where: { gender: { not: null } },
         orderBy: { gender: "asc" },
       }),
 
@@ -421,7 +413,7 @@ const contarResultados = async (req, res) => {
     if (braceletMaterial)
       where.braceletMaterial = { equals: braceletMaterial, mode: "insensitive" };
 
-    // MELHORADO: Validação de valores numéricos
+    // Validação de valores numéricos
     if (minPrice || maxPrice) {
       where.price = {};
       const parsedMinPrice = parseFloat(minPrice);
@@ -444,9 +436,30 @@ const contarResultados = async (req, res) => {
   }
 };
 
+/**
+ * Lista apenas as marcas disponíveis
+ * GET /api/search/brands
+ */
+const listarMarcas = async (req, res) => {
+  try {
+    const brands = await prisma.watch.findMany({
+      select: { brand: true },
+      distinct: ["brand"],
+      orderBy: { brand: "asc" },
+    });
+
+    // O .filter(Boolean) já remove null, undefined e strings vazias
+    res.json(brands.map(w => w.brand).filter(Boolean));
+  } catch (err) {
+    console.error("Erro ao listar marcas:", err);
+    res.status(500).json({ error: "Erro ao listar marcas." });
+  }
+};
+
 module.exports = {
   buscarSugestoes,
   buscaAvancada,
   obterFiltrosDisponiveis,
   contarResultados,
+  listarMarcas,
 };

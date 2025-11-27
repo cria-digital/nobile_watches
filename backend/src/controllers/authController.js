@@ -186,24 +186,27 @@ const verifyUser = async (req, res) => {
       });
     }
 
-    // Atualiza o status de verificação
+    // Atualiza o status de verificação e role
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(userId) },
       data: {
         isVerified: status === "approved",
         verificationStatus: status,
+        // Promove automaticamente para SELLER quando aprovado
+        role: status === "approved" ? "SELLER" : userToVerify.role,
       },
     });
 
     res.json({
       message:
         status === "approved"
-          ? "Usuário verificado com sucesso."
+          ? "Usuário verificado e promovido a vendedor com sucesso."
           : "Verificação rejeitada.",
       user: {
         id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
+        role: updatedUser.role,
         isVerified: updatedUser.isVerified,
         verificationStatus: updatedUser.verificationStatus,
       },
@@ -225,6 +228,7 @@ const getVerificationStatus = async (req, res) => {
         id: true,
         name: true,
         email: true,
+        role: true,
         isVerified: true,
         verificationStatus: true,
         verificationSubmittedAt: true,

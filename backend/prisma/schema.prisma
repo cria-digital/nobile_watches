@@ -13,6 +13,14 @@ enum Role {
   ADMIN
 }
 
+enum ListingStatus {
+  DRAFT      // Rascunho
+  ACTIVE     // Publicado/Ativo
+  PAUSED     // Pausado
+  SOLD       // Vendido
+  CANCELLED  // Cancelado
+}
+
 model User {
   id                Int        @id @default(autoincrement())
   name              String
@@ -34,11 +42,13 @@ model User {
 
   // Relacionamentos
   watches           Watch[]    @relation("SellerWatches")
+  listings          Listing[]  @relation("SellerListings")
   orders            Order[]    @relation("BuyerOrders")
   messagesSent      Message[] @relation("MessagesSent")
   messagesReceived  Message[] @relation("MessagesReceived")
   collections       Collection[]
   adminLogs         AdminLog[]
+  wishlist          Wishlist[]
 }
 
 model Watch {
@@ -69,16 +79,45 @@ model Watch {
 
   // Relacionamentos
   seller           User       @relation("SellerWatches", fields: [sellerId], references: [id])
+  listings         Listing[]  // Um relógio pode ter múltiplos anúncios ao longo do tempo
   orders           Order[]
   messages         Message[]
   collections      Collection[]
   priceHistories   PriceHistory[]
+  wishlist         Wishlist[]
+}
+
+model Listing {
+  id              Int           @id @default(autoincrement())
+  watchId         Int
+  sellerId        Int
+  status          ListingStatus @default(DRAFT)
+  
+  // Informações específicas do anúncio
+  shippingInfo    String?       // Informações de envio
+  returnPolicy    String?       // Política de devolução
+  deliveryTime    String?       // Prazo de entrega estimado
+  negotiable      Boolean       @default(false) // Preço negociável?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  publishedAt     DateTime?     // Quando foi publicado
+  soldAt          DateTime?     // Quando foi vendido
+  
+  // Relacionamentos
+  watch           Watch         @relation(fields: [watchId], references: [id])
+  seller          User          @relation("SellerListings", fields: [sellerId], references: [id])
+  orders          Order[]       // Pedidos relacionados a este anúncio
+  
+  // Índice único: um relógio só pode ter um anúncio ATIVO ou DRAFT por vez
+  @@unique([watchId, status], name: "unique_active_listing")
 }
 
 model Order {
   id           Int      @id @default(autoincrement())
   buyerId      Int
   watchId      Int
+  listingId    Int?     // Novo campo para vincular ao anúncio
   status       String
   paymentInfo  String?
   shippingInfo String?
@@ -86,6 +125,7 @@ model Order {
 
   buyer        User     @relation("BuyerOrders", fields: [buyerId], references: [id])
   watch        Watch    @relation(fields: [watchId], references: [id])
+  listing      Listing? @relation(fields: [listingId], references: [id])
 
   transactions Transaction[]
 }
@@ -98,6 +138,18 @@ model Collection {
 
   user           User    @relation(fields: [userId], references: [id])
   watch          Watch   @relation(fields: [watchId], references: [id])
+}
+
+model Wishlist {
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  watchId  Int
+  addedAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  watch    Watch    @relation(fields: [watchId], references: [id])
+
+  @@unique([userId, watchId])
 }
 
 model Message {

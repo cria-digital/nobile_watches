@@ -5,7 +5,19 @@ const {
   buscaAvancada,
   obterFiltrosDisponiveis,
   contarResultados,
+  listarMarcas,
 } = require("../controllers/searchController");
+const { searchLimiter } = require("../config/rateLimiter");
+
+// ============================================
+// RATE LIMITER
+// ============================================
+
+router.use(searchLimiter);
+
+// ============================================
+// ROTAS DE BUSCA
+// ============================================
 
 /**
  * @swagger
@@ -24,8 +36,31 @@ const {
  *     responses:
  *       200:
  *         description: Lista de sugestões retornada com sucesso
+ *       429:
+ *         description: Muitas buscas em pouco tempo
  */
 router.get("/suggestions", buscarSugestoes);
+
+/**
+ * @swagger
+ * /api/search/brands:
+ *   get:
+ *     summary: Lista todas as marcas disponíveis
+ *     tags: [Busca]
+ *     responses:
+ *       200:
+ *         description: Lista de marcas retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["Rolex", "Omega", "Patek Philippe"]
+ *       429:
+ *         description: Muitas buscas em pouco tempo
+ */
+router.get("/brands", listarMarcas);
 
 /**
  * @swagger
@@ -133,6 +168,8 @@ router.get("/suggestions", buscarSugestoes);
  *     responses:
  *       200:
  *         description: Resultados da busca retornados com sucesso
+ *       429:
+ *         description: Muitas buscas em pouco tempo
  */
 router.get("/advanced", buscaAvancada);
 
@@ -145,6 +182,8 @@ router.get("/advanced", buscaAvancada);
  *     responses:
  *       200:
  *         description: Filtros disponíveis retornados com sucesso
+ *       429:
+ *         description: Muitas buscas em pouco tempo
  */
 router.get("/filters", obterFiltrosDisponiveis);
 
@@ -180,6 +219,8 @@ router.get("/filters", obterFiltrosDisponiveis);
  *     responses:
  *       200:
  *         description: Contagem retornada com sucesso
+ *       429:
+ *         description: Muitas buscas em pouco tempo
  */
 router.post("/count", contarResultados);
 
