@@ -44,6 +44,13 @@ export function ErrorState({ title, description }: ErrorStateProps) {
               {description}
             </p>
           )}
+
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-5 px-8 py-3.5 bg-gray-900 text-white rounded-lg"
+          >
+            Tentar novamente
+          </button>
         </div>
       </motion.div>
     </div>

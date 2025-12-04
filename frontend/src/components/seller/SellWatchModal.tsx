@@ -1,6 +1,11 @@
 "use client";
 
-import { Dialog, DialogBackdrop, DialogPanel, Transition } from "@headlessui/react";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  Transition,
+} from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { Fragment, useState } from "react";
@@ -9,10 +14,15 @@ import { useForm } from "react-hook-form";
 import { Step1Identification } from "@/components/seller/Step1Identification";
 import { WatchSearchStep } from "@/components/seller/WatchSearchStep";
 import { Button, Input, Select, Toast } from "@/components/ui";
-import { genderOptions } from "@/lib/constants";
+import { braceletMaterialOptions, genderOptions } from "@/lib/constants";
 import nobileService from "@/lib/services/nobile.service";
+import {
+  createImagePreview,
+  optimizeImage,
+  validateImageFile,
+} from "@/lib/utils/imageOptimizer";
 import { CreateWatchFormValues, watchSchema } from "@/lib/validations/watch";
-import { Camera } from "lucide-react";
+import { Camera, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
 type ToastType = "success" | "error" | "info" | "warning";
@@ -41,12 +51,18 @@ const steps = [
   { id: 7, title: "Preço & Envio" },
 ];
 
-export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalProps) {
+export function SellWatchModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: SellWatchModalProps) {
   const [step, setStep] = useState<number>(0);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [toast, setToast] = useState<ToastState | null>(null);
   const [priceFieldTouched, setPriceFieldTouched] = useState(false);
+  const [imageError, setImageError] = useState<string>("");
+  const [imageProcessing, setImageProcessing] = useState(false);
 
   const {
     register,
@@ -75,49 +91,80 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
     setToast({ type, message });
   };
 
-  const handleImagesChange = (files: FileList | null) => {
+  const handleImagesChange = async (files: FileList | null) => {
+    setImageError("");
+
     if (!files || files.length === 0) {
       setImagePreview("");
       setValue("image", null);
       return;
     }
 
-    // Pega apenas o primeiro arquivo
     const file = files[0];
 
-    // Verifica se o arquivo existe (TypeScript guard)
     if (!file) {
       setImagePreview("");
       setValue("image", null);
       return;
     }
 
-    // Valida formato
-    if (!ALLOWED_FORMATS.includes(file.type)) {
-      showToast("error", `${file.name}: formato não permitido. Use JPEG, PNG ou WebP.`);
+    // Validação usando helper
+    const validation = await validateImageFile(file, {
+      maxSize: MAX_FILE_SIZE,
+      allowedFormats: ALLOWED_FORMATS,
+      minWidth: 800,
+      minHeight: 600,
+    });
+
+    if (!validation.valid) {
+      setImageError(validation.error || "Arquivo inválido");
+      setImagePreview("");
+      setValue("image", null);
       return;
     }
 
-    // Valida tamanho
-    if (file.size > MAX_FILE_SIZE) {
-      showToast("error", `${file.name}: arquivo muito grande. Máximo 5MB.`);
-      return;
+    // Inicia processamento
+    setImageProcessing(true);
+
+    try {
+      // Otimiza a imagem
+      const result = await optimizeImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.85,
+        outputFormat: "image/webp",
+      });
+
+      // Cria FileList com arquivo otimizado
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(result.file);
+      const optimizedFileList = dataTransfer.files;
+
+      // Salva no formulário
+      setValue("image", optimizedFileList, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
+      // Cria preview
+      const preview = await createImagePreview(result.file);
+      setImagePreview(preview);
+
+      showToast("success", `Imagem processada com sucesso`);
+    } catch (error) {
+      console.error("Erro ao processar imagem:", error);
+      setImageError("Erro ao processar imagem. Tente novamente.");
+      setImagePreview("");
+      setValue("image", null);
+    } finally {
+      setImageProcessing(false);
     }
+  };
 
-    // Cria um novo FileList com apenas 1 arquivo
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    const singleFileList = dataTransfer.files;
-
-    // Salva o arquivo no formulário
-    setValue("image", singleFileList, { shouldValidate: true, shouldDirty: true });
-
-    // Cria preview visual
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(String(reader.result));
-    };
-    reader.readAsDataURL(file);
+  const handleRemoveImage = () => {
+    setImagePreview("");
+    setImageError("");
+    setValue("image", null);
   };
 
   const next = async () => {
@@ -130,7 +177,7 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
         fieldsToValidate = ["brand", "model"];
         break;
       case 2:
-        fieldsToValidate = ["customTitleSuffix"];
+        fieldsToValidate = ["titleSuffix"];
         break;
       case 3:
         fieldsToValidate = [
@@ -149,7 +196,7 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
         fieldsToValidate = ["includedAccessories"];
         break;
       case 5:
-        fieldsToValidate = ["hasSignsOfWear", "condition"];
+        fieldsToValidate = ["hasSignsOfWear"];
         break;
       case 6:
         fieldsToValidate = ["description"];
@@ -168,7 +215,10 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
 
     if (step === 1) {
       if (!v.brand || !v.model) {
-        showToast("error", "Por favor, preencha a marca e o modelo do relógio.");
+        showToast(
+          "error",
+          "Por favor, preencha a marca e o modelo do relógio."
+        );
         return;
       }
     }
@@ -177,16 +227,15 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
       return;
     }
 
-    setStep(s => Math.min(s + 1, steps.length));
+    setStep((s) => Math.min(s + 1, steps.length));
   };
 
   const prev = () => {
-    setStep(s => Math.max(s - 1, 0));
+    setStep((s) => Math.max(s - 1, 0));
   };
 
   const handleClose = () => {
-    // Impede fechamento durante submissão
-    if (submitting) {
+    if (submitting || imageProcessing) {
       return;
     }
 
@@ -199,13 +248,19 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
 
   const onSubmit = async (data: CreateWatchFormValues) => {
     if (step !== 7) {
-      showToast("info", "Por favor, complete todos os passos antes de criar o anúncio.");
+      showToast(
+        "info",
+        "Por favor, complete todos os passos antes de criar o anúncio."
+      );
       return;
     }
 
     const finalValidation = await trigger();
     if (!finalValidation) {
-      showToast("error", "Por favor, corrija todos os erros antes de criar o anúncio.");
+      showToast(
+        "error",
+        "Por favor, corrija todos os erros antes de criar o anúncio."
+      );
       return;
     }
 
@@ -216,7 +271,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
         Object.fromEntries(
           Object.entries(obj).map(([key, value]) => {
             const shouldTrim =
-              typeof value === "string" && key !== "year" && key !== "caseDiameter";
+              typeof value === "string" &&
+              key !== "year" &&
+              key !== "caseDiameter";
 
             return [key, shouldTrim ? value.trim() : value];
           })
@@ -228,27 +285,29 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
 
       form.append("brand", cleaned.brand);
       form.append("model", cleaned.model);
-
       if (cleaned.referenceNumber)
         form.append("referenceNumber", cleaned.referenceNumber);
-
       if (cleaned.movement) form.append("movement", cleaned.movement);
 
       // numeric (raw)
       if (cleaned.year) form.append("year", String(cleaned.year));
-      if (cleaned.caseDiameter) form.append("caseDiameter", String(cleaned.caseDiameter));
-
-      form.append("condition", cleaned.condition || "");
-
-      if (cleaned.price !== undefined) form.append("price", String(cleaned.price));
-
+      if (cleaned.caseDiameter)
+        form.append("caseDiameter", String(cleaned.caseDiameter));
+      form.append(
+        "condition",
+        cleaned.hasSignsOfWear === "yes" ? "Usado" : "Novo"
+      );
+      if (cleaned.price !== undefined)
+        form.append("price", String(cleaned.price));
       if (cleaned.description) form.append("description", cleaned.description);
       if (cleaned.gender) form.append("gender", cleaned.gender);
       if (cleaned.dialColor) form.append("dialColor", cleaned.dialColor);
-      if (cleaned.caseMaterial) form.append("caseMaterial", cleaned.caseMaterial);
+      if (cleaned.caseMaterial)
+        form.append("caseMaterial", cleaned.caseMaterial);
       if (cleaned.braceletMaterial)
         form.append("braceletMaterial", cleaned.braceletMaterial);
-      if (cleaned.braceletColor) form.append("braceletColor", cleaned.braceletColor);
+      if (cleaned.braceletColor)
+        form.append("braceletColor", cleaned.braceletColor);
       if (cleaned.claspType) form.append("claspType", cleaned.claspType);
 
       // Envia apenas 1 imagem
@@ -265,6 +324,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
         returnPolicy: "",
         deliveryTime: "",
         negotiable: true,
+        ...(cleaned.titleSuffix && {
+          titleSuffix: cleaned.titleSuffix,
+        }),
       });
 
       showToast("success", "Anúncio criado com sucesso!");
@@ -284,15 +346,24 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
     }
   };
 
-  const progressPercentage = step === 0 ? 0 : ((step - 1) / (steps.length - 1)) * 100;
+  const progressPercentage =
+    step === 0 ? 0 : ((step - 1) / (steps.length - 1)) * 100;
 
   const renderStep = () => {
     if (step === 0) {
-      return <WatchSearchStep setValue={setValue} onContinue={() => setStep(1)} />;
+      return (
+        <WatchSearchStep setValue={setValue} onContinue={() => setStep(1)} />
+      );
     }
 
     if (step === 1) {
-      return <Step1Identification watch={watch} errors={errors} register={register} />;
+      return (
+        <Step1Identification
+          watch={watch}
+          errors={errors}
+          register={register}
+        />
+      );
     }
 
     if (step === 2) {
@@ -302,66 +373,132 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
             Personalize o título do anúncio
           </h2>
           <p className="text-gray-400 text-sm mb-6">
-            Indique características especiais do seu relógio para que este tenha mais
-            visibilidade.
+            Indique características especiais do seu relógio para que este tenha
+            mais visibilidade.
           </p>
 
-          <label className="block">
-            <div className="text-sm leading-[168%] mb-2.5">
-              Informações adicionais sobre o título (opcional)
-            </div>
-            <input
-              type="text"
-              {...register("customTitleSuffix")}
-              className={clsx(
-                "w-full max-w-full px-3 py-3 border rounded-[12px] focus:outline-none transition-colors",
-                errors.customTitleSuffix
-                  ? "border-red-500 focus:border-red-500"
-                  : "border-[#EFEFEF] focus:border-[#D5A60A]"
-              )}
-              placeholder="Digite..."
-            />
-          </label>
-
-          {/* <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-xs text-gray-500 mb-2">Prévia do título:</p>
-            <p className="font-medium">
-              {watch("brand")} {watch("model")}{" "}
-              {watch("customTitleSuffix") && `- ${watch("customTitleSuffix")}`}
-            </p>
-          </div> */}
+          <Input
+            {...register("titleSuffix")}
+            id="titleSuffix"
+            label="Informações adicionais sobre o título (opcional)"
+            type="text"
+            error={errors.titleSuffix?.message as string}
+            placeholder="Digite..."
+          />
 
           <div className="mt-6">
-            <label className="block cursor-pointer">
-              <div className="text-sm leading-[168%] mb-2.5">
-                Carregue uma imagem do seu relógio
-              </div>
-              <input
-                type="file"
-                accept={ALLOWED_FORMATS.join(",")}
-                onChange={e => handleImagesChange(e.target.files)}
-                className="hidden"
-              />
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center justify-center gap-1.5 w-[50%] border-2 border-dashed border-[#cccccc] rounded-lg p-4.5 text-center cursor-pointer">
-                  <Camera className="w-6 h-6 text-[#D5A60A]" />
-                  <span className="text-sm text-gray-400 text-center">
-                    Carregar imagem
-                  </span>
+            <div className="text-sm leading-[168%] mb-2.5">
+              Carregue uma imagem do seu relógio
+            </div>
+
+            {imageError && (
+              <div className="mb-4 flex items-start gap-2">
+                <div className="text-[13px] text-[#E81F33] leading-[133%]">
+                  A imagem não pode ser enviada
                 </div>
-                {imagePreview && (
-                  <div className="w-[50%]">
-                    <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
+                <div className="text-[13px] text-[#E81F33] leading-[133%]">
+                  {imageError}
+                </div>
               </div>
-            </label>
+            )}
+
+            <div className="flex gap-4">
+              {/* Card de upload */}
+              {!imagePreview && (
+                <label className="cursor-pointer w-[32%]">
+                  <input
+                    type="file"
+                    accept={ALLOWED_FORMATS.join(",")}
+                    onChange={(e) => handleImagesChange(e.target.files)}
+                    className="hidden"
+                    disabled={imageProcessing}
+                  />
+                  <div
+                    className={clsx(
+                      "flex flex-col items-center justify-center gap-1.5 w-full border-2 border-dashed rounded-lg p-2.5 text-center transition-colors aspect-square",
+                      imageProcessing
+                        ? "border-gray-300 bg-gray-50 cursor-not-allowed"
+                        : imageError
+                          ? "border-red-300 bg-red-50 cursor-pointer hover:border-red-400"
+                          : "border-[#cccccc] cursor-pointer hover:border-[#D5A60A]"
+                    )}
+                  >
+                    {imageProcessing ? (
+                      <>
+                        <Loader2 className="w-6 h-6 text-[#D5A60A] animate-spin" />
+                        <span className="text-sm text-gray-400">
+                          Processando...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera
+                          className={clsx(
+                            "w-6 h-6",
+                            imageError ? "text-red-400" : "text-[#D5A60A]"
+                          )}
+                        />
+                        <span
+                          className={clsx(
+                            "text-sm",
+                            imageError ? "text-red-600" : "text-gray-400"
+                          )}
+                        >
+                          Carregar{" "}
+                          <span className="hidden sm:inline">imagem</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </label>
+              )}
+
+              {/* Preview da imagem */}
+              {imagePreview && (
+                <div className="w-[32%] relative">
+                  <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Badge de erro (se houver) */}
+                    {imageError && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                        Erro
+                      </div>
+                    )}
+                    {/* Botão remover */}
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition-colors"
+                      aria-label="Remover imagem"
+                    >
+                      <X className="w-4 h-4 text-gray-700" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Placeholder para segunda imagem (futuro) */}
+              {/* {imagePreview && (
+                <label className="cursor-pointer w-[50%]">
+                  <input
+                    type="file"
+                    accept={ALLOWED_FORMATS.join(",")}
+                    className="hidden"
+                    disabled
+                  />
+                  <div className="flex flex-col items-center justify-center gap-1.5 w-full border-2 border-dashed border-[#cccccc] rounded-lg p-4.5 text-center aspect-square opacity-50 cursor-not-allowed">
+                    <Camera className="w-6 h-6 text-gray-400" />
+                    <span className="text-sm text-gray-400">
+                      Carregar <span className="hidden sm:inline">imagem</span>
+                    </span>
+                  </div>
+                </label>
+              )} */}
+            </div>
           </div>
         </div>
       );
@@ -381,7 +518,7 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
               label="Ano de fabricação"
               type="number"
               error={errors.year?.message as string}
-              placeholder="Ex: 2012"
+              placeholder="Ex: 2020"
             />
 
             <Select
@@ -439,19 +576,19 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
               placeholder="Ex: Aço inoxidável, Ouro, Titânio"
             />
 
-            <Input
+            <Select
               {...register("braceletMaterial")}
               id="braceletMaterial"
-              label="Material da pulseira"
-              type="text"
-              error={errors.braceletMaterial?.message as string}
-              placeholder="Ex: Aço, Couro, Borracha"
+              label="Material da bracelete"
+              placeholder="Selecione..."
+              error={errors.braceletMaterial?.message}
+              options={braceletMaterialOptions}
             />
 
             <Input
               {...register("braceletColor")}
               id="braceletColor"
-              label="Cor da pulseira"
+              label="Cor do bracelete"
               type="text"
               error={errors.braceletColor?.message as string}
               placeholder="Ex: Preto, Marrom, Prata"
@@ -473,7 +610,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
     if (step === 4) {
       return (
         <div className="w-[701px]">
-          <h2 className="text-2xl mb-4">O que está incluído com seu relógio?</h2>
+          <h2 className="text-2xl mb-4">
+            O que está incluído com seu relógio?
+          </h2>
 
           <div className="space-y-4">
             <label
@@ -483,7 +622,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                   : "font-light"
               }`}
             >
-              <span className="text-sm">Caixa original e documentos originais</span>
+              <span className="text-sm">
+                Caixa original e documentos originais
+              </span>
               <input
                 type="radio"
                 value="box_and_docs"
@@ -495,7 +636,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
 
             <label
               className={`flex items-center justify-between py-1.5 pl-3.5 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
-                watch("includedAccessories") === "box_only" ? "font-normal" : "font-light"
+                watch("includedAccessories") === "box_only"
+                  ? "font-normal"
+                  : "font-light"
               }`}
             >
               <span className="text-sm">Caixa original</span>
@@ -527,7 +670,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
 
             <label
               className={`flex items-center justify-between py-1.5 pl-3.5 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
-                watch("includedAccessories") === "none" ? "font-normal" : "font-light"
+                watch("includedAccessories") === "none"
+                  ? "font-normal"
+                  : "font-light"
               }`}
             >
               <span className="text-sm">Sem mais acessórios</span>
@@ -545,6 +690,8 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
     }
 
     if (step === 5) {
+      const hasSignsOfWear = watch("hasSignsOfWear");
+
       return (
         <div className="w-[701px]">
           <h2 className="text-2xl mb-4">Indique o estado do seu relógio</h2>
@@ -560,7 +707,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
               <div className="flex gap-4">
                 <label
                   className={`flex items-center justify-between h-[42px] pl-4 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
-                    watch("hasSignsOfWear") === "yes" ? "font-normal" : "font-light"
+                    watch("hasSignsOfWear") === "yes"
+                      ? "font-normal"
+                      : "font-light"
                   }`}
                 >
                   <span className="text-sm">Sim</span>
@@ -575,7 +724,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
 
                 <label
                   className={`flex items-center justify-between h-[42px] pl-4 pr-1.5 bg-[#F7F7F7] rounded-lg cursor-pointer transition-all ${
-                    watch("hasSignsOfWear") === "no" ? "font-normal" : "font-light"
+                    watch("hasSignsOfWear") === "no"
+                      ? "font-normal"
+                      : "font-light"
                   }`}
                 >
                   <span className="text-sm">Não</span>
@@ -590,18 +741,100 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
               </div>
             </div>
 
-            <Select
-              {...register("condition")}
-              id="condition"
-              label="Estado de conservação *"
-              placeholder="Selecione..."
-              error={errors.condition?.message}
-            >
-              <option value="Novo">Novo</option>
-              <option value="Muito bom">Muito bom</option>
-              <option value="Bom">Bom</option>
-              <option value="Aceitável">Aceitável</option>
-            </Select>
+            {hasSignsOfWear === "no" && (
+              <div className="p-4 bg-[#F7F7F7] rounded-lg border border-[#EFEFEF]">
+                <h3 className="font-lato text-sm font-medium mb-2">
+                  Sem marcas e em estado impecável
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  O item está em condição perfeita, sem riscos, amassados ou
+                  qualquer sinal de uso. Também não passou por qualquer tipo de
+                  polimento.
+                </p>
+              </div>
+            )}
+
+            {/* {hasSignsOfWear === "yes" && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium">
+                  Sinais de utilização em componentes individuais
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    {...register("wearCasing")}
+                    id="wearCasing"
+                    label="Caixa"
+                    placeholder="Selecione..."
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="barely_visible">Pouco visíveis</option>
+                    <option value="clearly_visible">Claramente visíveis</option>
+                    <option value="extremely_visible">Extremamente visíveis</option>
+                  </Select>
+
+                  <Select
+                    {...register("wearDial")}
+                    id="wearDial"
+                    label="Mostrador"
+                    placeholder="Selecione..."
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="barely_visible">Pouco visíveis</option>
+                    <option value="clearly_visible">Claramente visíveis</option>
+                    <option value="extremely_visible">Extremamente visíveis</option>
+                  </Select>
+
+                  <Select
+                    {...register("wearBezel")}
+                    id="wearBezel"
+                    label="Luneta"
+                    placeholder="Selecione..."
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="barely_visible">Pouco visíveis</option>
+                    <option value="clearly_visible">Claramente visíveis</option>
+                    <option value="extremely_visible">Extremamente visíveis</option>
+                  </Select>
+
+                  <Select
+                    {...register("wearGlass")}
+                    id="wearGlass"
+                    label="Vidro do relógio"
+                    placeholder="Selecione..."
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="barely_visible">Pouco visíveis</option>
+                    <option value="clearly_visible">Claramente visíveis</option>
+                    <option value="extremely_visible">Extremamente visíveis</option>
+                  </Select>
+
+                  <Select
+                    {...register("wearCaseBack")}
+                    id="wearCaseBack"
+                    label="Fundo da caixa"
+                    placeholder="Selecione..."
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="barely_visible">Pouco visíveis</option>
+                    <option value="clearly_visible">Claramente visíveis</option>
+                    <option value="extremely_visible">Extremamente visíveis</option>
+                  </Select>
+
+                  <Select
+                    {...register("wearBraceletClasp")}
+                    id="wearBraceletClasp"
+                    label="Bracelete e fecho"
+                    placeholder="Selecione..."
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="barely_visible">Pouco visíveis</option>
+                    <option value="clearly_visible">Claramente visíveis</option>
+                    <option value="extremely_visible">Extremamente visíveis</option>
+                  </Select>
+                </div>
+              </div>
+            )} */}
           </div>
         </div>
       );
@@ -612,9 +845,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
         <div className="w-[701px]">
           <h2 className="text-2xl mb-5">Diga-nos mais sobre o seu relógio</h2>
           <p className="text-gray-400 text-sm font-light leading-[20px] mb-5">
-            Uma descrição detalhada reforça a confiança dos potenciais compradores.
-            Utilize esta oportunidade para comunicar o valor do seu relógio e aumentar as
-            suas oportunidades de venda.
+            Uma descrição detalhada reforça a confiança dos potenciais
+            compradores. Utilize esta oportunidade para comunicar o valor do seu
+            relógio e aumentar as suas oportunidades de venda.
           </p>
 
           <label className="block max-w-full overflow-hidden">
@@ -639,7 +872,9 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
       return (
         <div className="space-y-5 lg:w-[572px] lg:max-w-[572px]">
           <h2 className="text-2xl leading-[30px] tracking-[-0.01em]">Preço</h2>
-          <p className="text-gray-400 text-sm">Defina o preço de venda do seu relógio</p>
+          <p className="text-gray-400 text-sm">
+            Defina o preço de venda do seu relógio
+          </p>
 
           <Input
             {...register("price", {
@@ -671,9 +906,12 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                   </span>
                   <span className="text-red-600">
                     {watch("price")
-                      ? `- R$ ${(Number(watch("price")) * 0.095).toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}`
+                      ? `- R$ ${(Number(watch("price")) * 0.095).toLocaleString(
+                          "pt-BR",
+                          {
+                            minimumFractionDigits: 2,
+                          }
+                        )}`
                       : "R$ 0,00"}
                   </span>
                 </div>
@@ -682,9 +920,12 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                     <span className="text-gray-900">Pagamento estimado:</span>
                     <span className="text-[#D5A60A]">
                       {watch("price")
-                        ? `R$ ${(Number(watch("price")) * 0.905).toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}`
+                        ? `R$ ${(Number(watch("price")) * 0.905).toLocaleString(
+                            "pt-BR",
+                            {
+                              minimumFractionDigits: 2,
+                            }
+                          )}`
                         : "R$ 0,00"}
                     </span>
                   </div>
@@ -711,7 +952,8 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
           />
         </div>
         <span className="text-xs font-light whitespace-nowrap">
-          {String(step).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}
+          {String(step).padStart(2, "0")}/
+          {String(steps.length).padStart(2, "0")}
         </span>
       </div>
     );
@@ -732,7 +974,7 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
         <Dialog
           as="div"
           className="relative z-150"
-          onClose={submitting ? () => {} : handleClose}
+          onClose={submitting || imageProcessing ? () => {} : handleClose}
         >
           <DialogBackdrop className="fixed inset-0 bg-black/30 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in" />
 
@@ -745,10 +987,15 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                     <button
                       type="button"
                       onClick={handleClose}
-                      disabled={submitting}
+                      disabled={submitting || imageProcessing}
                       className="absolute right-12 top-8 w-auto bg-transparent"
                     >
-                      <Image src="/icons/close-icon.svg" alt="" width={32} height={32} />
+                      <Image
+                        src="/icons/close-icon.svg"
+                        alt=""
+                        width={32}
+                        height={32}
+                      />
                     </button>
                   </div>
                 </div>
@@ -771,7 +1018,7 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                         type="button"
                         variant="stroke"
                         onClick={prev}
-                        disabled={submitting}
+                        disabled={submitting || imageProcessing}
                         className="w-[220px] h-[56px]"
                       >
                         Voltar
@@ -783,7 +1030,7 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                         type="button"
                         variant="gold"
                         onClick={next}
-                        disabled={submitting}
+                        disabled={submitting || imageProcessing}
                         className="w-[220px] h-[56px]"
                       >
                         Continuar
@@ -793,7 +1040,11 @@ export function SellWatchModal({ isOpen, onClose, onSuccess }: SellWatchModalPro
                         type="button"
                         variant="gold" //@ts-ignore
                         onClick={handleSubmit(onSubmit)}
-                        disabled={submitting || Object.keys(errors).length > 0}
+                        disabled={
+                          submitting ||
+                          imageProcessing ||
+                          Object.keys(errors).length > 0
+                        }
                         className="w-[220px] disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submitting ? "Criando..." : "Criar Anúncio"}

@@ -14,7 +14,8 @@
   h5,
   h6 {
     font-family:
-      var(--font-erstoria), var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+      var(--font-erstoria), var(--font-lato), ui-sans-serif, system-ui,
+      sans-serif;
     color: #141414;
     letter-spacing: -0.01em;
   }
@@ -80,7 +81,11 @@
   }
 
   .hero-fade {
-    background: linear-gradient(0deg, #ffffff 77.15%, rgba(255, 255, 255, 0) 100%);
+    background: linear-gradient(
+      0deg,
+      #ffffff 77.15%,
+      rgba(255, 255, 255, 0) 100%
+    );
   }
 
   .auth-content {
@@ -106,12 +111,6 @@
   --font-weight-normal: 400;
   --font-weight-bold: 700;
   --font-weight-black: 900;
-
-  --number-of-items-per-slide-xs: 1;
-  --number-of-items-per-slide-sm: 3;
-  --number-of-items-per-slide-md: 3;
-  --number-of-items-per-slide-lg: 4;
-  --cut-of-last-item-on-start: 0;
 }
 
 @keyframes fadeIn {
@@ -124,26 +123,25 @@
     transform: translateY(0);
   }
 }
-*/
 
-/* .animate-fadeIn {
-  animation: fadeIn 0.4s ease-out;
-} */
-
-/* Remover bordas/outlines indesejados durante transições */
-* {
-  -webkit-tap-highlight-color: transparent;
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-/* Suavizar todas as transições de layout */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
 }
 
 /* Melhorar performance de animações */
-
 .brand {
   /* Remover outline padrão do foco, mas manter acessibilidade */
   *:focus {
@@ -165,85 +163,6 @@
   /* Reset após hover */
   .group:not(:hover) * {
     will-change: auto;
-  }
-}
-
-/* Banner Slider Dots - Posicionados abaixo do slider */
-.banner-dots {
-  position: relative !important;
-  bottom: auto !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 16px !important;
-  padding: 16px 0 0 0 !important;
-  margin: 0 !important;
-  list-style: none !important;
-  z-index: 10 !important;
-  width: 100% !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.banner-dots li {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 12px !important;
-  height: 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.banner-dots li button {
-  width: 12px !important;
-  height: 12px !important;
-  padding: 0 !important;
-  border: 2px solid #d9d9d9 !important;
-  border-radius: 50% !important;
-  background-color: #d9d9d9 !important;
-  cursor: pointer !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.banner-dots li button:hover {
-  background-color: rgba(213, 166, 10, 0.3) !important;
-  /* border-color: #d5a60a !important; */
-  transform: scale(1.1) !important;
-}
-
-.banner-dots li.slick-active button {
-  background-color: #141414 !important;
-  border-color: #141414 !important;
-  box-shadow: 0 2px 8px rgba(213, 166, 10, 0.25) !important;
-}
-
-.banner-dots li button:before {
-  display: none !important;
-}
-
-/* Responsivo - ajustes para mobile */
-@media (max-width: 768px) {
-  .banner-dots {
-    padding: 12px 0 0 0 !important;
-    gap: 8px !important;
-  }
-
-  .banner-dots li {
-    width: 6px !important;
-    height: 6px !important;
-  }
-
-  .banner-dots li button {
-    width: 6px !important;
-    height: 6px !important;
-    border-width: 1.5px !important;
   }
 }
 
@@ -302,100 +221,35 @@
   background-image: radial-gradient(circle, var(--tw-gradient-stops));
 }
 
-.featured-watches-slider .slick-track {
-  display: flex !important;
-  align-items: center !important;
+/* PhotoSwipe Customização */
+.pswp {
+  --pswp-bg: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
 }
 
-.featured-watches-slider .slick-slide {
-  height: auto !important;
+.pswp__button {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transition: background-color 0.2s ease;
 }
 
-.featured-watches-slider .slick-slide > div {
-  height: 100%;
+.pswp__button:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.pswp__counter {
+  color: #d5a60a !important;
+  font-weight: 500;
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-out;
+.pswp__button--arrow {
+  color: #d5a60a !important;
 }
 
-a.remove-ef {
-  outline: none;
+/* CSS Básico para Embla */
+.embla {
+  overflow: hidden;
 }
 
-a.remove-ef:focus,
-a.remove-ef:active {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.model-card .model-image-container {
-  aspect-ratio: 500 / 610;
-}
-
-.model-card .model-image-container img {
-  transition: transform 0.3s;
-}
-
-/* Correção de acessibilidade para react-slick */
-/* Slides com aria-hidden não devem ter elementos focáveis */
-.slick-slide[aria-hidden="true"] {
-  visibility: hidden;
-}
-
-.slick-slide[aria-hidden="true"] * {
-  visibility: hidden !important;
-}
-
-/* Garante que apenas o slide ativo seja interativo */
-.slick-slide[aria-hidden="true"] a,
-.slick-slide[aria-hidden="true"] button,
-.slick-slide[aria-hidden="true"] input,
-.slick-slide[aria-hidden="true"] [tabindex] {
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-/* Volta ao normal para slides ativos */
-.slick-slide:not([aria-hidden="true"]) {
-  visibility: visible;
-}
-
-.slick-slide:not([aria-hidden="true"]) * {
-  visibility: visible;
-}
-
-/* Scrollbar minimalista e fina para modais */
-.scrollbar-minimal {
-  scrollbar-width: thin;
-  scrollbar-color: #e5e5e5 transparent;
-}
-
-.scrollbar-minimal::-webkit-scrollbar {
-  width: 4px;
-}
-
-.scrollbar-minimal::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-minimal::-webkit-scrollbar-thumb {
-  background-color: #e5e5e5;
-  border-radius: 2px;
-}
-
-.scrollbar-minimal::-webkit-scrollbar-thumb:hover {
-  background-color: #d4d4d4;
+.embla__container {
+  display: flex;
 }

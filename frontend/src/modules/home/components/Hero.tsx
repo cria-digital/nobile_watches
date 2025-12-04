@@ -1,17 +1,21 @@
 "use client";
 
 import { ProductCard } from "@/components/product";
-import { mockProducts } from "@/lib/data/mockProducts";
 
-import { BrandCard } from "@/components/brand/BrandCard";
-import { Brand, mockBrands } from "@/lib/data/mockBrands";
 import { usePersonalizedFeed } from "@/lib/hooks/usePersonalizedFeed";
 import nobileService from "@/lib/services/nobile.service";
 import { Product } from "@/types/product";
+import { EmblaCarouselType } from "embla-carousel";
+import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
-import { useMemo } from "react";
-import Slider from "react-slick";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
+
+import { BrandCard } from "@/components/brand/BrandCard";
+import { mockWatchBrands } from "@/data/mock/brands";
+import { mockProducts } from "@/lib/data/mockProducts";
+import { BrandsSkeleton } from "./BrandsSkeleton";
+import { SuggestionsSkeleton } from "./SuggestionsSkeleton";
 
 const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
@@ -44,85 +48,67 @@ export function Hero() {
     revalidateOnFocus: false,
   });
 
-  const { data: brandsFromAPI, error: brandsError } = useSWR(
-    !useMockData ? "/brands" : null,
-    brandsFetcher,
-    {
-      revalidateOnFocus: false,
-    }
-  );
+  const {
+    data: brandsFromAPI,
+    error: brandsError,
+    isLoading: brandsLoading,
+  } = useSWR(!useMockData ? "/brands" : null, brandsFetcher, {
+    revalidateOnFocus: false,
+  });
 
+  // Hook de feed personalizado
   const {
     products: personalizedProducts,
     isPersonalized,
-    count,
     isLoading: isLoadingPersonalized,
+    isError: personalizedError,
   } = usePersonalizedFeed({ limit: 4 });
 
-  const brands: Brand[] = useMemo(() => {
-    // Modo mock: usa marcas mockadas
-    if (useMockData) {
-      return mockBrands;
-    }
-
-    if (brandsFromAPI && brandsFromAPI.length > 0) {
-      return brandsFromAPI.map((brand: string, i: number) => ({
-        nome: brand,
-        href: `/${brand.toLowerCase().replace(/\s+/g, "-")}`,
-        img: `/images/brand/marca${(i % 10) + 1}.svg`,
-      }));
-    }
-
-    // Em produção sem dados da API: retorna array vazio (não mostra nada)
-    return [];
+  // Decide quais marcas usar (mock vs API)
+  const brands = useMemo(() => {
+    if (useMockData) return mockWatchBrands;
+    return brandsFromAPI || [];
   }, [brandsFromAPI]);
 
-  const bannerSettings = {
-    dots: true,
-    infinite: true,
-    speed: 800,
-    autoplay: true,
-    autoplaySpeed: 5000,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: false,
-    fade: true,
-    cssEase: "cubic-bezier(0.4, 0, 0.2, 1)",
-    dotsClass: "slick-dots banner-dots",
-  } as const;
-
   const initialProducts = [
-    { img: "/images/hero/banner1.svg", nome: "Rolex Deepsea", href: "/rolex/deepsea-12" },
+    {
+      img: "/images/hero/banner1.svg",
+      brand: "Rolex",
+      model: "Rolex Deepsea",
+      href: "/rolex/deepsea-12",
+    },
     {
       img: "/images/hero/banner2.svg",
-      nome: "Rolex Oyster-Perpetual",
+      brand: "Rolex",
+      model: "Oyster Perpetual",
       href: "/rolex/oyster-perpetual-9",
     },
     {
       img: "/images/hero/banner3.svg",
-      nome: "Patek Philippe",
+      brand: "Patek Philippe",
+      model: "Nautilus",
       href: "/patek-philippe/nautilus-14",
     },
     {
       img: "/images/hero/banner4.svg",
-      nome: "Breitling Superocean Heritage",
+      brand: "Breitling",
+      model: "Superocean Heritage",
       href: "/breitling/superocean-heritage-15",
     },
   ];
 
-  const suggestedProducts: Product[] = useMemo(() => {
-    // Modo mock: retorna sempre 4 produtos mockados
+  // Produtos sugeridos com fallback
+  const suggestedProducts = useMemo(() => {
+    let suggested: Product[] = [];
+
     if (useMockData) {
       return [
         mockProducts[0],
-        mockProducts[19],
-        mockProducts[20],
+        mockProducts[16],
+        mockProducts[17],
         mockProducts[14],
       ].filter((p): p is Product => p !== undefined);
     }
-
-    // 🚫 PRODUÇÃO: NUNCA usa dados mock
-    let suggested: Product[] = [];
 
     // 1. Adiciona produtos personalizados (se houver)
     if (personalizedProducts && personalizedProducts.length > 0) {
@@ -131,9 +117,9 @@ export function Hero() {
 
     // 2. Se temos menos de 4, completa com produtos da API
     if (suggested.length < 4 && watches && watches.length > 0) {
-      const usedIds = new Set(suggested.map(p => p.id));
+      const usedIds = new Set(suggested.map((p) => p.id));
       const availableWatches = watches
-        .filter(w => w.images?.length && !usedIds.has(w.id))
+        .filter((w) => w.images?.length && !usedIds.has(w.id))
         .slice(0, 4 - suggested.length);
 
       suggested = [...suggested, ...availableWatches];
@@ -142,102 +128,150 @@ export function Hero() {
     return suggested.slice(0, 4);
   }, [personalizedProducts, watches]);
 
+  const autoplaySpeed = 5000;
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    dragFree: false,
+    containScroll: "keepSnaps",
+  });
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const onSelect = useCallback((emblaApi: EmblaCarouselType) => {
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, []);
+
+  // Efeito para o autoplay
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    emblaApi.on("select", onSelect);
+    emblaApi.off("scroll", onSelect);
+
+    const autoplayInterval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, autoplaySpeed);
+
+    return () => {
+      clearInterval(autoplayInterval);
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect, autoplaySpeed]);
+
+  // Função para navegar para um dot específico
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index);
+    },
+    [emblaApi]
+  );
+
   return (
     <div className="mt-5 sm:mt-12">
-      <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-5 lg:px-8">
         {/* Slider */}
-        <div className="relative">
-          <div className="h-[180px] md:h-[350px] lg:h-[518px] overflow-hidden rounded-[16px] md:rounded-[48px]">
-            <Slider {...bannerSettings}>
-              {initialProducts.map((product, index) => {
-                return (
-                  <div
-                    key={index}
-                    className="h-full relative rounded-[16px] md:rounded-[48px]"
-                  >
-                    <div className="block h-full remove-ef">
+        <div className="relative h-[180px] md:h-[clamp(280px,40vw,350px)] lg:h-[518px] max-h-[518px]">
+          <div className="relative h-[152px] md:h-[clamp(230px,35vw,340px)] lg:h-[482px] max-h-[482px] overflow-hidden">
+            {/* Container do Viewport do Embla */}
+            <div className="embla h-full" ref={emblaRef}>
+              <div className="embla__container flex h-full relative">
+                {initialProducts.map((product, index) => {
+                  const isActive = index === selectedIndex;
+                  return (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 flex items-start transition-opacity duration-800 ease-in-out
+                                  ${isActive ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+                      style={{
+                        minWidth: "100%",
+                        flex: "0 0 100%",
+                      }}
+                    >
+                      {/* <Image
+                        src={product.images?.[0] || "/placeholder-watch.jpg"}
+                        alt={`${product.brand} ${product.model}`}
+                        className="w-full object-cover rounded-[16px] md:rounded-[48px]"
+                        fill
+                        priority={index === 0}
+                        sizes="(max-width: 768px) 100vw, 1280px"
+                      /> */}
                       <Image
                         src={product.img}
-                        alt={product.nome}
-                        className="w-full h-[152px] md:h-full object-cover rounded-[16px] md:rounded-[48px]"
-                        width={1200}
-                        height={518}
-                        priority
+                        alt={`${product.brand} ${product.model}`}
+                        className="w-full object-cover rounded-[16px] lg:rounded-[48px]"
+                        fill
+                        priority={index === 0}
+                        sizes="(max-width: 768px) 100vw, 1280px"
                       />
                     </div>
-                    {/* <button className="hidden absolute bottom-8 left-5 md:bottom-32 md:left-22 bg-white hover:bg-gray-50 font-lato text-[#141414] rounded-full lg:flex items-center justify-center gap-2 text-[12px] lg:text-[16px] font-normal md:font-bold transition-colors w-[128px] h-[32px] md:w-[200px] md:h-[56px]">
-                      Garanta o seu
-                      <svg
-                        className="w-[18px] h-[18px] md:w-[22px] md:h-[22px]"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#D5A60A"
-                        strokeWidth="2"
-                      >
-                        <path d="M7 17L17 7M17 7H7M17 7V17" />
-                      </svg>
-                    </button> */}
-                  </div>
-                );
-              })}
-            </Slider>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Dots de Navegação */}
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center space-x-2 lg:space-x-4 z-20">
+            {initialProducts.map((_, index) => (
+              <button
+                key={index}
+                aria-label={`Ir para o slide ${index + 1}`}
+                onClick={() => scrollTo(index)}
+                className={`w-2 h-2 lg:w-3 lg:h-3  rounded-full transition-all duration-300 ${
+                  index === selectedIndex ? "bg-pb-500" : "bg-[#d9d9d9]"
+                }`}
+              />
+            ))}
           </div>
         </div>
 
         {/* Marcas */}
-        <section aria-label="Marcas de relógios" className="py-6 lg:py-12">
-          <div className="relative">
-            <div className="absolute left-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-r from-[#f7f7f7] to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-l from-[#f7f7f7] to-transparent z-10 pointer-events-none" />
+        {/* Carregando */}
+        {!useMockData && brandsLoading && <BrandsSkeleton />}
 
-            <div
-              className="overflow-x-auto scrollbar-hide"
-              style={{
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-              }}
-            >
-              <div className="h-auto md:h-[116px] flex items-center gap-4 md:gap-6 lg:gap-[30px] px-4 md:px-8 min-w-max">
-                {brands?.map(brand => (
-                  <BrandCard
-                    key={brand.nome}
-                    href={brand.href}
-                    name={brand.nome}
-                    image={brand.img}
-                  />
-                ))}
+        {/*  Sucesso - renderiza normalmente */}
+        {(useMockData ||
+          (!brandsLoading && !brandsError && brands?.length > 0)) && (
+          <section
+            aria-label="Marcas de relógios"
+            className="pt-6 pb-5 lg:pt-12 lg:pb-8"
+          >
+            <div className="relative">
+              <div className="absolute left-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-r from-[#f7f7f7] to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-l from-[#f7f7f7] to-transparent z-10 pointer-events-none" />
+
+              <div
+                className="overflow-x-auto scrollbar-hide"
+                style={{
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                }}
+              >
+                <div className="h-[89px] md:h-[116px] flex items-center gap-1 md:gap-6 lg:gap-[30px] min-w-max">
+                  {brands?.map((brand, index) => (
+                    <BrandCard key={`${brand}-${index}`} name={brand} />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Sugestões */}
-        <section
-          aria-label="Sugestões de relógios"
-          className="mb-8 md:mb-12 mt-[22px] md:mt-0"
-        >
-          <div className="flex items-center justify-between mb-6 md:mb-8">
-            {/* 🆕 Título dinâmico baseado em isPersonalized */}
-            <h2 className="font-erstoria text-2xl md:text-[28px] text-slate-900">
-              {isPersonalized ? "Recomendado para você" : "Sugestões para você"}
+        {/*Sugestões*/}
+        {/* Carregando */}
+        {!useMockData && isLoadingPersonalized && <SuggestionsSkeleton />}
+
+        {/* Sucesso - renderiza normalmente */}
+        {(useMockData ||
+          (!isLoadingPersonalized &&
+            !personalizedError &&
+            suggestedProducts.length > 0)) && (
+          <section aria-label="Sugestões de relógios" className="py-6 lg:py-12">
+            <h2 className="text-2xl lg:text-[28px] mb-6 lg:mb-8">
+              Sugestões para você
             </h2>
-          </div>
 
-          {/* Loading state */}
-          {isLoadingPersonalized && !useMockData && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
-                  <div className="aspect-square bg-gray-200 rounded-lg mb-4" />
-                  <div className="h-4 bg-gray-200 rounded mb-2" />
-                  <div className="h-4 bg-gray-200 rounded w-2/3" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Products grid */}
-          {!isLoadingPersonalized && (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {suggestedProducts.map((product, index) => (
                 <div
@@ -252,8 +286,8 @@ export function Hero() {
                 </div>
               ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
       </div>
     </div>
   );

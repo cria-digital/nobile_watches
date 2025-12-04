@@ -1,19 +1,33 @@
 "use client";
-import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
-import Slider from "react-slick";
 
 const watches = [
-  { name: "Nautilus", price: "R$ 76.094,00", image: "/images/mock/rolex-deepsea2.png" },
-  { name: "Claratrava", price: "R$ 54.094,00", image: "/images/mock/claratrava.png" },
-  { name: "Golden Ellipse", price: "R$ 71.450,00", image: "/images/mock/aquanaut.png" },
+  {
+    name: "Nautilus",
+    price: "R$ 76.094,00",
+    image: "/images/mock/rolex-deepsea2.png",
+  },
+  {
+    name: "Claratrava",
+    price: "R$ 54.094,00",
+    image: "/images/mock/claratrava.png",
+  },
+  {
+    name: "Golden Ellipse",
+    price: "R$ 71.450,00",
+    image: "/images/mock/aquanaut.png",
+  },
   {
     name: "Oyster Perpetual",
     price: "R$ 120.450,00",
     image: "/images/mock/rolex-oyster-perpetual.png",
   },
-  { name: "GMT-Master II", price: "R$ 75.300,00", image: "/images/mock/GMT-Master.png" },
+  {
+    name: "GMT-Master II",
+    price: "R$ 75.300,00",
+    image: "/images/mock/GMT-Master.png",
+  },
 ];
 
 export function FeaturedWatchesDesktop() {
@@ -49,113 +63,6 @@ export function FeaturedWatchesDesktop() {
       <div className="relative max-w-7xl overflow-visible">
         {/* Linha centralizada atrás dos relógios */}
         <div className="absolute top-[45%] -translate-y-1/2 w-full h-[2px] bg-gradient-to-r from-transparent via-white/80 to-transparent z-0" />
-
-        <Slider
-          {...settings}
-          className="custom-slick relative z-10 max-h-[clamp(300px,60vh,600px)]"
-        >
-          {watches.map((watch, index) => {
-            const isCenter = index === activeIndex + 1;
-
-            return (
-              <div
-                key={index}
-                className={`px-6 transition-all duration-700 ease-in-out ${isCenter ? "scale-125 opacity-100" : ""}`}
-              >
-                <motion.div
-                  className={`relative flex items-center justify-center transition-transform duration-500 ${
-                    isCenter ? "opacity-100" : "opacity-80"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <img
-                    src={watch.image}
-                    alt={watch.name}
-                    className="object-contain mx-auto w-full max-w-[clamp(220px,35vw,420px)] aspect-[3/4]"
-                  />
-                </motion.div>
-
-                <div
-                  className={`mt-6 text-center transition-opacity duration-500 h-10 flex flex-col justify-center ${
-                    isCenter ? "opacity-100 animate-fadeIn" : "opacity-0"
-                  }`}
-                >
-                  <h3 className="text-[28px] font-light text-white tracking-[-1%] mb-2 text-nowrap">
-                    {watch.name}
-                  </h3>
-                  <p className="text-[20px] text-white font-light tracking-tight leading-2 text-nowrap">
-                    {watch.price}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </Slider>
-
-        <style jsx global>{`
-          .custom-slick .slick-list {
-            overflow: visible !important;
-          }
-
-          .custom-slick .slick-slide {
-            transition:
-              transform 0.4s ease,
-              opacity 0.4s ease;
-
-            transform: scale(0.7);
-          }
-
-          .custom-slick .slick-center {
-            transform: scale(1);
-            opacity: 1;
-            z-index: 10;
-          }
-
-          .custom-slick .slick-slide img {
-            transition: transform 0.4s ease;
-          }
-
-          .custom-slick .slick-center img {
-            transform: scale(1.05);
-          }
-
-          .custom-slick .slick-dots {
-            position: relative;
-            z-index: 50;
-            bottom: 0px;
-            display: flex !important;
-            justify-content: center;
-            gap: 8px;
-          }
-
-          .custom-slick .slick-dots li {
-            width: 8px !important;
-            height: 8px !important;
-            margin: 0 !important;
-          }
-
-          .custom-slick .slick-dots li button {
-            width: 8px !important;
-            height: 8px !important;
-            padding: 0 !important;
-          }
-
-          .custom-slick .slick-dots li button:before {
-            font-size: 0 !important;
-            width: 8px;
-            height: 8px;
-            content: "";
-            display: block;
-            border-radius: 9999px;
-            background-color: #ffffff;
-            opacity: 0.2;
-            transition: background-color 0.2s ease;
-          }
-
-          .custom-slick .slick-dots li.slick-active button:before {
-            background-color: #ffffff !important;
-          }
-        `}</style>
       </div>
     </section>
   );

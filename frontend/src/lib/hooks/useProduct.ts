@@ -29,12 +29,10 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
   const { data, error, isLoading } = useSWR(
     swrKey,
     async () => {
-      console.log("🔍 Buscando produto da API:", productId);
+      //  console.log("🔍 Buscando produto da API:", productId);
 
       // Busca o produto específico
       const watch = await nobileService.getWatchById(Number(productId));
-      console.log("✅ Produto encontrado:", watch);
-
       // Busca todos os relógios para filtrar produtos relacionados
       const allWatches = await nobileService.getWatches();
 
@@ -42,11 +40,12 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
       const related = allWatches
         .filter(
           (w: any) =>
-            w.id !== watch.id && w.brand?.toLowerCase() === watch.brand?.toLowerCase()
+            w.id !== watch.id &&
+            w.brand?.toLowerCase() === watch.brand?.toLowerCase()
         )
         .slice(0, 4); // Apenas 4 produtos relacionados
 
-      console.log("✅ Produtos relacionados encontrados:", related.length);
+      //  console.log("✅ Produtos relacionados encontrados:", related.length);
 
       return {
         product: watch,
@@ -62,8 +61,7 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
 
   // Fallback para mock data quando API não está disponível
   if (!USE_API) {
-    console.log("📊 Usando dados mock");
-    const mockProduct = mockProducts.find(p => p.id === Number(productId));
+    const mockProduct = mockProducts.find((p) => p.id === Number(productId));
 
     if (!mockProduct) {
       return {
@@ -77,7 +75,7 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
 
     // Busca produtos relacionados (mesma marca)
     const mockRelated = mockProducts
-      .filter(p => p.id !== mockProduct.id && p.brand === mockProduct.brand)
+      .filter((p) => p.id !== mockProduct.id && p.brand === mockProduct.brand)
       .slice(0, 4);
 
     return {

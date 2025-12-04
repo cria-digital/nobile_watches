@@ -1,6 +1,3 @@
-// Exemplo de adaptação do ListingCard para aceitar handlers e loading states
-// Arquivo: frontend/src/components/user/ListingCard.tsx
-
 import { formatCurrency } from "@/lib/utils/format";
 import { stringToSlug } from "@/lib/utils/stringUtils";
 import { Listing } from "@/types/nobile";
@@ -161,6 +158,11 @@ export function ListingCard({
                 alt={`${watch.brand} ${watch.model}`}
                 fill
                 className="object-cover"
+                sizes="
+    (max-width: 640px) 116px,
+    (max-width: 1024px) 116px,
+    116px
+  "
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">

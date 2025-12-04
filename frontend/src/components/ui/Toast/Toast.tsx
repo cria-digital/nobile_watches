@@ -1,6 +1,6 @@
 "use client";
 
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -109,10 +109,14 @@ export function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
           ${styles[type].bg} ${styles[type].border}
         `}
       >
-        <div className={`flex-shrink-0 ${styles[type].icon}`}>{icons[type]}</div>
+        <div className={`flex-shrink-0 ${styles[type].icon}`}>
+          {icons[type]}
+        </div>
 
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium ${styles[type].text}`}>{message}</p>
+          <p className={`text-sm font-medium ${styles[type].text}`}>
+            {message}
+          </p>
         </div>
 
         <button
@@ -120,7 +124,7 @@ export function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
           className={`flex-shrink-0 ${styles[type].icon} hover:opacity-70 transition-opacity`}
           aria-label="Fechar"
         >
-          <XMarkIcon className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 

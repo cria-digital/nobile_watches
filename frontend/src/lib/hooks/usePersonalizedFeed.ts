@@ -1,6 +1,8 @@
 /**
  * Hook para Feed Personalizado de Recomendações
  * Integrado com a nova API de recomendações do backend
+ *
+ * ✅ CORREÇÃO: Agora respeita o modo mock e não faz requisições quando NEXT_PUBLIC_USE_MOCK_DATA=true
  */
 
 import { useAuth } from "@/lib/context/AuthContext";
@@ -27,8 +29,10 @@ interface UsePersonalizedFeedResult {
  * Hook que busca feed personalizado de relógios
  *
  * Comportamento:
- * - Se usuário autenticado: recomendações baseadas na wishlist (isPersonalized: true)
- * - Se não autenticado: relógios de marcas premium (isPersonalized: false)
+ * - **MODO MOCK (NEXT_PUBLIC_USE_MOCK_DATA=true)**: Não faz requisições, retorna array vazio
+ * - **MODO REAL**:
+ *   - Se usuário autenticado: recomendações baseadas na wishlist (isPersonalized: true)
+ *   - Se não autenticado: relógios de marcas premium (isPersonalized: false)
  * - Cache automático com SWR
  * - Atualiza quando usuário faz login/logout
  *
@@ -55,9 +59,17 @@ export function usePersonalizedFeed(
   // Obtém o token do authService
   const token = authService.getToken();
 
+  // 🔒 Verificar se está em modo mock
+  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+
   // Chave única para o cache do SWR
   // Muda quando usuário loga/desloga para forçar atualização
-  const cacheKey = `recommendations-${isAuthenticated ? "auth" : "guest"}-${limit}`;
+  // 🚫 Se estiver em modo mock, a chave é null para não fazer requisições
+  const cacheKey = useMockData
+    ? null
+    : enableCache
+      ? `recommendations-${isAuthenticated ? "auth" : "guest"}-${limit}`
+      : null;
 
   // Fetcher para o SWR
   const fetcher = async () => {
@@ -65,30 +77,26 @@ export function usePersonalizedFeed(
   };
 
   // Usar SWR para cache e revalidação automática
-  const { data, error, isLoading, mutate } = useSWR(
-    enableCache ? cacheKey : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 60000, // Cache por 1 minuto
-      // Revalidar mais frequentemente para usuários não autenticados
-      revalidateIfStale: !isAuthenticated,
-      // Fallback em caso de erro
-      fallbackData: {
-        recommendations: [],
-        isPersonalized: false,
-        count: 0,
-      },
-    }
-  );
+  const { data, error, isLoading, mutate } = useSWR(cacheKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 60000, // Cache por 1 minuto
+    // Revalidar mais frequentemente para usuários não autenticados
+    revalidateIfStale: !isAuthenticated,
+    // Fallback em caso de erro ou modo mock
+    fallbackData: {
+      recommendations: [],
+      isPersonalized: false,
+      count: 0,
+    },
+  });
 
   return {
     products: data?.recommendations || [],
     isPersonalized: data?.isPersonalized || false,
     count: data?.count || 0,
-    isLoading,
-    isError: !!error,
+    isLoading: useMockData ? false : isLoading, // Em modo mock, nunca está carregando
+    isError: useMockData ? false : !!error, // Em modo mock, nunca há erro
     refresh: () => mutate(),
   };
 }
@@ -96,6 +104,8 @@ export function usePersonalizedFeed(
 /**
  * Hook variante que sempre busca dados frescos (sem cache)
  * Útil para componentes que precisam de dados sempre atualizados
+ *
+ * ⚠️ Em modo mock, se comporta igual ao hook principal (não faz requisições)
  *
  * @example
  * ```tsx
@@ -109,6 +119,8 @@ export function usePersonalizedFeedFresh(limit: number = 12): UsePersonalizedFee
 /**
  * Hook para buscar insights das preferências do usuário
  * Requer autenticação
+ *
+ * ⚠️ Em modo mock, retorna null e não faz requisições
  *
  * @example
  * ```tsx
@@ -131,6 +143,9 @@ export function useUserInsights() {
   // Obtém o token do authService
   const token = authService.getToken();
 
+  // 🔒 Verificar se está em modo mock
+  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
+
   const fetcher = async () => {
     if (!token) {
       return { insights: null, message: "Não autenticado" };
@@ -139,7 +154,8 @@ export function useUserInsights() {
   };
 
   const { data, error, isLoading, mutate } = useSWR(
-    isAuthenticated ? "user-insights" : null,
+    // 🚫 Se estiver em modo mock, não faz requisição
+    useMockData ? null : isAuthenticated ? "user-insights" : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -151,8 +167,8 @@ export function useUserInsights() {
   return {
     insights: data?.insights || null,
     message: data?.message || "",
-    isLoading,
-    isError: !!error,
+    isLoading: useMockData ? false : isLoading,
+    isError: useMockData ? false : !!error,
     refresh: () => mutate(),
   };
 }

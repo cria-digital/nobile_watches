@@ -1,14 +1,14 @@
 "use client";
 
 import { Button, Input, Select, Toast } from "@/components/ui";
-import { BRAZIL_STATES, CITIES_BY_STATE } from "@/lib/constants/brazilLocations";
+import { citiesByState, states } from "@/data/locations";
 import { useAuth } from "@/lib/context/AuthContext";
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface RegisterFormProps {
@@ -42,9 +42,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     },
   });
 
-  // Observa os valores dos campos
   const selectedState = watch("state");
-  const availableCities = selectedState ? CITIES_BY_STATE[selectedState] || [] : [];
+
+  // Memoiza as cidades disponíveis para evitar recalcular a cada render
+  const availableCities = useMemo(() => {
+    return selectedState ? citiesByState[selectedState] || [] : [];
+  }, [selectedState]);
 
   const isButtonEnabled = Boolean(isValid && !isLoading);
 
@@ -231,17 +234,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             <option value="Brasil">Brasil</option>
           </Select>
 
-          {/* Estado - Select com array de options */}
+          {/* Estado */}
           <Select
             {...register("state")}
             id="state"
             label="Estado"
             placeholder="Selecione o estado"
-            options={BRAZIL_STATES}
+            options={states}
             error={errors.state?.message}
           />
 
-          {/* Cidade - Select dinâmico */}
+          {/* Cidade */}
           <Select
             {...register("city")}
             id="city"

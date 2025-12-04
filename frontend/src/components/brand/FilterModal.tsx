@@ -6,11 +6,6 @@ import { SearchFilterOptions } from "@/types/nobile";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-/**
- * Mapeamento de marcas disponíveis com logos
- * Key: nome normalizado da marca (lowercase, sem parênteses)
- * Value: caminho do logo
- */
 const BRAND_LOGOS: Record<string, string> = {
   rolex: "/images/brand/marca1.svg",
   "tag heuer": "/images/brand/marca2.svg",
@@ -24,13 +19,9 @@ const BRAND_LOGOS: Record<string, string> = {
   iwc: "/images/brand/marca10.svg",
 };
 
-/**
- * Normaliza o nome da marca para buscar no mapeamento de logos
- * Remove parênteses e conteúdo dentro deles, converte para lowercase
- */
 function normalizeBrandName(brandName: string): string {
   return brandName
-    .replace(/\s*\([^)]*\)/g, "") // Remove (inspired) ou qualquer outro texto entre parênteses
+    .replace(/\s*\([^)]*\)/g, "")
     .toLowerCase()
     .trim();
 }
@@ -43,12 +34,22 @@ function hasLogo(brandName: string): boolean {
   return normalized in BRAND_LOGOS;
 }
 
-/**
- * Obtém o caminho do logo de uma marca
- */
 function getBrandLogo(brandName: string): string | null {
   const normalized = normalizeBrandName(brandName);
   return BRAND_LOGOS[normalized] || null;
+}
+
+function isBrandSelected(brandName: string, selectedBrands: string[]): boolean {
+  const normalized = normalizeBrandName(brandName);
+  return selectedBrands.some(selected => normalizeBrandName(selected) === normalized);
+}
+
+function findBrandInFilters(
+  brandName: string,
+  selectedBrands: string[]
+): string | undefined {
+  const normalized = normalizeBrandName(brandName);
+  return selectedBrands.find(selected => normalizeBrandName(selected) === normalized);
 }
 
 interface FilterModalProps {
@@ -66,10 +67,8 @@ export function FilterModal({
   currentFilters,
   onApplyFilters,
 }: FilterModalProps) {
-  // Estado local dos filtros enquanto modal está aberto
   const [localFilters, setLocalFilters] = useState<AppliedFilters>(currentFilters);
 
-  // Sincronizar quando currentFilters mudam
   useEffect(() => {
     setLocalFilters(currentFilters);
   }, [currentFilters]);
@@ -86,16 +85,10 @@ export function FilterModal({
     };
   }, [isOpen]);
 
-  /**
-   * Separa as marcas vindas da API em duas categorias:
-   * 1. Marcas com logos (principais marcas)
-   * 2. Marcas sem logos (outras marcas)
-   */
   const { mainBrands, otherBrands } = useMemo(() => {
     const brandsWithLogos: Array<{ name: string; logo: string }> = [];
     const brandsWithoutLogos: string[] = [];
 
-    // Ordena alfabeticamente para consistência
     const sortedBrands = [...filterOptions.brands].sort((a, b) =>
       a.localeCompare(b, "pt-BR")
     );
@@ -115,7 +108,6 @@ export function FilterModal({
     };
   }, [filterOptions.brands]);
 
-  // Contar filtros ativos
   const activeFiltersCount = Object.values(localFilters).reduce((count, value) => {
     if (Array.isArray(value)) {
       return count + value.length;
@@ -131,7 +123,6 @@ export function FilterModal({
     return count;
   }, 0);
 
-  // Handlers para atualizações de filtros
   const handleClearFilters = () => {
     const clearedFilters: AppliedFilters = {
       priceRange: { min: 0, max: 1000000 },
@@ -148,7 +139,6 @@ export function FilterModal({
       gender: [],
     };
     setLocalFilters(clearedFilters);
-    // Aplica os filtros limpos imediatamente
     onApplyFilters(clearedFilters);
   };
 
@@ -158,12 +148,23 @@ export function FilterModal({
   };
 
   const toggleBrand = (brand: string) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      brands: prev.brands.includes(brand)
-        ? prev.brands.filter(b => b !== brand)
-        : [...prev.brands, brand],
-    }));
+    setLocalFilters(prev => {
+      const existingBrand = findBrandInFilters(brand, prev.brands);
+
+      if (existingBrand) {
+        return {
+          ...prev,
+          brands: prev.brands.filter(
+            b => normalizeBrandName(b) !== normalizeBrandName(brand)
+          ),
+        };
+      } else {
+        return {
+          ...prev,
+          brands: [...prev.brands, brand],
+        };
+      }
+    });
   };
 
   const toggleModel = (model: string) => {
@@ -242,7 +243,7 @@ export function FilterModal({
         className="absolute inset-0 bg-black/20 transition-opacity"
         onClick={onClose}
       />
-      {/* Modal - largura fixa de 504px */}
+
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative w-full max-w-[504px] bg-white flex flex-col h-9/10 rounded-2xl shadow-2xl overflow-hidden">
           {/* Header fixo */}
@@ -257,29 +258,37 @@ export function FilterModal({
             </button>
           </div>
 
-          {/* Content - Scrollable */}
+          {/* Content */}
           <div className="flex-1 overflow-y-auto px-5 lg:px-8 py-4 lg:py-2 space-y-8">
             {/* Principais Marcas - Apenas se houver marcas com logos */}
             {mainBrands.length > 0 && (
               <div>
                 <h3 className="font-lato text-sm mb-4">Principais marcas</h3>
                 <div className="flex flex-row gap-3 flex-wrap">
-                  {mainBrands.map((brand, index) => (
-                    <button
-                      key={`${brand.name}-${index}`}
-                      className={`flex items-center h-[36px] px-3.5 rounded-sm border transition-all font-lato text-sm ${localFilters.brands.includes(brand.name) ? "border-[#D5A60A] bg-[#FFF9E6] text-[#D5A60A]" : "border-gray-300 text-[#141414] hover:border-gray-400 bg-white"}`}
-                      onClick={() => toggleBrand(brand.name)}
-                    >
-                      <span className="text-[#0F0F0F] text-center leading-[140%] tracking-[-1%] whitespace-nowrap">
-                        {brand.name}
-                      </span>
-                    </button>
-                  ))}
+                  {mainBrands.map((brand, index) => {
+                    const isSelected = isBrandSelected(brand.name, localFilters.brands);
+
+                    return (
+                      <button
+                        key={`${brand.name}-${index}`}
+                        className={`flex items-center h-[36px] px-3.5 rounded-sm border transition-all font-lato text-sm ${
+                          isSelected
+                            ? "border-[#D5A60A] bg-[#FFF9E6] text-[#D5A60A]"
+                            : "border-gray-300 text-[#141414] hover:border-gray-400 bg-white"
+                        }`}
+                        onClick={() => toggleBrand(brand.name)}
+                      >
+                        <span className="text-[#0F0F0F] text-center leading-[140%] tracking-[-1%] whitespace-nowrap">
+                          {brand.name}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Outras Marcas - Apenas se houver marcas sem logos */}
+            {/* Outras Marcas */}
             {otherBrands.length > 0 && (
               <div>
                 <h3 className="font-lato text-sm mb-4">

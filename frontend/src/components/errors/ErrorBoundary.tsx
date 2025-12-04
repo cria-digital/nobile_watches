@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
+import { Button } from "../ui";
 
 interface Props {
   children: ReactNode;
@@ -9,7 +10,7 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null; // Mudei de optional para nullable
+  error: Error | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -29,7 +30,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Você pode logar o erro para um serviço de monitoramento
     console.error("ErrorBoundary caught an error:", error, errorInfo);
 
     // Exemplo: integração com Sentry
@@ -62,19 +62,18 @@ export class ErrorBoundary extends Component<Props, State> {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Algo deu errado</h1>
-            <p className="text-gray-600 mb-6">
-              Desculpe, ocorreu um erro inesperado. Nossa equipe foi notificada.
-            </p>
-            <button
+            <h1 className="font-lato text-2xl mb-2">Algo deu errado</h1>
+            <p className="text-gray-600 mb-6">Desculpe, ocorreu um erro inesperado.</p>
+            <Button
+              variant="gold"
               onClick={() => {
                 this.setState({ hasError: false, error: null });
                 window.location.reload();
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              // className=''
             >
               Tentar novamente
-            </button>
+            </Button>
           </div>
         </div>
       );

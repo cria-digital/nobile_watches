@@ -3,6 +3,21 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
+const fadeSection = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+  },
+};
+
+const bgFadeScale = {
+  hidden: { opacity: 0, scale: 1.03 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+  },
+};
+
 const protectionFeatures = [
   {
     icon: "/icons/shipping-box.svg",
@@ -24,32 +39,55 @@ const protectionFeatures = [
 
 export function BuyerProtection() {
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 lg:px-8 pt-6 pb-10 lg:pt-[140px] lg:pb-[160px]">
-      <div className="max-w-full mx-auto px-5 lg:pr-18 lg:flex lg:items-center lg:justify-between relative">
-        <div
-          aria-hidden="true"
-          className="absolute right-0 top-1/2 -translate-y-1/2 w-[81.57%] h-[620px] bg-gradient-to-b from-[#141414] to-[#000000] rounded-[198px_48px_48px_198px] isolate -z-10 hidden md:block"
-        />
-
-        <div
-          aria-hidden="true"
-          className="absolute bottom-0 left-0 w-full h-[367px] bg-gradient-to-b from-[#141414] to-[#000000] rounded-[164px_164px_8px_8px] -z-10 lg:hidden"
-        />
-
+    <motion.section
+      variants={fadeSection}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      transition={{
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      className="mx-auto w-full max-w-7xl px-5 py-8 lg:px-8 lg:py-26"
+    >
+      <div className="relative w-full max-h-[660px] overflow-hidden">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="mt-10 lg:mt-0 lg:order-1 z-10"
+          variants={bgFadeScale}
+          initial="hidden"
+          whileInView="visible"
+          transition={{
+            duration: 0.9,
+            ease: [0.16, 1, 0.3, 1],
+          }}
         >
           <Image
-            src="/images/hero/hero-rolex-box.png"
+            src="/images/hero/watch-box-bg-desktop.png"
             alt="Luxury watch with protective box illustration"
-            width={500}
-            height={500}
-            className="mx-auto w-[260px] lg:w-[500px] h-auto"
+            width={1200}
+            height={660}
             priority
+            // AQUI: Adicione as classes w-full e h-auto para garantir que a altura seja automática
+            // quando a imagem se ajustar à largura total.
+            className="hidden lg:block w-full h-auto"
+          />
+        </motion.div>
+
+        <motion.div
+          variants={bgFadeScale}
+          initial="hidden"
+          whileInView="visible"
+          transition={{
+            duration: 0.9,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
+          <Image
+            src="/images/hero/watch-box-bg-mobile.png"
+            alt="Luxury watch with protective box illustration"
+            width={387}
+            height={522}
+            priority
+            className="block lg:hidden"
           />
         </motion.div>
 
@@ -58,18 +96,18 @@ export function BuyerProtection() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
           viewport={{ once: true }}
-          className="lg:max-w-md z-10 lg:order-2 pb-7 lg:pb-0"
+          className="lg:w-md max-w-lg px-6 lg:px-0 absolute z-100 bottom-7 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2"
         >
-          <p className="font-erstoria text-[#D5A60A] mt-4 mb-1 text-sm leading-relaxed">
+          <p className="font-erstoria text-[#D5A60A] mb-1 text-sm leading-relaxed">
             Seguro do comprador
           </p>
 
-          <h2 className="text-white text-[28px] leading-tight lg:text-[50px] lg:leading-[56px]">
+          <h2 className="text-white text-[24px] lg:text-[42px] xl:text-[52px] leading-tight lg:leading-[42px] xl:leading-[56px] tracking-normal">
             Proteção completa em cada etapa da sua compra
           </h2>
 
-          <div className="grid grid-cols-[auto_1fr] lg:grid-cols-2 gap-4 lg:gap-x-6 lg:gap-y-6 mt-[22px] lg:max-w-sm">
-            {protectionFeatures.map(item => (
+          <div className="grid grid-cols-[auto_1fr] lg:grid-cols-2 gap-4 lg:gap-x-6 lg:gap-y-6 mt-[18px] lg:mt-[20px] lg:max-w-sm">
+            {protectionFeatures.map((item) => (
               <motion.div
                 key={item.title}
                 initial={{ opacity: 0, y: 12 }}
@@ -91,7 +129,7 @@ export function BuyerProtection() {
   "
                 />
 
-                <p className="text-xs lg:text-base text-white font-light leading-[124%] text-nowrap">
+                <p className="text-xs lg:text-base text-white font-light leading-[124%] tracking-normal text-nowrap">
                   {item.title}
                 </p>
               </motion.div>
@@ -99,6 +137,6 @@ export function BuyerProtection() {
           </div>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 }

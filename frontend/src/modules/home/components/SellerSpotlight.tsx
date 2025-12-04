@@ -46,10 +46,10 @@ export function SellerSpotlight() {
   return (
     <section
       aria-label="Featured Sellers"
-      className="mx-auto w-full max-w-7xl px-5 lg:px-8 py-12 lg:py-[150px]"
+      className="mx-auto w-full max-w-7xl px-5 py-8 lg:px-8 lg:py-16"
     >
       <motion.h2
-        className="font-erstoria text-[28px] md:text-[48px] text-[#141414] mb-5 md:mb-8"
+        className="text-2xl lg:text-[32px] mb-5 md:mb-8"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: "easeOut" }}

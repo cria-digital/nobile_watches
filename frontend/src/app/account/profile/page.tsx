@@ -1,10 +1,11 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs, Button, VerifiedBadge } from "@/components/ui";
+import { Breadcrumbs, Button, ErrorState, VerifiedBadge } from "@/components/ui";
 import { UserNav } from "@/components/user/UserNav";
 import { VerificationModal } from "@/components/verification/VerificationModal";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { getInitials } from "@/lib/utils/stringUtils";
 import { Edit2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,7 +24,6 @@ export default function Profile() {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   const handleVerificationSubmitted = () => {
-    // Recarrega os dados do perfil e o status de verificação
     refetch();
     refetchVerificationStatus();
   };
@@ -54,19 +54,7 @@ export default function Profile() {
   }
 
   if (error || !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Erro ao carregar dados do perfil</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      </div>
-    );
+    return <ErrorState title="Erro ao carregar dados do perfil" />;
   }
 
   const { user, activity, paymentMethods, billingAddresses } = data;
@@ -76,7 +64,7 @@ export default function Profile() {
       <MobileBackHeader title="Perfil" />
 
       {/* Desktop */}
-      <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto px-8">
+      <div className="hidden lg:flex items-center justify-between flex-wrap max-w-7xl mx-auto px-8.5">
         <div>
           <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Meu perfil" }]} />
           <h1 className="text-[32px] leading-[100%]">Meu perfil</h1>
@@ -89,10 +77,10 @@ export default function Profile() {
         <div className="grid grid-cols-6 gap-6 mt-8 mb-6">
           {/* Card de perfil principal - Desktop */}
           <div className="relative col-span-4 bg-[#F7F7F7] rounded-[12px] py-6 px-8">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-7">
                 {/* Avatar */}
-                <div className="relative w-[118px] h-[118px] rounded-full overflow-hidden bg-gray-200">
+                <div className="relative w-[118px] h-[118px] rounded-full overflow-hidden bg-gray-300 shrink-0">
                   {user.avatar ? (
                     <Image
                       src={user.avatar}
@@ -102,18 +90,19 @@ export default function Profile() {
                       sizes="118px"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gold-500 text-white text-5xl font-medium">
-                      {user.name.charAt(0).toUpperCase()}
+                    <div className="w-full h-full flex items-center justify-center bg-gold-500 text-white text-4xl font-medium">
+                      {getInitials(user?.name)}
                     </div>
                   )}
                 </div>
 
-                {/* Nome e status */}
-                <h2 className="font-lato text-2xl font-normal">
+                {/* Nome */}
+                <h2 className="font-lato text-2xl font-normal leading-snug max-w-[400px] line-clamp-2">
                   Olá, <span className="font-semibold">{user.name}!</span>
                 </h2>
               </div>
 
+              {/* Status */}
               {user.isVerified ? (
                 <VerifiedBadge role={user.role} />
               ) : (
@@ -365,7 +354,7 @@ export default function Profile() {
         <div className="flex flex-col items-center pt-[30px] pb-6 px-5">
           {/* Avatar com botão de edição */}
           <div className="relative mb-4">
-            <div className="relative w-[126px] h-[126px] rounded-full overflow-hidden bg-gray-200">
+            <div className="relative w-[126px] h-[126px] rounded-full overflow-hidden bg-gray-300">
               {user.avatar ? (
                 <Image
                   src={user.avatar}
@@ -376,7 +365,7 @@ export default function Profile() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gold-500 text-white text-4xl font-medium">
-                  {user.name.charAt(0).toUpperCase()}
+                  {getInitials(user?.name)}
                 </div>
               )}
             </div>

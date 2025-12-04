@@ -36,7 +36,7 @@ export function VerifiedBadge({ className, role = "SELLER" }: VerifiedBadgeProps
         style={{ width: 16, height: 16 }}
       />
 
-      <p className="text-sm leading-5">
+      <p className="text-sm leading-5 whitespace-nowrap">
         {/* Mobile */}
         <span className="lg:hidden">Verificado</span>
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button, Input, Toast } from "@/components/ui";
-
 import { useAuth } from "@/lib/context/AuthContext";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +21,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const searchParams = useSearchParams();
   const { login, mockLogin, isLoading } = useAuth();
 
-  // ✅ Estado para controlar o feedback de sucesso
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const {
@@ -44,15 +42,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      // ✅ MOCK: Mostra feedback e redireciona após delay
       if (useMockData) {
-        // Primeiro mostra o toast de sucesso
         setShowSuccessToast(true);
-
-        // Chama mockLogin para setar o usuário
         mockLogin();
 
-        // Aguarda 1.5s mostrando o feedback antes de redirecionar
         setTimeout(() => {
           const redirect = searchParams.get("redirect") || "/";
           router.push(redirect);
@@ -62,13 +55,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         return;
       }
 
-      // ✅ LOGIN REAL: Aguarda resposta da API
       await login(data.email, data.password);
 
-      // Mostra feedback de sucesso
       setShowSuccessToast(true);
 
-      // Aguarda 1.5s mostrando o feedback antes de redirecionar
       setTimeout(() => {
         const redirect = searchParams.get("redirect") || "/";
         router.push(redirect);
@@ -77,14 +67,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       }, 1500);
     } catch (error: any) {
       setError("root", {
-        message: error.message || "E-mail ou senha incorretos. Tente novamente.",
+        message:
+          error.message || "E-mail ou senha incorretos. Tente novamente.",
       });
     }
   };
 
   return (
     <>
-      {/* ✅ Toast de sucesso */}
       {showSuccessToast && (
         <Toast
           message="Login realizado com sucesso!"
@@ -98,8 +88,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         <div className="flex flex-col gap-3 mb-6">
           <h1 className="text-[28px]">Acesse sua conta</h1>
           <p className="text-gray-400 text-sm leading-[148%]">
-            Descubra as marcas mais exclusivas, negocie com segurança e acompanhe a
-            valorização das suas peças.
+            Descubra as marcas mais exclusivas, negocie com segurança e
+            acompanhe a valorização das suas peças.
           </p>
         </div>
 
@@ -111,7 +101,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-offset-2"
               aria-label="Entrar com Google"
             >
-              <Image src="/icons/google.svg" alt="Google" width={40} height={40} />
+              <Image
+                src="/icons/google.svg"
+                alt="Google"
+                width={40}
+                height={40}
+              />
             </button>
 
             <button
@@ -119,7 +114,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-offset-2"
               aria-label="Entrar com Apple"
             >
-              <Image src="/icons/apple.svg" alt="Apple" width={40} height={40} />
+              <Image
+                src="/icons/apple.svg"
+                alt="Apple"
+                width={40}
+                height={40}
+              />
             </button>
           </div>
         </div>
@@ -134,7 +134,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" autoComplete="on">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-5"
+          autoComplete="on"
+        >
           {/* Email */}
           <Input
             {...register("email")}

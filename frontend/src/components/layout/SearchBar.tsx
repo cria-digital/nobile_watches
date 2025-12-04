@@ -3,7 +3,7 @@
 import { useSearch } from "@/lib/hooks/useSearch";
 import { findBrandSlug } from "@/lib/utils/stringUtils";
 import { Product } from "@/types/product";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,10 @@ export function SearchBar({
   // Fechar sugestões ao clicar fora
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     }
@@ -114,18 +117,19 @@ export function SearchBar({
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-[14px] flex items-center pointer-events-none">
-            <MagnifyingGlassIcon
+            <Search
               className="h-[21px] w-[21px] text-[#141414]"
               aria-hidden="true"
             />
           </div>
 
           <input
-            type="text"
+            type="search"
             className="block w-full pl-[48px] pr-10 py-3 border border-[#EFEFEF] rounded-xl leading-5 bg-[#f7f7f7] placeholder-gray-400 placeholder:font-bold focus:outline-none focus:placeholder-gray-400 focus:border-[#D9D9D9] font-lato font-medium text-sm transition-colors"
             placeholder={placeholder}
             value={query}
             onChange={handleInputChange}
+            maxLength={225}
             aria-label="Pesquisar relógios"
             aria-autocomplete="list"
             aria-controls="search-suggestions"
@@ -139,7 +143,7 @@ export function SearchBar({
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Limpar busca"
             >
-              <XMarkIcon className="h-5 w-5" />
+              <X className="h-5 w-5" />
             </button>
           )}
         </div>
@@ -158,7 +162,7 @@ export function SearchBar({
             </div>
           ) : results.length > 0 ? (
             <ul className="max-h-[400px] overflow-y-auto">
-              {results.map(product => (
+              {results.map((product) => (
                 <li key={product.id} role="option">
                   <button
                     type="button"
@@ -216,7 +220,9 @@ export function SearchBar({
             </ul>
           ) : (
             <div className="p-4 text-center">
-              <p className="text-sm text-gray-500 mb-1">Nenhum resultado encontrado</p>
+              <p className="text-sm text-gray-500 mb-1">
+                Nenhum resultado encontrado
+              </p>
               <p className="text-xs text-gray-400">
                 Tente buscar por marca, modelo ou referência
               </p>

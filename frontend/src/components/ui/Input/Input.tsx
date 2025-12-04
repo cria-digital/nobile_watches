@@ -1,4 +1,4 @@
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useState } from "react";
 import { Icon } from "../Icon";
 
@@ -68,9 +68,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               className="absolute inset-y-0 right-0 flex items-center pr-3"
             >
               {showPassword ? (
-                <EyeSlashIcon className="h-6 w-6 text-pb-500" />
+                <EyeOff
+                  className="h-6 w-6 text-pb-500"
+                  color="#141414"
+                  strokeWidth={1.5}
+                />
               ) : (
-                <EyeIcon className="h-6 w-6 text-pb-500" />
+                <Eye className="h-6 w-6" color="#141414" strokeWidth={1.5} />
               )}
             </button>
           )}

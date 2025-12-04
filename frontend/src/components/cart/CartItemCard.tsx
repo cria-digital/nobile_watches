@@ -65,6 +65,11 @@ export function CartItemCard({ item, onRemove, onCheckout }: CartItemCardProps) 
             alt={`${item.watch.brand} ${item.watch.model}`}
             fill
             className="object-cover"
+            sizes="
+    (max-width: 640px) 116px,
+    (max-width: 1024px) 116px,
+    116px
+  "
           />
         </div>
 

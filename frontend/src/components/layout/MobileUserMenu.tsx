@@ -19,10 +19,14 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
   const { isAuthenticated, mockLogout, logout } = useAuth();
 
   const gerenciamentoItems = USER_MENU_ITEMS.filter(
-    item => item.section === "gerenciamento"
+    (item) => item.section === "gerenciamento"
   );
-  const meusDadosItems = USER_MENU_ITEMS.filter(item => item.section === "meusDados");
-  const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
+  const meusDadosItems = USER_MENU_ITEMS.filter(
+    (item) => item.section === "meusDados"
+  );
+  const opcoesItems = USER_MENU_ITEMS.filter(
+    (item) => item.section === "opcoes"
+  );
 
   const handleClick = (e: React.MouseEvent) => {
     onClose();
@@ -79,7 +83,13 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
         {/* Header do menu */}
         <div className="flex h-16 items-center justify-between px-5">
           <Link href="/" onClick={onClose}>
-            <Image src="/logo.svg" alt="Nobile" width={91} height={24} priority />
+            <Image
+              src="/logo.svg"
+              alt="Nobile"
+              width={91}
+              height={24}
+              priority
+            />
           </Link>
 
           <button
@@ -87,12 +97,17 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
             className="w-auto h-auto flex items-center justify-center rounded-lg hover:bg-gray-50 transition-colors"
             aria-label="Fechar menu"
           >
-            <Image src="/icons/close-icon.svg" alt="Fechar" width={32} height={32} />
+            <Image
+              src="/icons/close-icon.svg"
+              alt="Fechar"
+              width={32}
+              height={32}
+            />
           </button>
         </div>
 
         {/* Search Bar */}
-        <div className="px-5 py-4">
+        <div className="px-5 pb-4">
           <SearchBar />
         </div>
 
@@ -105,14 +120,19 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                 Gerenciamento
               </h3>
               <div className="grid grid-cols-3 gap-2 min-w-0">
-                {gerenciamentoItems.map(item => (
+                {gerenciamentoItems.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={onClose}
                     className="flex flex-col items-center justify-center gap-2 sm:gap-2.5 p-3 sm:p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors min-w-0"
                   >
-                    <Image src={item.icon} alt={item.label} width={24} height={24} />
+                    <Image
+                      src={item.icon}
+                      alt={item.label}
+                      width={24}
+                      height={24}
+                    />
                     <span className="font-lato text-xs font-medium text-[#141414] text-center leading-[148%] line-clamp-2">
                       {item.label}
                     </span>
@@ -127,14 +147,19 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                 Meus dados
               </h3>
               <div className="grid grid-cols-3 gap-2 min-w-0">
-                {meusDadosItems.map(item => (
+                {meusDadosItems.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={onClose}
                     className="flex flex-col items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors min-w-0"
                   >
-                    <Image src={item.icon} alt={item.label} width={24} height={24} />
+                    <Image
+                      src={item.icon}
+                      alt={item.label}
+                      width={24}
+                      height={24}
+                    />
                     <span className="font-lato text-xs font-medium text-[#141414] text-center leading-[148%] line-clamp-2">
                       {item.label}
                     </span>
@@ -149,14 +174,19 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                 Opções
               </h3>
               <div className="grid grid-cols-3 gap-2 sm:gap-3 min-w-0">
-                {opcoesItems.map(item => (
+                {opcoesItems.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
                     onClick={handleClick}
                     className="flex flex-col items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors min-w-0"
                   >
-                    <Image src={item.icon} alt={item.label} width={24} height={24} />
+                    <Image
+                      src={item.icon}
+                      alt={item.label}
+                      width={24}
+                      height={24}
+                    />
                     <span className="font-lato text-xs font-medium text-red-600 text-center line-clamp-2">
                       {item.label}
                     </span>

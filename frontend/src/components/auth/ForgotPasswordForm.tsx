@@ -4,18 +4,25 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
 } from "@/lib/validations/auth";
-import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Input } from "../ui";
 import { Button } from "../ui/Button";
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [verificationCode, setVerificationCode] = useState(["", "", "", "", "", ""]);
+  const [verificationCode, setVerificationCode] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
   const router = useRouter();
 
   const {
@@ -36,7 +43,7 @@ export function ForgotPasswordForm() {
     setIsLoading(true);
     try {
       console.log("Forgot password data:", data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsSubmitted(true);
     } catch (error) {
       setError("root", {
@@ -83,8 +90,10 @@ export function ForgotPasswordForm() {
           </h1>
           <p className="font-lato text-sm text-gray-400 leading-[148%]">
             Enviamos um código de 6 dígitos para o e-mail{" "}
-            <span className="font-medium text-[#141414]">{getValues("email")}</span>.
-            Insira-o abaixo para continuar.
+            <span className="font-medium text-[#141414]">
+              {getValues("email")}
+            </span>
+            . Insira-o abaixo para continuar.
           </p>
         </div>
 
@@ -98,8 +107,8 @@ export function ForgotPasswordForm() {
                   type="text"
                   maxLength={1}
                   value={verificationCode[index]}
-                  onChange={e => handleCodeChange(index, e.target.value)}
-                  onKeyDown={e => handleCodeKeyDown(index, e)}
+                  onChange={(e) => handleCodeChange(index, e.target.value)}
+                  onKeyDown={(e) => handleCodeKeyDown(index, e)}
                   className="w-12 h-12 text-center text-lg font-medium border border-[#D9D9D9] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D5A60A] focus:border-[#D5A60A] transition-colors bg-white"
                 />
               ))}
@@ -137,40 +146,25 @@ export function ForgotPasswordForm() {
           Esqueceu sua senha?
         </h1>
         <p className="font-lato text-sm text-gray-400 leading-[148%]">
-          Informe o e-mail associado à sua conta. Enviaremos um código de verificação para
-          que você possa redefinir sua senha.
+          Informe o e-mail associado à sua conta. Enviaremos um código de
+          verificação para que você possa redefinir sua senha.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
         <div className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-normal text-[#141414] mb-2.5"
-            >
-              E-mail
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <EnvelopeIcon className="h-5 w-5 text-[#141414]" />
-              </div>
-              <input
-                {...register("email")}
-                type="email"
-                id="email"
-                placeholder="Digite seu e-mail..."
-                className={`w-full h-[48px] pl-12 pr-4 py-3 border rounded-xl focus:outline-none transition-colors ${
-                  errors.email
-                    ? "border-[#E81F33] text-[#E81F33] placeholder:text-[#E81F33]"
-                    : "border-[#D9D9D9] focus:border-[#D5A60A] focus:ring-1 focus:ring-[#D5A60A]"
-                }`}
-              />
-            </div>
-            {errors.email && (
-              <p className="mt-2 text-sm text-[#E81F33]">{errors.email.message}</p>
-            )}
-          </div>
+          <Input
+            {...register("email")}
+            id="email"
+            label="E-mail"
+            type="email"
+            placeholder="Digite seu e-mail..."
+            icon="/icons/envelope-outline.svg"
+            iconAlt="Envelope"
+            autoComplete="email"
+            inputMode="email"
+            error={errors.email?.message}
+          />
 
           {errors.root && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl">

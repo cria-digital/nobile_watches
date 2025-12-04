@@ -1,7 +1,3 @@
-/**
- * Hook que integra filtragem com API/Mock
- */
-
 import { filterProducts } from "@/lib/utils/filterUtils";
 import { AppliedFilters } from "@/types/filters";
 import { Product } from "@/types/product";
@@ -33,11 +29,18 @@ export function useFilteredProducts({
 }: UseFilteredProductsProps): UseFilteredProductsResult {
   const { products, isLoading, isError } = useBrandProducts(brandName);
 
-  // Usar useMemo ao invés de useEffect + useState para evitar loops infinitos
-  // e melhorar performance
+  const isAllProducts = brandName.toLowerCase() === "all";
+
   const filteredProducts = useMemo(() => {
-    return filterProducts(products, filters, sortBy);
-  }, [products, filters, sortBy]);
+    const adjustedFilters: AppliedFilters = isAllProducts
+      ? filters // Na página "all", mantém todos os filtros incluindo brands
+      : {
+          ...filters,
+          brands: [], // Remove filtro de brands pois já está aplicado pelo useBrandProducts
+        };
+
+    return filterProducts(products, adjustedFilters, sortBy);
+  }, [products, filters, sortBy, isAllProducts]);
 
   return {
     filteredProducts,

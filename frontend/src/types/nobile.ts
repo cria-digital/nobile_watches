@@ -17,6 +17,28 @@ export interface User {
   updatedAt: string;
 }
 
+interface Seller {
+  id: number;
+  name: string;
+  email: string;
+  isVerified: boolean;
+  city?: string;
+  state?: string;
+  country?: string;
+  phone?: string;
+}
+
+interface WatchListing {
+  id: number;
+  status: "ACTIVE" | "DRAFT" | "PAUSED" | "SOLD" | "CANCELLED";
+  titleSuffix?: string;
+  shippingInfo?: string;
+  returnPolicy?: string;
+  deliveryTime?: string;
+  negotiable: boolean;
+  publishedAt?: string;
+}
+
 export interface Watch {
   id: number;
   brand: string;
@@ -40,11 +62,9 @@ export interface Watch {
   braceletColor?: string;
   claspType?: string;
   gender?: string;
-  seller?: {
-    id: number;
-    name: string;
-    email: string;
-  };
+
+  seller: Seller;
+  listings?: WatchListing[];
 }
 
 export interface Order {
@@ -131,13 +151,11 @@ export enum ListingStatus {
   SOLD = "SOLD", // Vendido
 }
 
-/**
- * Interface principal de um anúncio
- */
 export interface Listing {
   id: number;
   watchId: number;
   status: ListingStatus;
+  titleSuffix?: string;
   shippingInfo?: string;
   returnPolicy?: string;
   deliveryTime?: string;
@@ -160,13 +178,15 @@ export interface CreateListingRequest {
   returnPolicy?: string;
   deliveryTime?: string;
   negotiable?: boolean;
-  publishNow: boolean; // Se true, publica imediatamente; se false, cria como rascunho
+  titleSuffix?: string;
+  publishNow: boolean;
 }
 
 /**
  * Request para atualizar anúncio
  */
 export interface UpdateListingRequest {
+  titleSuffix?: string;
   shippingInfo?: string;
   returnPolicy?: string;
   deliveryTime?: string;

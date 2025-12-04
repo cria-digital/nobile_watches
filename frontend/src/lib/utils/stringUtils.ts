@@ -58,7 +58,7 @@ export const slugToTitle = (slug: string): string => {
 
   return slug
     .split("-")
-    .map(word => {
+    .map((word) => {
       // Preserva parênteses como estão, sem capitalizar
       if (word.startsWith("(") && word.endsWith(")")) {
         return word;
@@ -105,7 +105,10 @@ export const normalizeForComparison = (str: string): string => {
  * areStringsEquivalentFuzzy("Rolex", "patek-philippe")
  * // Returns: false
  */
-export const areStringsEquivalentFuzzy = (str1: string, str2: string): boolean => {
+export const areStringsEquivalentFuzzy = (
+  str1: string,
+  str2: string
+): boolean => {
   return normalizeForComparison(str1) === normalizeForComparison(str2);
 };
 
@@ -147,4 +150,28 @@ export const findBrandSlug = (query: string): string | null => {
 
 export function pluralize(count: number, singular: string, plural: string) {
   return count === 1 ? singular : plural;
+}
+
+export function getInitials(name?: string | null): string {
+  if (!name || typeof name !== "string") return "";
+
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length === 0) return "";
+
+  if (parts.length === 1) {
+    const firstChar = (parts[0] ?? "").charAt(0);
+    return firstChar ? firstChar.toUpperCase() : "";
+  }
+
+  const first = (parts[0] ?? "").charAt(0);
+  const last = (parts[parts.length - 1] ?? "").charAt(0);
+
+  return (first + last).toUpperCase();
+}
+
+export function safeString(value?: string | null): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }

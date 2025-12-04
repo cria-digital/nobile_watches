@@ -4,7 +4,7 @@ export type GenderOption = {
 };
 
 export const genderOptions: GenderOption[] = [
-  // { value: "", label: "Selecione..." },
+  { value: "", label: "Selecione..." },
   { value: "Mulher", label: "Mulher" },
   { value: "Homem", label: "Homem" },
   { value: "Unissex", label: "Unissex" },

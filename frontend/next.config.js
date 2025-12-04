@@ -16,6 +16,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "https",
         hostname: "images.unsplash.com", // Imagens placeholder durante desenvolvimento
       },
       {
@@ -27,7 +31,7 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
 
-    qualities: [75, 85, 90, 100],
+   qualities: [75, 85, 90, 95, 100],
   },
 
   // Otimizações

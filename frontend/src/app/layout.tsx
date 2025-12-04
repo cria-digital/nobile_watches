@@ -6,8 +6,6 @@ import type { ReactNode } from "react";
 
 import { AuthProvider } from "@/lib/context/AuthContext";
 import "@/styles/globals.css";
-import "slick-carousel/slick/slick-theme.css";
-import "slick-carousel/slick/slick.css";
 
 export const metadata: Metadata = siteMetadata;
 
@@ -22,8 +20,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <ErrorBoundary>
           <AuthProvider>{children}</AuthProvider>
         </ErrorBoundary>
-
-        {/* Portais para componentes que renderizam fora da hierarquia */}
       </body>
     </html>
   );

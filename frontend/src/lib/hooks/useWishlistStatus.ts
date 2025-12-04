@@ -25,11 +25,6 @@ const checkWishlistStatus = async (url: string): Promise<boolean> => {
 /**
  * Hook customizado para gerenciar o status da wishlist usando SWR
  *
- * Benefícios do SWR:
- * - Deduplicação automática de requisições
- * - Cache integrado
- * - Revalidação inteligente
- * - Evita race conditions
  *
  * @param watchId - ID do relógio
  * @returns Status da wishlist e função de mutação
@@ -38,7 +33,8 @@ export function useWishlistStatus(watchId: string | number) {
   const { isAuthenticated } = useAuth();
 
   // Construir chave do SWR - só faz requisição se estiver autenticado e não estiver em modo mock
-  const swrKey = isAuthenticated && !USE_MOCK_DATA ? `/wishlist/check/${watchId}` : null;
+  const swrKey =
+    isAuthenticated && !USE_MOCK_DATA ? `/wishlist/check/${watchId}` : null;
 
   const {
     data: isFavorited,

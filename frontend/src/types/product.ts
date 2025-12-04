@@ -1,3 +1,14 @@
+interface WatchListing {
+  id: number;
+  status: "ACTIVE" | "DRAFT" | "PAUSED" | "SOLD" | "CANCELLED";
+  titleSuffix?: string;
+  shippingInfo?: string;
+  returnPolicy?: string;
+  deliveryTime?: string;
+  negotiable: boolean;
+  publishedAt?: string;
+}
+
 export interface Product {
   id: number;
   brand: string;
@@ -8,7 +19,6 @@ export interface Product {
   condition: string;
   price: number;
   description?: string;
-  customTitleSuffix?: string;
   images: string[];
   sellerId: number;
   createdAt: string;
@@ -27,6 +37,7 @@ export interface Product {
     name: string;
     email: string;
   };
+  listings?: WatchListing[];
 
   //não existem no back
 

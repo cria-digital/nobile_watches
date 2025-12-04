@@ -153,9 +153,9 @@ export function VendedorHero() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="lg:overflow-hidden">
+      <section className="bg-white lg:overflow-hidden">
         {/* Layout Mobile */}
-        <div className="lg:hidden h-[410px] flex flex-col">
+        <div className="md:hidden h-[410px] flex flex-col">
           {/* Imagem que se expande sob o header */}
           <div className="absolute left-0 -top-4 right-0 h-[283px] z-100">
             <Image
@@ -177,13 +177,16 @@ export function VendedorHero() {
                 Tenha seus relógios vendidos na Nobile
               </h1>
               <p className="text-sm text-gray-400">
-                Conectamos colecionadores, entusiastas e profissionais ao redor do mundo
-                com compradores confiáveis.
+                Conectamos colecionadores, entusiastas e profissionais ao redor
+                do mundo com compradores confiáveis.
               </p>
             </div>
           </div>
 
-          <Link href="/login" className="relative mt-auto px-[42px] text-center">
+          <Link
+            href="/login"
+            className="relative mt-auto px-[42px] text-center"
+          >
             <Button variant="gold" className="w-full max-w-[343px]">
               Vender meus relógios
             </Button>
@@ -191,7 +194,7 @@ export function VendedorHero() {
         </div>
 
         {/* Layout Desktop - mantém como estava */}
-        <div className="hidden lg:block relative min-h-[500px] lg:min-h-[600px]">
+        <div className="hidden md:block relative min-h-[500px] lg:min-h-[600px]">
           <div className="absolute inset-0">
             <Image
               src="/images/seller/hero-bg.svg"
@@ -202,17 +205,17 @@ export function VendedorHero() {
             />
           </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-16 md:py-24 lg:py-32">
+          <div className="relative z-10 mx-auto max-w-7xl px-8 py-24 lg:py-32">
             <div className="max-w-[546px]">
-              <p className="font-erstoria text-[#D5A60A] text-sm md:text-[18px] leading-[1.4] mb-3 tracking-[-0.01em]">
+              <p className="font-erstoria text-[#D5A60A] text-[18px] leading-[1.4] mb-3 tracking-[-0.01em]">
                 Seja um vendedor
               </p>
-              <h1 className="font-erstoria text-4xl md:text-5xl lg:text-6xl text-white mb-3 leading-[100%]">
+              <h1 className="md:text-5xl lg:text-6xl text-white mb-3 leading-[100%]">
                 Tenha seus relógios vendidos na Nobile
               </h1>
-              <p className="font-lato text-base text-gray-300 mb-12 leading-[148%] max-w-[457px]">
-                Conectamos colecionadores, entusiastas e profissionais ao redor do mundo
-                com compradores confiáveis.
+              <p className="text-sm lg:text-base text-gray-300 mb-12 leading-[148%] max-w-[457px]">
+                Conectamos colecionadores, entusiastas e profissionais ao redor
+                do mundo com compradores confiáveis.
               </p>
               <Link
                 href="/login"
@@ -226,31 +229,34 @@ export function VendedorHero() {
       </section>
 
       {/* Como Funciona */}
-      <section className="py-12 md:py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+      <section className="py-12 lg:pt-24 lg:pb-20 bg-white">
+        <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="text-center mb-12 md:mb-19">
-            <p className="font-erstoria text-[#D5A60A] text-sm md:text-[18px] mb-3 tracking-[0.01em]">
+            <h3 className="text-[#D5A60A] text-sm md:text-[18px] mb-3 tracking-[0.01em]">
               Como funciona
-            </p>
+            </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          <div className="flex items-center lg:items-start justify-center flex-wrap gap-x-6 gap-y-12">
             {howItWorks.map((step, index) => (
               <div
                 key={index}
-                className="max-w-[388px] flex flex-col items-center text-center"
+                className="w-full max-w-80 lg:max-w-90 text-center flex flex-col items-center gap-8"
               >
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#F8F2DC] flex items-center justify-center mb-4 md:mb-8.5">
-                  <span className="font-erstoria text-[98px] text-[#272314] leading-[140%]">
+                <div className="relative flex items-center justify-center h-[67px]">
+                  <span className="font-erstoria text-[94px] text-[#272314] font-normal relative z-10 leading-0 translate-y-2">
                     {step.number}
                   </span>
+                  <span className="absolute w-[58px] h-[58px] rounded-full bg-[#F8F2DC]"></span>
                 </div>
-                <h3 className="font-erstoria leading-[1.4] tracking-[0.01em] text-xl md:text-[18px] text-[#141414] mb-4">
-                  {step.title}
-                </h3>
-                <p className="font-lato text-sm text-gray-400 leading-[1.4]">
-                  {step.description}
-                </p>
+                <div className="lg:max-w-[320px]">
+                  <h3 className="text-lg font-normal leading-relaxed mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -258,33 +264,43 @@ export function VendedorHero() {
       </section>
 
       {/* Seguro do Vendedor */}
-      <section className="relative pt-[46px] lg:pt-[194px] min-h-[535px] lg:min-h-[1450px] overflow-hidden">
-        <div className="absolute z-10 top-[94px] lg:top-0 inset-0">
+      <section className="relative bg-white overflow-hidden">
+        <div className="relative h-[535px] lg:hidden flex-shrink-0">
           <Image
-            src="/images/seller/watch-secure.svg"
+            src="/images/seller/watch-large-mobile.png"
             alt="Relógio com mostrador verde - Segurança garantida"
             fill
-            className="object-fill"
-            priority
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 0vw"
           />
         </div>
 
-        <div className="relative z-30 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-8 lg:gap-16">
-            {/* Conteúdo */}
-            <div className="w-full max-w-[316px] md:max-w-[400px] lg:max-w-[746px] mx-auto text-center">
-              <p className="font-erstoria text-[#D5A60A] text-sm lg:text-[18px] mb-3 leading-[1.4] tracking-[0.01em]">
-                Seguro do vendedor
-              </p>
-              <h2 className="font-erstoria text-[28px] md:text-4xl lg:text-[64px] text-[#141414] mb-3 leading-[1.12] md:leading-[1]">
-                Proteção completa em cada etapa da sua venda
-              </h2>
-              <p className="font-lato text-sm lg:text-[16px] text-gray-400 leading-[1.48]">
-                Todo o processo é cuidadosamente monitorado do pagamento à entrega. Seu
-                relógio só é enviado após a confirmação do pagamento e autenticação por
-                nossos especialistas.
-              </p>
+        <Image
+          src="/images/seller/watch-large.png"
+          alt="Relógio com mostrador verde - Segurança garantida"
+          width={1920}
+          height={1450}
+          priority
+          className="hidden lg:block"
+        />
+
+        <div className="absolute inset-0 z-100">
+          <div className="max-w-xs lg:max-w-3xl mx-auto text-center py-12 lg:py-40 px-2">
+            <div className="font-erstoria font-normal text-sm lg:text-lg text-[#D5A60A] tracking-[-0.01em] mb-1">
+              Seguro do vendedor
             </div>
+
+            <h2 className="text-2xl/7 lg:text-6xl tracking-normal mx-auto mb-1 lg:mb-2">
+              Proteção completa em
+              <br />
+              cada etapa da sua venda
+            </h2>
+
+            <p className="text-sm lg:text-base text-gray-400">
+              Todo o processo é cuidadosamente monitorado do pagamento à
+              entrega, seu relógio só é enviado após a confirmação do pagamento
+              e autenticação por nossos especialistas.
+            </p>
           </div>
         </div>
       </section>

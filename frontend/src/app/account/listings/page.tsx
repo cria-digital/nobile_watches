@@ -196,11 +196,7 @@ export default function MyListingsPage() {
 
   const handleModalSuccess = () => {
     refresh();
-    addNotification(
-      "success",
-      "Anúncio criado!",
-      "Seu anúncio foi criado com sucesso e está em análise."
-    );
+    addNotification("success", "Anúncio criado!", "Seu anúncio foi criado com sucesso.");
   };
 
   const filteredListings = listings.filter(
@@ -283,7 +279,8 @@ export default function MyListingsPage() {
       </div>
 
       {/* Desktop Header */}
-      <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto px-8.5">
+
+      <div className="hidden lg:flex items-center justify-between flex-wrap max-w-7xl mx-auto px-8.5">
         <div>
           <Breadcrumbs
             items={[{ label: "Home", href: "/" }, { label: "Meus anúncios" }]}

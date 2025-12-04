@@ -6,139 +6,133 @@ import { useEffect, useState } from "react";
 const STORAGE_KEY = "nobile:cart";
 
 /**
- * Dados mockados para desenvolvimento
+ * Hook para gerenciar o carrinho de compras
+ *
+ * ARQUITETURA:
+ * - Gerenciamento 100% frontend usando localStorage
+ * - Backend NÃO possui modelo de carrinho
+ * - Sincronização acontece apenas no checkout (criação de pedido)
+ *
+ * @returns {Object} Estado e métodos para gerenciar o carrinho
  */
-const MOCK_CART_ITEMS: CartItem[] = [
-  {
-    id: "cart-1",
-    watchId: 1,
-    seller: {
-      name: "Cordial Watches",
-      isVerified: true,
-    },
-    watch: {
-      brand: "Patek Philippe",
-      model: "Aquanaut",
-      image: "/images/mock/aquanaut.png",
-      condition: "Com caixa e documentos originais",
-    },
-    price: 80300,
-  },
-  {
-    id: "cart-2",
-    watchId: 2,
-    seller: {
-      name: "Cordial Watches",
-      isVerified: true,
-    },
-    watch: {
-      brand: "Omega",
-      model: "De Ville Prestige",
-      image: "/images/mock/omega1.jpg",
-      condition: "Com caixa e documentos originais",
-    },
-    price: 80300,
-  },
-];
-
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Carregar carrinho do localStorage ao montar o componente
   useEffect(() => {
     loadCart();
+
+    // Listener para evento 'cartUpdated' disparado por outros componentes
+    const handleCartUpdate = () => {
+      loadCart();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
   }, []);
 
+  /**
+   * Carrega o carrinho do localStorage
+   */
   const loadCart = async () => {
     try {
       setIsLoading(true);
 
-      // Usar dados mockados durante desenvolvimento
-      const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== "false";
+      // Simular delay de rede para melhor UX
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      if (useMockData) {
-        // Simular delay de rede
-        await new Promise(resolve => setTimeout(resolve, 300));
+      // Carregar do localStorage
+      const savedCart = localStorage.getItem(STORAGE_KEY);
 
-        // Tentar carregar do localStorage, senão usar mock
-        const savedCart = localStorage.getItem(STORAGE_KEY);
-        if (savedCart) {
-          setItems(JSON.parse(savedCart));
-        } else {
-          setItems(MOCK_CART_ITEMS);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_CART_ITEMS));
-        }
-        return;
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        setItems(parsedCart);
+      } else {
+        // Se não houver carrinho salvo, iniciar com array vazio
+        setItems([]);
       }
-
-      // TODO: Implementar chamada real à API quando disponível
-      // const response = await fetch('/api/cart');
-      // const data = await response.json();
-      // setItems(data);
     } catch (error) {
       console.error("Erro ao carregar carrinho:", error);
-      setItems(MOCK_CART_ITEMS);
+      setItems([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  /**
+   * Adiciona um item ao carrinho
+   * @param item - Item a ser adicionado
+   */
   const addItem = async (item: CartItem) => {
     try {
       // Verificar se o item já existe no carrinho
       const existingItem = items.find(i => i.watchId === item.watchId);
+
       if (existingItem) {
         console.log("Item já está no carrinho");
         return;
       }
 
+      // Adicionar novo item
       const newItems = [...items, item];
       setItems(newItems);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
 
-      // TODO: Sincronizar com API quando disponível
-      // await fetch('/api/cart', {
-      //   method: 'POST',
-      //   body: JSON.stringify(item),
-      // });
+      // Disparar evento para atualizar UI
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
     } catch (error) {
       console.error("Erro ao adicionar item:", error);
     }
   };
 
+  /**
+   * Remove um item do carrinho
+   * @param itemId - ID do item a ser removido
+   */
   const removeItem = async (itemId: string) => {
     try {
       const newItems = items.filter(item => item.id !== itemId);
       setItems(newItems);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
 
-      // TODO: Sincronizar com API quando disponível
-      // await fetch(`/api/cart/${itemId}`, {
-      //   method: 'DELETE',
-      // });
+      // Disparar evento para atualizar UI
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
     } catch (error) {
       console.error("Erro ao remover item:", error);
     }
   };
 
+  /**
+   * Limpa todo o carrinho
+   */
   const clearCart = async () => {
     try {
       setItems([]);
       localStorage.removeItem(STORAGE_KEY);
 
-      // TODO: Sincronizar com API quando disponível
-      // await fetch('/api/cart', {
-      //   method: 'DELETE',
-      // });
+      // Disparar evento para atualizar UI
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
     } catch (error) {
       console.error("Erro ao limpar carrinho:", error);
     }
   };
 
+  /**
+   * Calcula o total do carrinho
+   * @returns Total em centavos/reais
+   */
   const getTotal = () => {
     return items.reduce((sum, item) => sum + item.price, 0);
   };
 
+  /**
+   * Retorna a quantidade de itens no carrinho
+   * @returns Número de itens
+   */
   const getItemCount = () => {
     return items.length;
   };

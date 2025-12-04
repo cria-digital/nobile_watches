@@ -1,18 +1,19 @@
 "use client";
 
-import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/validations/auth";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import {
+  resetPasswordSchema,
+  type ResetPasswordFormData,
+} from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Input } from "../ui";
 import { Button } from "../ui/Button";
 
 export function ResetPasswordForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
@@ -39,7 +40,7 @@ export function ResetPasswordForm() {
       console.log("Reset password data:", data);
 
       // Simular delay da API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setIsSuccess(true);
     } catch (error) {
@@ -56,7 +57,12 @@ export function ResetPasswordForm() {
       <div>
         <div className="text-center mb-8">
           <div className="mx-auto flex items-center justify-center w-[46px] h-[46px] mb-8">
-            <Image src="/icons/check_square.svg" alt="Check" width={46} height={46} />
+            <Image
+              src="/icons/check_square.svg"
+              alt="Check"
+              width={46}
+              height={46}
+            />
           </div>
           <h1 className="font-erstoria text-[32px] text-[#141414] mb-3 leading-[100%]">
             Senha atualizada com sucesso!
@@ -80,97 +86,45 @@ export function ResetPasswordForm() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-erstoria text-[28px] text-[#141414] mb-3 leading-[100%]">
+        <h1 className="text-[28px] mb-3 leading-[100%] tracking-normal">
           Crie uma nova senha
         </h1>
-        <p className="font-lato text-sm text-gray-400 leading-[148%]">
+        <p className="text-sm text-gray-400 leading-[148%]">
           Escolha uma senha forte para manter sua conta protegida.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Código (oculto - seria passado via URL params em implementação real) */}
-        <input
-          {...register("code")}
-          type="hidden"
-          value="123456" // Exemplo - seria obtido dos params
-        />
+        {/* Código (oculto - talvez seja passado via URL params na implementação real) */}
+        <input {...register("code")} type="hidden" value="123456" />
 
         {/* Nova senha */}
-        <div>
-          <label htmlFor="password" className="block text-sm text-pb-500 mb-2.5">
-            Nova senha
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image
-                src="/icons/password-lock.svg"
-                alt="Password"
-                width={24}
-                height={24}
-              />
-            </div>
-            <input
-              {...register("password")}
-              type={showPassword ? "text" : "password"}
-              id="password"
-              placeholder="Digite sua nova senha..."
-              className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
-            >
-              {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-pb-500" />
-              ) : (
-                <EyeIcon className="h-5 w-5 text-pb-500" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
+        <Input
+          {...register("password")}
+          id="password"
+          label="Nova senha"
+          type="password"
+          placeholder="Digite sua nova senha..."
+          icon="/icons/password-lock.svg"
+          iconAlt="Password"
+          autoComplete="current-password"
+          enterKeyHint="done"
+          showPasswordToggle
+          error={errors.password?.message}
+        />
 
         {/* Confirmar nova senha */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm text-pb-500 mb-2.5">
-            Confirme sua nova senha
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image
-                src="/icons/password-lock.svg"
-                alt="Password"
-                width={24}
-                height={24}
-              />
-            </div>
-            <input
-              {...register("confirmPassword")}
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmPassword"
-              placeholder="Confirme sua nova senha..."
-              className="w-full pl-12 pr-3 py-3 border border-[#EFEFEF] rounded-xl focus:outline-none transition-colors"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
-            >
-              {showConfirmPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-pb-500" />
-              ) : (
-                <EyeIcon className="h-5 w-5 text-pb-500" />
-              )}
-            </button>
-          </div>
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
-          )}
-        </div>
+        <Input
+          {...register("confirmPassword")}
+          id="confirmPassword"
+          label="Confirme sua nova senha"
+          type="password"
+          placeholder="Confirme sua nova senha..."
+          icon="/icons/password-lock.svg"
+          iconAlt="Password"
+          showPasswordToggle
+          error={errors.confirmPassword?.message}
+        />
 
         {/* Erro geral */}
         {errors.root && (

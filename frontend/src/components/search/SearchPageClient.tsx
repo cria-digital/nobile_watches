@@ -9,7 +9,6 @@ import { useProductFilters } from "@/lib/hooks/useProductFilters";
 import { useSearch } from "@/lib/hooks/useSearch";
 import { AppliedFilters } from "@/types/filters";
 import { AlertCircle, ListFilter } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type ViewMode = "grid" | "list";
@@ -256,89 +255,7 @@ export function SearchPageClient({ query }: SearchPageClientProps) {
                   </Button>
                 </div>
 
-                {/* Seção de descoberta */}
-                <div className="mt-16">
-                  <div className="flex items-center gap-2 mb-8">
-                    <h2 className="font-erstoria text-2xl md:text-3xl text-[#141414]">
-                      Descubra
-                    </h2>
-                    <span className="text-2xl">🔥</span>
-                  </div>
-
-                  {/* Grid de categorias sugeridas */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Link
-                      href="/produtos?categoria=masculino"
-                      className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 hover:shadow-lg transition-all"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white font-lato font-semibold text-lg">
-                          Relógios de homem
-                        </p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/produtos?condicao=usado"
-                      className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 hover:shadow-lg transition-all"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white font-lato font-semibold text-lg">
-                          Relógios usados
-                        </p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/produtos?categoria=bolso"
-                      className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 hover:shadow-lg transition-all"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white font-lato font-semibold text-lg">
-                          Relógios de bolso
-                        </p>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href="/produtos?categoria=feminino"
-                      className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 hover:shadow-lg transition-all"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white font-lato font-semibold text-lg">
-                          Relógios de senhora
-                        </p>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Sugestão de voltar */}
-                <div className="mt-12 text-center">
-                  <Link
-                    href="/"
-                    className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors font-lato"
-                  >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                      />
-                    </svg>
-                    Voltar à página inicial
-                  </Link>
-                </div>
+             
               </>
             )}
           </div>

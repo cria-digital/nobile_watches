@@ -1,6 +1,6 @@
 "use client";
 
-import { stringToSlug } from "@/lib/utils/stringUtils";
+import { safeString, stringToSlug } from "@/lib/utils/stringUtils";
 import { Product } from "@/types/product";
 import { cva } from "class-variance-authority";
 import Link from "next/link";
@@ -11,8 +11,8 @@ import { ProductImage } from "./ProductImage";
 export const descriptionText = cva("text-gray-400 leading-[22px]", {
   variants: {
     mode: {
-      grid: "text-xs lg:text-base line-clamp-1",
-      listMobile: "text-xs lg:text-base line-clamp-1",
+      grid: "text-sm lg:text-base line-clamp-1",
+      listMobile: "text-sm lg:text-base line-clamp-1",
       listDesktop: "text-xs lg:text-base line-clamp-3",
     },
   },
@@ -20,6 +20,22 @@ export const descriptionText = cva("text-gray-400 leading-[22px]", {
     mode: "grid",
   },
 });
+
+export const brandText = cva(
+  "font-erstoria text-[#D5A60A] tracking-[-0.01em] truncate",
+  {
+    variants: {
+      mode: {
+        grid: "text-sm lg:text-base leading-[140%] lg:leading-[22px]",
+        listMobile: "text-base leading-[140%] lg:text-lg lg:leading-[22px]",
+        listDesktop: "text-base lg:text-lg leading-[22px]",
+      },
+    },
+    defaultVariants: {
+      mode: "grid",
+    },
+  }
+);
 
 interface ProductCardProps {
   product: Product;
@@ -36,28 +52,35 @@ function ProductHeader({
   productUrl: string;
   descriptionMode: "grid" | "listMobile" | "listDesktop";
 }) {
+  const description =
+    safeString(product.listings?.[0]?.titleSuffix) ?? product.description;
+
   return (
     <>
       <div className="flex items-center gap-2 mb-2">
-        <p className="font-erstoria text-base lg:text-lg text-[#D5A60A] leading-[22px] tracking-[-0.01em] truncate">
-          {product.brand}
-        </p>
+        <p className={brandText({ mode: descriptionMode })}>{product.brand}</p>
       </div>
 
       <Link href={productUrl}>
-        <h3 className="font-erstoria text-xl lg:text-2xl leading-[31px] mb-2">
+        <h3 className="font-erstoria text-lg lg:text-2xl leading-[140%] lg:leading-[31px] lg:mb-2">
           {product.model}
         </h3>
 
         <p className={descriptionText({ mode: descriptionMode })}>
-          {product?.customTitleSuffix || product?.description || "\u00A0"}
+          {description || "\u00A0"}
         </p>
       </Link>
     </>
   );
 }
 
-function ProductPrice({ price, productUrl }: { price: number; productUrl: string }) {
+function ProductPrice({
+  price,
+  productUrl,
+}: {
+  price: number;
+  productUrl: string;
+}) {
   return (
     <Link href={productUrl}>
       <p className="font-lato text-lg lg:text-3xl font-medium leading-[120%] text-[#141414]">
@@ -73,6 +96,9 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   const productUrl = `/${stringToSlug(product.brand)}/${stringToSlug(
     product.model
   )}-${product.id}`;
+
+  const description =
+    safeString(product.listings?.[0]?.titleSuffix) ?? product.description;
 
   // ========== LIST VIEW ==========
   if (viewMode === "list") {
@@ -178,7 +204,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
       <div className="relative min-h-[116px] max-h-[116px]">
         <div className="relative min-w-0">
           <Link href={productUrl}>
-            <p className="font-erstoria text-sm lg:text-base text-[#D5A60A] mb-3 leading-[22px] tracking-[-0.01em] overflow-hidden text-ellipsis whitespace-nowrap">
+            <p className="font-erstoria text-sm lg:text-base text-[#D5A60A] mb-2.5 lg:mb-3 leading-[140%] lg:leading-[22px] tracking-[-0.01em] overflow-hidden text-ellipsis whitespace-nowrap">
               {product.brand}
             </p>
 
@@ -188,7 +214,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               </h3>
 
               <p className={descriptionText({ mode: "grid" })}>
-                {product?.customTitleSuffix || product?.description || "\u00A0"}
+                {description || "\u00A0"}
               </p>
             </div>
 

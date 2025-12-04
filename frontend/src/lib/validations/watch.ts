@@ -10,36 +10,69 @@ export const watchSchema = z.object({
     .string()
     .min(2, "O modelo deve ter pelo menos 2 caracteres")
     .max(200, "O modelo não pode ter mais de 200 caracteres"),
-  referenceNumber: z.string().max(250, "Número de referência muito longo").optional(),
+  referenceNumber: z
+    .string()
+    .max(250, "Número de referência muito longo")
+    .optional(),
 
   // STEP 2 - Título & Destaque (opcional)
-  customTitleSuffix: z
+  titleSuffix: z
     .string()
+    .trim() // Remove espaços nas pontas
     .max(60, "Informações adicionais não podem ter mais de 60 caracteres")
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 
   // STEP 3 - Detalhes
   year: z
-    .union([
-      z.literal(""), // Aceita string vazia
-      z.string().regex(/^\d{4}$/, "Ano inválido (formato: AAAA)"),
-      z
-        .number()
-        .int()
-        .min(1900, "Ano deve ser maior que 1900")
-        .max(new Date().getFullYear(), "Ano não pode ser futuro"),
-    ])
+    .string()
     .optional()
-    .transform(val => {
+    .transform((val) => {
       if (!val || val === "") return undefined;
-      return Number(val);
-    }),
+      return val;
+    })
+    .pipe(
+      z
+        .string()
+        .optional()
+        .superRefine((val, ctx) => {
+          if (!val) return;
+
+          const num = Number(val);
+
+          if (isNaN(num) || !Number.isInteger(num)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Ano inválido",
+            });
+            return;
+          }
+
+          if (num < 1500) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Informe um ano a partir de 1500",
+            });
+            return;
+          }
+
+          if (num > new Date().getFullYear()) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Ano não pode ser futuro",
+            });
+            return;
+          }
+        })
+        .transform((val) => {
+          if (!val) return undefined;
+          return Number(val);
+        })
+    ),
   gender: z.enum(["Homem", "Mulher", "Unissex", ""]).optional(),
   serialNumber: z.string().max(100, "Número de série muito longo").optional(),
   dialColor: z.string().optional(),
-  movement: z
-    .enum(["", "Automático", "Corda manual", "Quartzo", "Smartwatch", "Solar"])
-    .optional(),
+  movement: z.string().max(50, "Tipo de movimento muito longo").optional(),
   caseMaterial: z.string().max(100, "Material muito longo").optional(),
   caseDiameter: z
     .union([
@@ -48,7 +81,7 @@ export const watchSchema = z.object({
       z.number().positive("Diâmetro deve ser positivo"),
     ])
     .optional()
-    .transform(val => {
+    .transform((val) => {
       if (!val || val === "") return undefined;
       return Number(val);
     }),
@@ -70,7 +103,7 @@ export const watchSchema = z.object({
     .string()
     .min(1, "Essa informação é obrigatória")
     .refine(
-      val => ["Novo", "Muito bom", "Bom", "Aceitável"].includes(val),
+      (val) => ["Novo", "Muito bom", "Bom", "Aceitável"].includes(val),
       "Selecione uma condição válida"
     ),
 
@@ -84,11 +117,13 @@ export const watchSchema = z.object({
   price: z
     .union([
       z.literal(""), // Permite string vazia
-      z.string().regex(/^\d+(\.\d{1,2})?$/, "Preço inválido (use formato: 12345.67)"),
+      z
+        .string()
+        .regex(/^\d+(\.\d{1,2})?$/, "Preço inválido (use formato: 12345.67)"),
       z.number().positive("O preço deve ser maior que zero"),
     ])
     .refine(
-      val => {
+      (val) => {
         // Se for string vazia, passa (campo ainda não preenchido)
         if (val === "") return true;
 
@@ -98,7 +133,7 @@ export const watchSchema = z.object({
       { message: "O preço deve ser maior que zero" }
     )
     // Validação final: quando for submeter, não pode estar vazio
-    .refine(val => val !== "", { message: "O preço é obrigatório" }),
+    .refine((val) => val !== "", { message: "O preço é obrigatório" }),
 });
 
 export type CreateWatchFormValues = z.infer<typeof watchSchema>;

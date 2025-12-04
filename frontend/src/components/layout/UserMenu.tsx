@@ -2,7 +2,8 @@
 
 import { User } from "@/lib/auth/auth";
 import { USER_MENU_ITEMS } from "@/lib/config/user-menu-items";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { getInitials } from "@/lib/utils/stringUtils";
+import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -40,18 +41,20 @@ export function UserMenu({ user, logout }: UserMenuProps) {
   }, [isOpen]);
 
   const gerenciamentoItems = USER_MENU_ITEMS.filter(
-    item => item.section === "gerenciamento"
+    (item) => item.section === "gerenciamento"
   );
-  const meusDadosItems = USER_MENU_ITEMS.filter(item => item.section === "meusDados");
-  const opcoesItems = USER_MENU_ITEMS.filter(item => item.section === "opcoes");
-
-  // Avatar padrão se não houver
-  //const avatarUrl = user.avatar || "/images/mock/avatar-placeholder.jpg";
+  const meusDadosItems = USER_MENU_ITEMS.filter(
+    (item) => item.section === "meusDados"
+  );
+  const opcoesItems = USER_MENU_ITEMS.filter(
+    (item) => item.section === "opcoes"
+  );
 
   useEffect(() => {
     const handleLogoutRequest = () => logout();
     window.addEventListener("logout-request", handleLogoutRequest);
-    return () => window.removeEventListener("logout-request", handleLogoutRequest);
+    return () =>
+      window.removeEventListener("logout-request", handleLogoutRequest);
   }, [logout]);
 
   return (
@@ -59,7 +62,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        className="flex items-center gap-3 hover:opacity-80 transition-opacity outline-none"
         aria-label="Menu do usuário"
       >
         {/* <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200">
@@ -72,20 +75,27 @@ export function UserMenu({ user, logout }: UserMenuProps) {
           />
         </div> */}
 
-        <div className="relative w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[#F7F7F7]">
-          <span className="font-lato text-base font-medium text-gray-700">
-            {user.name.charAt(0).toUpperCase()}
+        <div className="relative flex items-center justify-center">
+          <span className="relative inline-flex items-center justify-center align-middle overflow-hidden select-none w-10 h-10 rounded-full bg-[#D5A60A] p-0 border-0 transition-colors duration-200">
+            <div className="font-lato text-[13px] leading-[133%] font-medium text-white">
+              {getInitials(user?.name)}
+            </div>
           </span>
         </div>
-
-        {isOpen ? <XMarkIcon className="size-7" /> : <Bars3Icon className="size-7" />}
+        {isOpen ? (
+          <X className="size-8 text-pb-500" strokeWidth={1.5} />
+        ) : (
+          <Image src="/icons/menu.svg" alt="" width={32} height={32} />
+        )}
       </button>
 
-      {/* Full Width Menu */}
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
 
           {/* Menu Panel */}
           <div className="absolute -right-8 top-full z-50 bg-white shadow-lg w-screen max-w-7xl">
@@ -101,7 +111,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-4">
-                      {gerenciamentoItems.map(item => (
+                      {gerenciamentoItems.map((item) => (
                         <MenuItemButton
                           key={item.label}
                           item={item}
@@ -119,7 +129,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-4">
-                      {meusDadosItems.map(item => (
+                      {meusDadosItems.map((item) => (
                         <MenuItemButton
                           key={`meus-dados-${item.label}`}
                           item={item}
@@ -137,7 +147,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-4">
-                      {opcoesItems.map(item => (
+                      {opcoesItems.map((item) => (
                         <MenuItemButton
                           key={`opcoes-${item.label}-${item.href}`}
                           item={item}
@@ -186,7 +196,9 @@ function MenuItemButton({
       }`}
     >
       <Image src={item.icon} alt={item.label} width={26} height={26} />
-      <span className="text-xs font-medium whitespace-nowrap">{item.label}</span>
+      <span className="text-xs font-medium whitespace-nowrap">
+        {item.label}
+      </span>
     </Link>
   );
 }

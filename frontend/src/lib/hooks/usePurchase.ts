@@ -1,17 +1,21 @@
 "use client";
 
+import { CartItem } from "@/types/cart";
 import { Product } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { purchaseService } from "../services/purchase.service";
+
+const STORAGE_KEY = "nobile:cart";
 
 /**
  * Hook personalizado para gerenciar operações de compra
  *
- * Fornece métodos para:
- * - Adicionar produtos ao carrinho
- * - Comprar diretamente (sem carrinho)
- * - Gerenciar estados de loading e mensagens
+ * ARQUITETURA DE CARRINHO:
+ * - Gerenciamento 100% frontend usando localStorage
+ * - Backend NÃO possui modelo de carrinho
+ * - Pedidos são criados apenas no momento do checkout
+ *
+ * @returns {Object} Métodos e estados para gerenciar compras
  */
 export function usePurchase() {
   const router = useRouter();
@@ -22,55 +26,84 @@ export function usePurchase() {
   } | null>(null);
 
   /**
-   * Adiciona um produto ao carrinho
+   * Converte Product em CartItem
+   */
+  const productToCartItem = (product: Product): CartItem => {
+    return {
+      id: `cart-${product.id}-${Date.now()}`,
+      watchId: product.id,
+      seller: {
+        name: product.seller?.name || "Vendedor Certificado",
+        isVerified: true,
+      },
+      watch: {
+        brand: product.brand,
+        model: product.model,
+        image: product.images[0] || "/images/placeholder-watch.png",
+        condition: product.condition,
+      },
+      price: product.price,
+    };
+  };
+
+  /**
+   * Adiciona produto ao carrinho (localStorage)
+   *
    * @param product - Produto a ser adicionado
-   * @param redirectAfter - Se true, redireciona para o carrinho após adicionar
+   * @param redirectAfter - Se true, redireciona para /account/cart
    */
   const addToCart = async (product: Product, redirectAfter: boolean = false) => {
     setIsLoading(true);
     setMessage(null);
 
     try {
-      const result = await purchaseService.addToCart(product);
+      // Simular delay para melhor UX
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      if (result.success) {
+      // Carregar carrinho do localStorage
+      const savedCart = localStorage.getItem(STORAGE_KEY);
+      const currentCart: CartItem[] = savedCart ? JSON.parse(savedCart) : [];
+
+      // Verificar duplicata
+      const existingItem = currentCart.find(item => item.watchId === product.id);
+
+      if (existingItem) {
         setMessage({
-          type: "success",
-          text: result.message,
+          type: "info",
+          text: "Este produto já está no seu carrinho",
         });
 
-        // Disparar evento customizado para atualizar o contador do carrinho
-        window.dispatchEvent(new CustomEvent("cartUpdated"));
-
         if (redirectAfter) {
-          // Aguardar um pouco para o usuário ver a mensagem
           setTimeout(() => {
             router.push("/account/cart");
           }, 500);
         }
-      } else {
-        // Se o item já está no carrinho e queremos redirecionar
-        if (result.message.includes("já está") && redirectAfter) {
-          setMessage({
-            type: "info",
-            text: result.message,
-          });
+        return;
+      }
 
-          setTimeout(() => {
-            router.push("/account/cart");
-          }, 500);
-        } else {
-          setMessage({
-            type: "error",
-            text: result.message,
-          });
-        }
+      // Adicionar ao carrinho
+      const cartItem = productToCartItem(product);
+      const updatedCart = [...currentCart, cartItem];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCart));
+
+      setMessage({
+        type: "success",
+        text: "Produto adicionado ao carrinho",
+      });
+
+      // Atualizar contador do carrinho na UI
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+      if (redirectAfter) {
+        setTimeout(() => {
+          router.push("/account/cart");
+        }, 500);
       }
     } catch (error) {
       console.error("Erro ao adicionar ao carrinho:", error);
       setMessage({
         type: "error",
-        text: "Erro inesperado ao adicionar ao carrinho",
+        text: "Erro ao adicionar produto ao carrinho",
       });
     } finally {
       setIsLoading(false);
@@ -78,100 +111,39 @@ export function usePurchase() {
   };
 
   /**
-   * Adiciona produto ao carrinho e redireciona para a página do carrinho
-   * Este é o fluxo padrão do botão "Comprar"
-   */
-  const addToCartAndRedirect = async (product: Product) => {
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      const result = await purchaseService.addToCartAndRedirect(product);
-
-      if (result.success) {
-        setMessage({
-          type: "success",
-          text: result.message,
-        });
-
-        // Disparar evento para atualizar contador
-        window.dispatchEvent(new CustomEvent("cartUpdated"));
-
-        // Redirecionar
-        if (result.redirectTo) {
-          router.push(result.redirectTo);
-        }
-      } else {
-        setMessage({
-          type: "error",
-          text: result.message,
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao processar compra:", error);
-      setMessage({
-        type: "error",
-        text: "Erro ao processar compra",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Compra direta (sem passar pelo carrinho)
-   * Cria pedido e inicia checkout imediatamente
+   * Compra direta - Vai direto para checkout
+   * Não adiciona ao carrinho, apenas redireciona
    *
-   * @param watchId - ID do relógio a ser comprado
+   * @param product - Produto a ser comprado
    */
-  const buyNow = async (watchId: number) => {
+  const buyNow = async (product: Product) => {
     setIsLoading(true);
     setMessage(null);
 
     try {
-      // Verificar autenticação
-      if (!purchaseService.isAuthenticated()) {
-        setMessage({
-          type: "error",
-          text: "Você precisa estar logado para fazer uma compra",
-        });
+      // Simular delay para melhor UX
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-        // Redirecionar para login após um delay
-        setTimeout(() => {
-          router.push("/login");
-        }, 1000);
-        return;
-      }
+      // Redirecionar para checkout com o ID do produto
+      router.push(`/account/checkout?items=${product.id}`);
 
-      const result = await purchaseService.buyNow(watchId);
-
-      if (result.success && result.checkoutUrl) {
-        setMessage({
-          type: "success",
-          text: result.message || "Redirecionando...",
-        });
-
-        // Redirecionar para o checkout
-        window.location.href = result.checkoutUrl;
-      } else {
-        setMessage({
-          type: "error",
-          text: result.error || "Erro ao processar compra",
-        });
-      }
+      setMessage({
+        type: "success",
+        text: "Redirecionando para checkout...",
+      });
     } catch (error) {
       console.error("Erro na compra direta:", error);
       setMessage({
         type: "error",
         text: "Erro ao processar compra",
       });
-    } finally {
       setIsLoading(false);
     }
+    // Não resetar loading aqui pois estamos redirecionando
   };
 
   /**
-   * Limpa a mensagem atual
+   * Limpa mensagem de feedback
    */
   const clearMessage = () => {
     setMessage(null);
@@ -181,7 +153,6 @@ export function usePurchase() {
     isLoading,
     message,
     addToCart,
-    addToCartAndRedirect,
     buyNow,
     clearMessage,
   };

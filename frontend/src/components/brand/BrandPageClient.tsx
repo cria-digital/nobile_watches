@@ -27,10 +27,18 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
   const [sortBy, setSortBy] = useState<string>("relevance");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
-  const { products: brandProducts, isLoading, isError } = useBrandProducts(brandName);
+  const {
+    products: brandProducts,
+    isLoading,
+    isError,
+  } = useBrandProducts(brandName);
 
   const { filterOptions, isLoading: isLoadingFilters } = useFilterOptions();
-  // const filterOptionsMock = getFilterOptions(brandProducts);
+
+  //@ts-ignore
+  const initialFilters: AppliedFilters = isAllProducts
+    ? {}
+    : { brands: [brandName] };
 
   // Hook para gerenciar filtros
   const {
@@ -41,10 +49,9 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
     setAllFilters,
     summary,
   } = useProductFilters({
-    initialFilters: {},
+    initialFilters,
   });
 
-  // Hook para produtos filtrados
   const {
     filteredProducts,
     totalCount,
@@ -81,10 +88,14 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
     }
   }, [isSortDropdownOpen]);
 
-  // Limpar filtros ao trocar de marca
   useEffect(() => {
-    clearAllFilters();
-  }, [brandName, clearAllFilters]);
+    //@ts-ignore
+    const newInitialFilters: AppliedFilters = isAllProducts
+      ? {}
+      : { brands: [brandName] };
+
+    setAllFilters(newInitialFilters);
+  }, [brandName, isAllProducts, setAllFilters]);
 
   // Se ainda está carregando filtros ou produtos iniciais
   /// const isInitialLoading = isLoading || isLoadingFilters;
@@ -107,7 +118,9 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
       <div className="min-h-screen bg-white">
         <div className="container mx-auto max-w-7xl px-5 lg:px-10 pt-4 pb-18 lg:pt-8 lg:pb-30">
           <div className="mb-6 lg:mb-8">
-            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: brandName }]} />
+            <Breadcrumbs
+              items={[{ label: "Home", href: "/" }, { label: brandName }]}
+            />
           </div>
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
@@ -192,10 +205,14 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
               <div className="flex items-center gap-[14px]">
                 {/* Botão de alternancia de visualização - Desktop */}
                 <button
-                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                  onClick={() =>
+                    setViewMode(viewMode === "grid" ? "list" : "grid")
+                  }
                   className="flex items-center justify-center w-[32px] h-[32px] rounded-lg hover:bg-gray-50 transition-colors"
                   title={
-                    viewMode === "grid" ? "Alternar para lista" : "Alternar para grade"
+                    viewMode === "grid"
+                      ? "Alternar para lista"
+                      : "Alternar para grade"
                   }
                   aria-label={
                     viewMode === "grid"
@@ -251,7 +268,7 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
                         onClick={() => setIsSortDropdownOpen(false)}
                       />
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                        {sortOptions.map(option => (
+                        {sortOptions.map((option) => (
                           <button
                             key={option.value}
                             onClick={() => handleSortChange(option.value)}
@@ -312,7 +329,7 @@ export function BrandPageClient({ brandName }: BrandPageClientProps) {
         </div>
       </div>
 
-      {/* Modal de Filtros - Passa filterOptions da API */}
+      {/* Modal de Filtros */}
       {filterOptions && (
         <FilterModal
           isOpen={isFilterModalOpen}
