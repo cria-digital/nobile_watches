@@ -1,10 +1,16 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs, Button, ErrorState, VerifiedBadge } from "@/components/ui";
+import {
+  Breadcrumbs,
+  Button,
+  ErrorState,
+  VerifiedBadge,
+} from "@/components/ui";
 import { UserNav } from "@/components/user/UserNav";
 import { VerificationModal } from "@/components/verification/VerificationModal";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAddresses } from "@/lib/hooks/useAddresses";
 import { getInitials } from "@/lib/utils/stringUtils";
 import { Edit2 } from "lucide-react";
 import Image from "next/image";
@@ -21,6 +27,8 @@ export default function Profile() {
     refetch,
     refetchVerificationStatus,
   } = useUserProfile();
+  const { addresses, isLoading: loadingAddresses } = useAddresses();
+  // console.log("addresses", addresses);
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   const handleVerificationSubmitted = () => {
@@ -66,7 +74,9 @@ export default function Profile() {
       {/* Desktop */}
       <div className="hidden lg:flex items-center justify-between flex-wrap max-w-7xl mx-auto px-8.5">
         <div>
-          <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Meu perfil" }]} />
+          <Breadcrumbs
+            items={[{ label: "Home", href: "/" }, { label: "Meu perfil" }]}
+          />
           <h1 className="text-[32px] leading-[100%]">Meu perfil</h1>
         </div>
         <UserNav />
@@ -145,7 +155,9 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-[170px]">
           {/* Dados pessoais */}
           <div className="bg-[#F7F7F7] rounded-xl p-8 pt-[28px] flex flex-col h-full">
-            <h3 className="font-lato text-base font-medium mb-1">Dados pessoais</h3>
+            <h3 className="font-lato text-base font-medium mb-1">
+              Dados pessoais
+            </h3>
             <p className="text-xs text-gray-400 font-light mb-4">
               Aqui você pode editar seus dados a qualquer momento.
             </p>
@@ -171,15 +183,28 @@ export default function Profile() {
               </div>
               {user.phone && (
                 <div className="flex h-[48px] items-center gap-3">
-                  <Image src="/icons/phone.svg" alt="Phone" width={24} height={24} />
+                  <Image
+                    src="/icons/phone.svg"
+                    alt="Phone"
+                    width={24}
+                    height={24}
+                  />
                   <span className="text-sm font-medium">{user.phone}</span>
                 </div>
               )}
               {(user.country || user.state || user.city) && (
                 <div className="flex h-[48px] items-center gap-3">
-                  <Image src="/icons/map-pin.svg" alt="Location" width={24} height={24} />
+                  <Image
+                    src="/icons/map-pin.svg"
+                    alt="Location"
+                    width={24}
+                    height={24}
+                  />
                   <span className="text-sm font-medium">
-                    {[user.country, user.state, user.city].filter(Boolean).join(", ")}.
+                    {[user.country, user.state, user.city]
+                      .filter(Boolean)
+                      .join(", ")}
+                    .
                   </span>
                 </div>
               )}
@@ -194,7 +219,9 @@ export default function Profile() {
 
           {/* Dados de pagamento */}
           <div className="bg-[#F7F7F7] rounded-xl p-8 pt-[28px] flex flex-col h-full">
-            <h3 className="font-lato text-base font-medium mb-1">Dados de pagamento</h3>
+            <h3 className="font-lato text-base font-medium mb-1">
+              Dados de pagamento
+            </h3>
             <p className="text-xs text-gray-400 font-light mb-4">
               Aqui você pode editar seus dados a qualquer momento.
             </p>
@@ -202,7 +229,12 @@ export default function Profile() {
             {paymentMethods && paymentMethods.length > 0 ? (
               <div className="mb-6">
                 <div className="flex h-[48px] items-center gap-3">
-                  <Image src="/icons/id-card.svg" alt="Id Card" width={24} height={24} />
+                  <Image
+                    src="/icons/id-card.svg"
+                    alt="Id Card"
+                    width={24}
+                    height={24}
+                  />
                   <span className="text-sm font-medium">
                     {paymentMethods[0]?.cardholderName}
                   </span>
@@ -247,7 +279,9 @@ export default function Profile() {
                     width={24}
                     height={24}
                   />
-                  <span className="text-sm font-medium">{paymentMethods[0]?.type}</span>
+                  <span className="text-sm font-medium">
+                    {paymentMethods[0]?.type}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -271,20 +305,21 @@ export default function Profile() {
               Endereços de cobrança
             </h3>
             <p className="text-xs text-gray-400 font-light mb-4">
-              Aqui você pode visualizar e editar seus dados de endereço a qualquer
-              momento.
+              Aqui você pode visualizar e editar seus dados de endereço a
+              qualquer momento.
             </p>
 
-            {billingAddresses && billingAddresses.length > 0 ? (
+            {/* Listar endereços usando useAddresses */}
+            {addresses && addresses.length > 0 ? (
               <div className="space-y-4 mb-[18px]">
-                {billingAddresses.slice(0, 2).map(address => (
+                {addresses.slice(0, 2).map((address) => (
                   <div
                     key={address.id}
                     className="flex flex-col border-1 border-[#D9D9D9] rounded-xl"
                   >
                     <div className="flex items-center p-4 gap-3 border-b-2 border-[#D9D9D9]">
-                      {/* flag-${countryCode}.svg */}
-                      {address.country === "Brasil" ? (
+                      {/* Flag do país */}
+                      {address.country.toLowerCase().includes("brasil") ? (
                         <Image
                           src="/icons/flag-br.svg"
                           alt="Flag Brasil"
@@ -293,12 +328,13 @@ export default function Profile() {
                         />
                       ) : (
                         <Image
-                          src="/icons/flag-es.svg"
+                          src="/icons/flag-us.svg"
                           alt="Flag EUA"
                           width={32}
                           height={22}
                         />
                       )}
+
                       <svg
                         width="1"
                         height="22"
@@ -339,7 +375,7 @@ export default function Profile() {
               </div>
             )}
 
-            <Link href="/account/profile/edit" className="mt-auto">
+            <Link href="/account/profile/addresses" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>
@@ -394,7 +430,9 @@ export default function Profile() {
                 />
               </div>
               <span className="text-xs">
-                {user.role === "SELLER" ? "Vendedor verificado" : "Usuário verificado"}
+                {user.role === "SELLER"
+                  ? "Vendedor verificado"
+                  : "Usuário verificado"}
               </span>
             </div>
           ) : (
@@ -473,15 +511,28 @@ export default function Profile() {
               </div>
               {user.phone && (
                 <div className="flex h-[48px] items-center gap-3">
-                  <Image src="/icons/phone.svg" alt="Phone" width={24} height={24} />
+                  <Image
+                    src="/icons/phone.svg"
+                    alt="Phone"
+                    width={24}
+                    height={24}
+                  />
                   <span className="text-sm font-medium">{user.phone}</span>
                 </div>
               )}
               {(user.country || user.state || user.city) && (
                 <div className="flex h-[48px] items-center gap-3">
-                  <Image src="/icons/map-pin.svg" alt="Location" width={24} height={24} />
+                  <Image
+                    src="/icons/map-pin.svg"
+                    alt="Location"
+                    width={24}
+                    height={24}
+                  />
                   <span className="text-sm font-medium">
-                    {[user.country, user.state, user.city].filter(Boolean).join(", ")}.
+                    {[user.country, user.state, user.city]
+                      .filter(Boolean)
+                      .join(", ")}
+                    .
                   </span>
                 </div>
               )}
@@ -508,7 +559,12 @@ export default function Profile() {
             {paymentMethods && paymentMethods.length > 0 ? (
               <div className="mb-6">
                 <div className="flex h-[48px] items-center gap-3">
-                  <Image src="/icons/id-card.svg" alt="Id Card" width={24} height={24} />
+                  <Image
+                    src="/icons/id-card.svg"
+                    alt="Id Card"
+                    width={24}
+                    height={24}
+                  />
                   <span className="text-sm font-medium">
                     {paymentMethods[0]?.cardholderName}
                   </span>
@@ -553,7 +609,9 @@ export default function Profile() {
                     width={24}
                     height={24}
                   />
-                  <span className="text-sm font-medium">{paymentMethods[0]?.type}</span>
+                  <span className="text-sm font-medium">
+                    {paymentMethods[0]?.type}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -579,20 +637,21 @@ export default function Profile() {
               Endereços de cobrança
             </h3>
             <p className="font-lato text-xs text-gray-400 mb-6">
-              Aqui você pode visualizar e editar seus dados de endereço a qualquer
-              momento.
+              Aqui você pode visualizar e editar seus dados de endereço a
+              qualquer momento.
             </p>
 
-            {billingAddresses && billingAddresses.length > 0 ? (
+            {/* Listar endereços usando useAddresses */}
+            {addresses && addresses.length > 0 ? (
               <div className="space-y-4 mb-[18px]">
-                {billingAddresses.slice(0, 2).map(address => (
+                {addresses.slice(0, 2).map((address) => (
                   <div
                     key={address.id}
                     className="flex flex-col border-1 border-[#D9D9D9] rounded-xl"
                   >
                     <div className="flex items-center p-4 gap-3 border-b-2 border-[#D9D9D9]">
-                      {/* flag-${countryCode}.svg */}
-                      {address.country === "Brasil" ? (
+                      {/* Flag do país */}
+                      {address.country.toLowerCase().includes("brasil") ? (
                         <Image
                           src="/icons/flag-br.svg"
                           alt="Flag Brasil"
@@ -601,12 +660,13 @@ export default function Profile() {
                         />
                       ) : (
                         <Image
-                          src="/icons/flag-es.svg"
+                          src="/icons/flag-us.svg"
                           alt="Flag EUA"
                           width={32}
                           height={22}
                         />
                       )}
+
                       <svg
                         width="1"
                         height="22"
@@ -647,7 +707,7 @@ export default function Profile() {
               </div>
             )}
 
-            <Link href="/account/profile/edit" className="mt-auto">
+            <Link href="/account/profile/addresses" className="mt-auto">
               <Button variant="stroke" className="w-full mt-auto">
                 Editar dados
               </Button>

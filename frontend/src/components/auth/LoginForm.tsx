@@ -188,14 +188,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
           <div className="flex items-center justify-between h-[28px]">
             <Link
-              href="/recuperar-senha"
+              href="/password/request"
               className="font-lato text-base text-pb-500 font-bold hover:text-gray-900 transition-colors"
             >
               Esqueci minha senha
             </Link>
 
             <Link
-              href="/cadastro"
+              href="/sign-up"
               className="font-lato text-base text-pb-500 font-bold hover:text-gray-900 transition-colors"
             >
               Criar conta

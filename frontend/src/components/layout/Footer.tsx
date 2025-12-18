@@ -73,7 +73,8 @@ export function Footer() {
               </div>
 
               <p className="hidden lg:block font-lato text-lg text-gray-400 leading-[1.4]">
-                Nascemos para ajudar vendedores e compradores a terem mais segurança.
+                Nascemos para ajudar vendedores e compradores a terem mais
+                segurança.
               </p>
             </div>
 
@@ -94,8 +95,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
-                    //  href="/como-funciona"
+                    href="/become-a-seller#como-funciona"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Como funciona
@@ -112,8 +112,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
-                    //  href="/perguntas-frequentes"
+                    href="/become-a-seller#duvidas-frequentes"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Perguntas frequentes
@@ -183,8 +182,7 @@ export function Footer() {
               <ul className="space-y-4">
                 <li>
                   <Link
-                    // href="/guia-vendedores"
-                    href="#"
+                    href="/become-a-seller"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Guia para vendedores
@@ -192,7 +190,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/vendedor"
+                    href="/become-a-seller"
                     className="font-lato text-lg font-medium text-pb-500 leading-[1.4] hover:text-[#D5A60A] transition-colors"
                   >
                     Vender relógios como particular

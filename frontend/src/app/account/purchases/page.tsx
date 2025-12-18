@@ -1,38 +1,56 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
-import { Breadcrumbs } from "@/components/ui/Breadcrumbs/Breadcrumbs";
+import { Breadcrumbs } from "@/components/ui";
 import { OrderCard } from "@/components/user/OrderCard";
 import { UserNav } from "@/components/user/UserNav";
-import { useUserOrders } from "@/lib/hooks/useUserOrders";
-import { useState } from "react";
-
-type TabType = "em_transito" | "entregue";
+import { useOrders } from "@/lib/hooks/useOrders";
+import { Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function PurchasesPage() {
-  const { orders, isLoading, error } = useUserOrders();
-  const [activeTab, setActiveTab] = useState<TabType>("em_transito");
+  const router = useRouter();
+  const { orders, isLoading, error } = useOrders();
 
-  // Filtrar pedidos por status
-  const ordersInTransit = orders.filter(
-    order =>
-      order.status === "enviado" ||
-      order.status === "em_transito" ||
-      order.status === "em_preparacao" ||
-      order.status === "pago"
-  );
+  const displayOrders = orders;
 
-  const deliveredOrders = orders.filter(
-    order => order.status === "entregue" || order.status === "cancelado"
-  );
+  // Redireciona para login se houver erro 401
+  useEffect(() => {
+    if (error && error.message?.includes("401")) {
+      router.push("/login");
+    }
+  }, [error, router]);
 
-  const displayedOrders = activeTab === "em_transito" ? ordersInTransit : deliveredOrders;
-
-  if (error) {
+  if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-600">Erro ao carregar pedidos: {error}</p>
+      <div className="min-h-screen bg-white lg:py-8">
+        <MobileBackHeader title="Minhas compras" />
+        <div className="max-w-7xl mx-auto px-5 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 w-64 bg-gray-200 rounded mb-8"></div>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-100 rounded-lg h-40"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tratamento de erro (exceto 401 que redireciona)
+  if (error && !error.message?.includes("401")) {
+    return (
+      <div className="min-h-screen bg-white lg:py-8">
+        <MobileBackHeader title="Minhas compras" />
+        <div className="max-w-7xl mx-auto px-5 lg:px-8 mt-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <p className="text-red-600">
+              Erro ao carregar pedidos. Tente novamente mais tarde.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -40,77 +58,56 @@ export default function PurchasesPage() {
 
   return (
     <div className="min-h-screen bg-white lg:py-8">
+      {/* Mobile Header */}
       <MobileBackHeader title="Minhas compras" />
-      {/* ==================== HEADER DESKTOP ==================== */}
+
+      {/* Desktop Header */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <Breadcrumbs
-                items={[{ label: "Home", href: "/" }, { label: "Minhas compras" }]}
+                items={[
+                  { label: "Home", href: "/" },
+                  { label: "Minhas compras" },
+                ]}
               />
-              <h1 className="text-3xl lg:text-[32px] leading-[100%]">Minhas compras</h1>
+              <h1 className="text-3xl lg:text-[32px] leading-[100%]">
+                Minhas compras
+              </h1>
             </div>
             <UserNav />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto lg:mt-12.5 px-5 lg:px-8">
-        {/* Abas de filtro */}
-        <div className="">
-          <div className="flex lg:px-4">
+      {/* Conteúdo */}
+      <div className="max-w-7xl mx-auto lg:mt-8 px-5 lg:px-8 lg:pb-[150px]">
+        {displayOrders.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <Package className="w-8 h-8 text-gray-400" />
+            </div>
+            <h2 className="text-xl font-lato font-semibold mb-2">
+              Nenhuma compra ainda
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Quando você fizer uma compra, ela aparecerá aqui.
+            </p>
             <button
-              onClick={() => setActiveTab("entregue")}
-              className={`flex-1 lg:flex-none lg:w-[198px] h-[41px] px-2 text-[18px] font-medium leading-[140%] tracking-[-1%] transition-colors relative ${
-                activeTab === "entregue"
-                  ? "text-pb-500"
-                  : "text-gray-400 hover:text-gray-700"
-              }`}
+              onClick={() => router.push("/all")}
+              className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
             >
-              Finalizados
-              {activeTab === "entregue" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#BE9F56]" />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab("em_transito")}
-              className={`flex-1 lg:flex-none lg:w-[198px] h-[41px] px-2 text-[18px] font-medium leading-[140%] tracking-[-1%] transition-colors relative ${
-                activeTab === "em_transito"
-                  ? "text-pb-500"
-                  : "text-gray-400 hover:text-gray-700"
-              }`}
-            >
-              A caminho
-              {activeTab === "em_transito" && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#BE9F56]" />
-              )}
+              Ver produtos
             </button>
           </div>
-        </div>
-
-        {/* Lista de pedidos */}
-        <div className="rounded-[12px] lg:border border-[#EFEFEF] py-4 lg:py-6 lg:px-8">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE9F56]" />
-            </div>
-          ) : displayedOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                {activeTab === "em_transito"
-                  ? "Você não possui pedidos a caminho no momento."
-                  : "Você ainda não possui pedidos finalizados."}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-              {displayedOrders.map(order => (
-                <OrderCard key={order.id} order={order} showTrackButton={true} />
-              ))}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 mb-6">
+            {displayOrders.map((order) => (
+              <OrderCard key={order.id} order={order} showTrackButton={true} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

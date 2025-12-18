@@ -1,11 +1,12 @@
 "use client";
 
 import { useAuth } from "@/lib/context/AuthContext";
+import { scrollToFAQ } from "@/lib/utils/navigation";
 import { getInitials } from "@/lib/utils/stringUtils";
 import { SquareX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/Button";
 import { MobileUserMenu } from "./MobileUserMenu";
@@ -18,14 +19,28 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, mockLogout, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
-  const isVendedorPage = pathname === "/vendedor";
+  const isSellerPage = pathname === "/become-a-seller";
+
+  const handleFAQClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+
+    if (pathname === "/become-a-seller") {
+      scrollToFAQ();
+    } else {
+      router.push("/become-a-seller");
+      setTimeout(() => {
+        scrollToFAQ();
+      }, 100);
+    }
+  };
 
   return (
     <div className="relative inset-x-0 z-120 group">
       <header
         className={`relative mx-auto duration-200 ${
-          isVendedorPage
+          isSellerPage
             ? "h-16 md:h-24 absolute lg:relative w-full bg-transparent lg:bg-white"
             : "h-[120px] md:h-24 bg-white"
         }`}
@@ -40,7 +55,7 @@ export function Header() {
                 className="flex items-center w-[92px] h-[25px] md:w-[123px] md:h-[33px]"
               >
                 {/* Mobile da página vendedor: logo branco */}
-                {isVendedorPage && (
+                {isSellerPage && (
                   <>
                     <Image
                       src="/logo-white.svg"
@@ -63,7 +78,7 @@ export function Header() {
                 )}
 
                 {/* Outras páginas - Desktop */}
-                {!isVendedorPage && (
+                {!isSellerPage && (
                   <Image
                     src="/logo.svg"
                     alt="Nobile"
@@ -75,7 +90,7 @@ export function Header() {
                 )}
 
                 {/* Outras páginas - Mobile */}
-                {!isVendedorPage && (
+                {!isSellerPage && (
                   <Image
                     src="/logo-mobile.svg"
                     alt="Nobile"
@@ -90,13 +105,16 @@ export function Header() {
               {/* Desktop Navigation Links */}
               <nav className="hidden lg:flex items-center space-x-8">
                 <Link
-                  href="/#"
+                  href="/become-a-seller#duvidas-frequentes"
+                  onClick={handleFAQClick}
                   className="font-lato text-md font-medium text-gray-400 hover:text-gray-900 transition-colors"
                 >
                   Perguntas frequentes
                 </Link>
                 <Link
-                  href="/vendedor"
+                  href={
+                    isAuthenticated ? "/account/listings" : "/become-a-seller"
+                  }
                   className="font-lato text-md font-medium text-gray-400 hover:text-gray-900 transition-colors"
                 >
                   Vender meu relógio
@@ -133,14 +151,14 @@ export function Header() {
                 <Link href="/account/profile">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isVendedorPage
+                      isSellerPage
                         ? "bg-white/20 backdrop-blur-sm border border-white/30"
                         : "bg-gray-200"
                     }`}
                   >
                     <span
                       className={`font-lato text-sm font-medium ${
-                        isVendedorPage ? "text-white" : "text-gray-700"
+                        isSellerPage ? "text-white" : "text-gray-700"
                       }`}
                     >
                       {getInitials(user?.name)}
@@ -158,9 +176,7 @@ export function Header() {
                 {isMobileMenuOpen ? (
                   <SquareX
                     className={`h-6 w-6 ${
-                      isVendedorPage
-                        ? "text-white lg:text-pb-500"
-                        : "text-pb-500"
+                      isSellerPage ? "text-white lg:text-pb-500" : "text-pb-500"
                     }`}
                   />
                 ) : (
@@ -170,9 +186,7 @@ export function Header() {
                     viewBox="0 0 24 18"
                     xmlns="http://www.w3.org/2000/svg"
                     className={`h-6 w-6 ${
-                      isVendedorPage
-                        ? "text-white lg:text-pb-500"
-                        : "text-pb-500"
+                      isSellerPage ? "text-white lg:text-pb-500" : "text-pb-500"
                     }`}
                   >
                     <path
@@ -186,7 +200,7 @@ export function Header() {
           </div>
 
           {/* Segunda linha - Search Bar (apenas mobile E NÃO na página vendedor) */}
-          {!isVendedorPage && (
+          {!isSellerPage && (
             <div className="md:hidden pb-4">
               <SearchBar />
             </div>

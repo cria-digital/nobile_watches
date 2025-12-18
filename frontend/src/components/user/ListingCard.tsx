@@ -64,6 +64,7 @@ export function ListingCard({
 
   const watch = listing.watch;
   const hasImage = watch?.images && watch.images.length > 0 && watch.images[0];
+  const isClickable = listing.status === "ACTIVE";
 
   const listingUrl = watch
     ? `/${stringToSlug(watch.brand)}/${stringToSlug(watch.model)}-${listing.watchId}`
@@ -150,37 +151,59 @@ export function ListingCard({
 
       <div className="flex gap-4 mb-4">
         {/* Imagem do relógio ou placeholder */}
-        <Link href={listingUrl} className="flex-shrink-0">
-          <div className="w-[116px] h-[116px] relative bg-[#EFEFEF] rounded-[5px] overflow-hidden">
-            {hasImage ? (
-              <Image // @ts-ignore
-                src={watch.images[0]}
-                alt={`${watch.brand} ${watch.model}`}
-                fill
-                className="object-cover"
-                sizes="
-    (max-width: 640px) 116px,
-    (max-width: 1024px) 116px,
-    116px
-  "
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-gray-400 text-sm">Sem imagem</span>
-              </div>
-            )}
+        {isClickable ? (
+          <Link href={listingUrl} className="flex-shrink-0">
+            <div className="w-[116px] h-[116px] relative bg-[#EFEFEF] rounded-[5px] overflow-hidden">
+              {hasImage ? (
+                <Image // @ts-ignore
+                  src={watch.images[0]}
+                  alt={`${watch.brand} ${watch.model}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 116px, (max-width: 1024px) 116px, 116px"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">Sem imagem</span>
+                </div>
+              )}
+            </div>
+          </Link>
+        ) : (
+          <div className="flex-shrink-0">
+            <div className="w-[116px] h-[116px] relative bg-[#EFEFEF] rounded-[5px] overflow-hidden">
+              {hasImage ? (
+                <Image // @ts-ignore
+                  src={watch.images[0]}
+                  alt={`${watch.brand} ${watch.model}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 116px, (max-width: 1024px) 116px, 116px"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">Sem imagem</span>
+                </div>
+              )}
+            </div>
           </div>
-        </Link>
+        )}
 
         {/* Informações do relógio */}
         <div className="flex-1 flex flex-col justify-between min-w-0">
           <div>
             <div className="flex items-start justify-between gap-2 mb-1">
-              <Link href={listingUrl}>
-                <h3 className="font-medium text-base leading-tight hover:text-[#D5A60A] transition-colors truncate">
+              {isClickable ? (
+                <Link href={listingUrl}>
+                  <h3 className="font-medium text-base leading-tight hover:text-[#D5A60A] transition-colors truncate">
+                    {watch?.brand} {watch?.model}
+                  </h3>
+                </Link>
+              ) : (
+                <h3 className="font-medium text-base leading-tight truncate">
                   {watch?.brand} {watch?.model}
                 </h3>
-              </Link>
+              )}
 
               {/* Menu de ações */}
               <Menu as="div" className="relative">
@@ -296,18 +319,21 @@ export function ListingCard({
 
           <div>
             <p className="text-lg">
-              {watch?.price ? formatCurrency(watch.price) : "Preço não definido"}
+              {watch?.price
+                ? formatCurrency(watch.price)
+                : "Preço não definido"}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Botão "Visualizar anúncio" com transição suave */}
-      <Link href={listingUrl}>
+      {/* ; */}
+      <Link href={listingUrl} className="block">
         <Button variant="stroke" className="w-full h-[50px]">
           Visualizar anúncio
         </Button>
       </Link>
+      {/* )} */}
     </div>
   );
 }

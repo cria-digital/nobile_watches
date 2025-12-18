@@ -3,44 +3,19 @@
  * Centralizamos aqui toda a lógica de interceptação de requisições e respostas
  */
 
-import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import type { AxiosError, AxiosInstance } from "axios";
 import type { ApiErrorResponse, InterceptorOptions } from "./types";
 
-/**
- * Token storage key - centralizando para evitar inconsistências
- */
-const TOKEN_STORAGE_KEY = "token";
 const USER_STORAGE_KEY = "nobile_user";
-
-/**
- * Obtém o token de autenticação do localStorage
- */
-function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
-}
+const MOCK_TOKEN_KEY = "mock_auth_token";
 
 /**
  * Remove dados de autenticação do localStorage
  */
 function clearAuthData(): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(USER_STORAGE_KEY);
-  localStorage.removeItem("mock_auth_token");
-}
-
-/**
- * Interceptor de requisição que adiciona o token JWT automaticamente
- */
-export function requestAuthInterceptor(config: InternalAxiosRequestConfig) {
-  const token = getAuthToken();
-
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
+  localStorage.removeItem(MOCK_TOKEN_KEY);
 }
 
 /**
@@ -70,15 +45,21 @@ export function responseErrorInterceptor(
   if (error.response?.status === 401 && enable401Redirect) {
     clearAuthData();
 
-    // Redireciona apenas se estiver no browser
     if (typeof window !== "undefined") {
-      // Evita redirecionar se já estiver na página de login
       if (!window.location.pathname.includes("/login")) {
-        window.location.href = redirectUrl;
+        console.log("🔒 401 detectado: redirecionando para /login");
+
+        // ✅ ADICIONAR estas linhas:
+        fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        }).catch((err) => console.error("Erro ao limpar cookie:", err));
+
+        const currentPath = window.location.pathname;
+        window.location.href = `${redirectUrl}?redirect=${encodeURIComponent(currentPath)}`;
       }
     }
   }
-
   return Promise.reject(error);
 }
 
@@ -89,22 +70,19 @@ export function setupInterceptors(
   axiosInstance: AxiosInstance,
   options: InterceptorOptions = {}
 ): void {
-  const { enableAuth = true, enable401Redirect = true, redirectUrl = "/login" } = options;
+  const { enable401Redirect = true, redirectUrl = "/login" } = options;
 
-  // Limpa interceptors existentes (caso seja reconfiguração)
   axiosInstance.interceptors.request.clear();
   axiosInstance.interceptors.response.clear();
 
-  // Request interceptors
-  if (enableAuth) {
-    axiosInstance.interceptors.request.use(
-      requestAuthInterceptor,
-      requestErrorInterceptor
-    );
-  }
+  // Request interceptors - apenas tratamento de erro
+  axiosInstance.interceptors.request.use(
+    (config) => config, // ✅ Passa direto, cookies são automáticos
+    requestErrorInterceptor
+  );
 
   // Response interceptors
-  axiosInstance.interceptors.response.use(responseSuccessInterceptor, error =>
+  axiosInstance.interceptors.response.use(responseSuccessInterceptor, (error) =>
     responseErrorInterceptor(error, { enable401Redirect, redirectUrl })
   );
 }

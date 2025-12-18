@@ -1,78 +1,113 @@
 "use client";
 
 import { MobileBackHeader } from "@/components/layout/MobileBackHeader";
+import { ShippingAddressCard } from "@/components/orders/ShippingAddressCard";
+import { Button, ErrorState, PageLoading } from "@/components/ui";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs/Breadcrumbs";
-import { Button } from "@/components/ui/Button";
 import { OrderTimelineComponent } from "@/components/user/OrderTimeline";
-import { UserNav } from "@/components/user/UserNav";
-import { getMockOrderDetails } from "@/lib/data/mockOrders";
-import { Order } from "@/types/order";
-import { ArrowLeft } from "lucide-react";
+import { useOrderDetails } from "@/lib/hooks/useOrderDetails";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
+const statusLabels: Record<string, string> = {
+  pendente: "Aguardando pagamento",
+  pago: "Pagamento aprovado",
+  em_preparacao: "Em preparação",
+  enviado: "Enviado",
+  em_transito: "Em trânsito",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+};
+
+const statusColors: Record<string, string> = {
+  pendente: "bg-yellow-100 text-yellow-800",
+  pago: "bg-green-100 text-green-800",
+  em_preparacao: "bg-blue-100 text-blue-800",
+  enviado: "bg-blue-100 text-blue-800",
+  em_transito: "bg-blue-100 text-blue-800",
+  entregue: "bg-green-100 text-green-800",
+  cancelado: "bg-red-100 text-red-800",
+};
 
 export default function OrderDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const orderId = params.id as string;
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { order, isLoading, isError, error, confirmDelivery, refresh } =
+    useOrderDetails(orderId);
 
-  useEffect(() => {
-    // Simular carregamento de dados
-    setTimeout(() => {
-      const orderData = getMockOrderDetails(orderId);
-      setOrder(orderData);
-      setIsLoading(false);
-    }, 300);
-  }, [orderId]);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState(false);
 
-  const handleContactSeller = () => {
-    // TODO: Implementar chat com vendedor
-    console.log("Contatar vendedor");
-  };
+  /**
+   * Confirma entrega do pedido
+   */
+  const handleConfirmDelivery = async () => {
+    if (!window.confirm("Confirmar que você recebeu o pedido?")) {
+      return;
+    }
 
-  const handleCancelOrder = () => {
-    // TODO: Implementar cancelamento de pedido
-    if (window.confirm("Tem certeza que deseja cancelar este pedido?")) {
-      console.log("Cancelar pedido");
-      router.push("/account/purchases");
+    setIsConfirming(true);
+    const result = await confirmDelivery();
+    setIsConfirming(false);
+
+    if (result.success) {
+      alert("Entrega confirmada com sucesso!");
+    } else {
+      alert(result.error || "Erro ao confirmar entrega");
     }
   };
 
-  if (isLoading) {
+  /**
+   * Contatar vendedor (placeholder)
+   */
+  const handleContactSeller = () => {
+    if (!order) return;
+
+    // TODO: Implementar chat/mensagens
+    alert(`Contatar ${order.seller?.name || "vendedor"}`);
+  };
+
+  // Loading
+  if (isLoading || isVerifyingPayment) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="h-64 bg-gray-200 rounded mb-4"></div>
-            <div className="h-96 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
+      <PageLoading
+        text={
+          isVerifyingPayment
+            ? "Confirmando pagamento..."
+            : "Carregando detalhes do pedido..."
+        }
+      />
     );
   }
 
-  if (!order) {
+  // Erro
+  if (isError || !order) {
     return (
       <div className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 py-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Voltar
-          </button>
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-semibold mb-4">Pedido não encontrado</h2>
-            <p className="text-gray-600 mb-6">
-              Não foi possível encontrar os detalhes deste pedido.
-            </p>
-            <Button onClick={() => router.push("/account/purchases")}>
+        <MobileBackHeader
+          title="Detalhes do pedido"
+          onBackClick={() => router.back()}
+        />
+
+        <div className="max-w-2xl mx-auto px-4 py-12">
+          <ErrorState
+            title="Pedido não encontrado"
+            description={
+              error?.message ||
+              "Não foi possível encontrar os detalhes deste pedido."
+            }
+          />
+          <div className="flex justify-center mt-6">
+            <Button
+              onClick={() => router.push("/account/purchases")}
+              variant="gold"
+            >
               Ver todos os pedidos
             </Button>
           </div>
@@ -83,7 +118,11 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="min-h-screen bg-white lg:py-8">
-      <MobileBackHeader title="Acompanhar pedido" onBackClick={() => router.back()} />
+      <MobileBackHeader
+        title="Acompanhar pedido"
+        onBackClick={() => router.back()}
+      />
+
       {/* Desktop Header */}
       <div className="hidden lg:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,14 +136,29 @@ export default function OrderDetailsPage() {
                 ]}
               />
               <h1 className="text-3xl lg:text-[32px] leading-[100%]">
-                Detalhes do pedido
+                Detalhes do pedido #{order.id}
               </h1>
             </div>
-            <UserNav />
+            {/* <UserNav /> */}
           </div>
         </div>
       </div>
-
+      {/*  Banner de sucesso do pagamento */}
+      {paymentVerified && (
+        <div className="max-w-7xl mx-auto px-5 lg:px-8 mt-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-green-900">
+                Pagamento confirmado com sucesso!
+              </p>
+              <p className="text-sm text-green-700">
+                O vendedor foi notificado e seu pedido será processado.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Conteúdo principal */}
       <div className="max-w-7xl mx-auto lg:mt-8 px-5 lg:px-8 lg:pb-[150px]">
         <div className="rounded-[12px] lg:border border-[#EFEFEF] py-4 lg:py-6 lg:px-8">
@@ -115,7 +169,9 @@ export default function OrderDetailsPage() {
                 {/* Imagem do produto */}
                 <div className="w-[116px] h-[116px] lg:w-[140px] lg:h-[140px] relative bg-[#EFEFEF] rounded-[8px] overflow-hidden flex-shrink-0">
                   <Image
-                    src={order.watch.images[0] || "/images/mock/order1.svg"}
+                    src={
+                      order.watch.images[0] || "/images/placeholder-watch.png"
+                    }
                     alt={`${order.watch.brand} ${order.watch.model}`}
                     fill
                     className="object-contain"
@@ -123,91 +179,149 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {/* Informações do produto */}
-                <div className="flex-1 min-w-0 py-1">
+                <div className="flex-1 min-w-0">
                   {/* Vendedor */}
-                  <div className="flex items-center gap-2 mb-2">
-                    {order.seller?.isVerified && (
-                      <div className="w-4 h-4 relative flex-shrink-0">
+                  {order.seller && (
+                    <div className="flex items-center gap-1.5 mb-3">
+                      {order.seller.isVerified && (
                         <Image
                           src="/icons/verified-badge.svg"
                           alt="Verificado"
                           width={16}
                           height={16}
                         />
-                      </div>
-                    )}
-                    <span className="font-erstoria text-sm text-[#D5A60A] leading-[140%] tracking-[-1%]">
-                      {order.seller?.name}
-                    </span>
-                  </div>
+                      )}
+                      <span className="font-erstoria text-sm text-[#D5A60A]">
+                        {order.seller.name}
+                      </span>
+                    </div>
+                  )}
 
-                  {/* Nome do relógio */}
-                  <h2 className="text-[18px] leading-[140%] tracking-[-1%] truncate">
+                  {/* Modelo */}
+                  <h2 className="text-lg lg:text-xl mb-1 truncate">
                     {order.watch.brand} {order.watch.model}
                   </h2>
-                  <p className="text-sm text-gray-400 mb-2">{order.watch.condition}</p>
 
-                  {/* Total */}
-                  <div className="">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm lg:text-base text-gray-400">Total:</span>
-                      <p className="text-[18px] font-medium">
-                        R$ {order.watch.price.toLocaleString("pt-BR")}
+                  {/* Condição */}
+                  <p className="text-sm text-gray-500 mb-2">
+                    {order.watch.condition}
+                  </p>
+
+                  {/* Referência */}
+                  {order.watch.referenceNumber && (
+                    <p className="text-xs text-gray-400 mb-3">
+                      REF: {order.watch.referenceNumber}
+                    </p>
+                  )}
+
+                  {/* Preço */}
+                  <p className="text-xl lg:text-2xl font-bold">
+                    R$ {order.watch.price.toLocaleString("pt-BR")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status do pedido */}
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm text-gray-600">
+                    Status do pedido:
+                  </span>
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      statusColors[order.status]
+                    }`}
+                  >
+                    {statusLabels[order.status]}
+                  </span>
+                </div>
+
+                {/* Data do pedido */}
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <span>Pedido realizado em:</span>
+                  <span className="font-medium">
+                    {new Date(order.createdAt).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Informações de pagamento */}
+              {order.paymentInfo && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-900">
+                      <p className="font-medium mb-1">
+                        Informações de pagamento
                       </p>
+                      {/* <p className="text-xs whitespace-pre-wrap">
+                        {typeof order.paymentInfo === "string"
+                          ? order.paymentInfo
+                          : JSON.stringify(order.paymentInfo, null, 2)}
+                      </p> */}
+                      Pagamento realizado através do Stripe
                     </div>
                   </div>
                 </div>
+              )}
+
+              <div className="lg:col-span-1 mt-6 lg:mt-0">
+                <ShippingAddressCard shippingInfo={order.shippingInfo} />
               </div>
             </div>
 
             {/* Timeline do pedido */}
-            <div className="lg:bg-[#F7F7F7] rounded-[24px] lg:p-6">
-              {order.timeline && order.timeline.length > 0 && (
+            <div>
+              <h3 className="text-lg mb-4 lg:mb-6">Rastreamento do pedido</h3>
+
+              {order.timeline && order.timeline.length > 0 ? (
                 <OrderTimelineComponent timeline={order.timeline} />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Nenhuma atualização disponível ainda</p>
+                </div>
               )}
+
+              {/* Ações */}
+              <div className="space-y-3 mt-12">
+                {/* Botão contatar vendedor */}
+                {order.seller && (
+                  <Button
+                    onClick={handleContactSeller}
+                    variant="stroke"
+                    className="w-full"
+                  >
+                    Contatar vendedor
+                  </Button>
+                )}
+
+                {/* Botão confirmar entrega */}
+                {order.status === "enviado" && (
+                  <Button
+                    onClick={handleConfirmDelivery}
+                    variant="gold"
+                    className="w-full"
+                    disabled={isConfirming}
+                  >
+                    {isConfirming ? "Confirmando..." : "Confirmar entrega"}
+                  </Button>
+                )}
+
+                {/* Botão cancelar (apenas se pendente) */}
+                {order.status === "pendente" && (
+                  <button
+                    onClick={() => {
+                      // TODO: Implementar cancelamento
+                      alert("Funcionalidade em desenvolvimento");
+                    }}
+                    className="w-full text-red-600 text-sm font-medium hover:underline"
+                  >
+                    Cancelar pedido
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* Botões de ação - Mobile */}
-          <div className="lg:hidden block p-4 space-y-3 mt-12">
-            <button
-              onClick={handleContactSeller}
-              className="w-full h-[52px] rounded-full border-2 border-[#141414] bg-[#141414] text-white text-base font-bold active:bg-[#2a2a2a] transition-colors flex items-center justify-center gap-2"
-            >
-              Falar com vendedor
-            </button>
-
-            {order.status !== "cancelado" && order.status !== "entregue" && (
-              <button
-                onClick={handleCancelOrder}
-                className="w-full h-[52px] rounded-full border-2 border-gray-300 text-gray-600 text-base font-semibold active:bg-gray-50 transition-colors"
-              >
-                Cancelar compra
-              </button>
-            )}
-          </div>
-
-          {/* Botões de ação - Desktop */}
-          <div className="hidden lg:flex mt-8 gap-3 justify-end">
-            {order.status !== "cancelado" && order.status !== "entregue" && (
-              <button
-                onClick={handleCancelOrder}
-                className="w-[240px] h-[52px] px-8 rounded-full border-2 border-gray-300 text-gray-600 text-base font-semibold hover:bg-gray-50 transition-colors"
-              >
-                Cancelar compra
-              </button>
-            )}
-
-            <button
-              onClick={handleContactSeller}
-              className="w-[240px] h-[52px] px-8 rounded-full border-2 border-[#141414] text-pb-500 text-base font-bold hover:bg-[#2a2a2a] transition-colors flex items-center justify-center gap-2"
-            >
-              Falar com vendedor
-            </button>
-          </div>
-
-          {/* Spacer para botões fixos mobile */}
-          <div className="lg:hidden h-32"></div>
         </div>
       </div>
     </div>

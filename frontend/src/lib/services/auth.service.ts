@@ -19,7 +19,6 @@ export interface User {
 
 export interface LoginResponse {
   message: string;
-  token: string;
   user: User;
 }
 
@@ -37,6 +36,23 @@ export interface RegisterData {
   state: string;
   city: string;
   role?: "BUYER" | "SELLER";
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  email: string;
+}
+
+export interface ValidateResetTokenResponse {
+  valid: boolean;
+  message?: string;
+  email?: string;
+  expiresIn?: string;
+  error?: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
 }
 
 export interface VerificationResponse {
@@ -59,7 +75,6 @@ export interface VerificationStatusResponse {
 // CONSTANTES
 // ===============================================
 
-const TOKEN_KEY = "token";
 const USER_KEY = "nobile_user";
 const MOCK_TOKEN_KEY = "mock_auth_token";
 
@@ -68,62 +83,162 @@ const MOCK_TOKEN_KEY = "mock_auth_token";
 // ===============================================
 
 class AuthService {
-  /**
-   * Realiza login no backend
-   * Endpoint: POST /auth/login
-   *
-   * Usa publicApiClient pois o login não precisa de autenticação prévia
-   */
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await publicApiClient.post<LoginResponse>("/auth/login", {
-        email,
-        password,
+      // Chama API Route do Next.js (não backend direto)
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ Envia/recebe cookies
+        body: JSON.stringify({ email, password }),
       });
 
-      // Salva o token no localStorage
-      if (response.data.token) {
-        localStorage.setItem(TOKEN_KEY, response.data.token);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erro ao fazer login");
       }
 
-      // Salva os dados do usuário no localStorage
-      if (response.data.user) {
-        localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+      const data = await response.json();
+
+      // Salva apenas dados do usuário (não token)
+      if (data.user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       }
 
-      return response.data;
+      return {
+        message: data.message || "Login realizado com sucesso",
+        user: data.user,
+      };
     } catch (error) {
       throw new Error(
-        extractErrorMessage(error, "Erro ao fazer login. Verifique suas credenciais.")
+        extractErrorMessage(
+          error,
+          "Erro ao fazer login. Verifique suas credenciais."
+        )
       );
     }
   }
 
-  /**
-   * Realiza registro de novo usuário no backend
-   * Endpoint: POST /auth/register
-   *
-   * Usa publicApiClient pois o registro não precisa de autenticação
-   */
   async register(userData: RegisterData): Promise<RegisterResponse> {
     try {
-      const response = await publicApiClient.post<RegisterResponse>(
-        "/auth/register",
-        userData
-      );
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(userData),
+      });
 
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erro ao fazer registro");
+      }
+
+      const data = await response.json();
+
+      // Salva apenas dados do usuário
+      if (data.user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      }
+
+      return {
+        message: data.message || "Cadastro realizado com sucesso",
+        user: data.user,
+      };
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao fazer registro."));
     }
   }
 
-  /**
-   * Busca perfil do usuário autenticado
-   * Endpoint: GET /auth/me
-   *
-   * Usa apiClient pois precisa de autenticação (token)
-   */
+  async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+    try {
+      const response = await publicApiClient.post<ForgotPasswordResponse>(
+        "/auth/forgot-password",
+        { email }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      // Tratamento específico para rate limit (429)
+      if (error.response?.status === 429) {
+        throw new Error(
+          "Muitas tentativas. Por favor, aguarde alguns minutos antes de tentar novamente."
+        );
+      }
+
+      // Tratamento para bad request (400)
+      if (error.response?.status === 400) {
+        throw new Error(
+          error.response?.data?.message ||
+            "Email inválido. Verifique o endereço informado."
+        );
+      }
+
+      // Erro genérico
+      throw new Error(
+        extractErrorMessage(
+          error,
+          "Erro ao enviar código de recuperação. Tente novamente."
+        )
+      );
+    }
+  }
+
+  async validateResetToken(code: string): Promise<ValidateResetTokenResponse> {
+    try {
+      const response = await publicApiClient.get<ValidateResetTokenResponse>(
+        `/auth/reset-password/${code}`
+      );
+
+      return response.data;
+    } catch (error: any) {
+      // Tratamento para bad request (400) - Token inválido ou expirado
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.error || "Código inválido ou expirado.";
+        throw new Error(errorMessage);
+      }
+
+      // Tratamento para erro interno (500)
+      if (error.response?.status === 500) {
+        throw new Error("Erro ao validar código. Tente novamente.");
+      }
+
+      // Erro genérico
+      throw new Error(
+        extractErrorMessage(error, "Erro ao validar código. Tente novamente.")
+      );
+    }
+  }
+
+  async resetPassword(
+    code: string,
+    newPassword: string
+  ): Promise<ResetPasswordResponse> {
+    try {
+      const response = await publicApiClient.post<ResetPasswordResponse>(
+        "/auth/reset-password",
+        {
+          token: code,
+          newPassword,
+        }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      // Tratamento para bad request (400) - Token inválido
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.error || "Código inválido ou expirado.";
+        throw new Error(errorMessage);
+      }
+
+      // Erro genérico
+      throw new Error(
+        extractErrorMessage(error, "Erro ao redefinir senha. Tente novamente.")
+      );
+    }
+  }
+
   async getProfile(): Promise<User> {
     try {
       const response = await apiClient.get<User>("/users/me");
@@ -133,14 +248,12 @@ class AuthService {
 
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar perfil do usuário."));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar perfil do usuário.")
+      );
     }
   }
 
-  /**
-   * Atualiza perfil do usuário
-   * Endpoint: PUT /auth/profile
-   */
   async updateProfile(userData: Partial<User>): Promise<User> {
     try {
       const response = await apiClient.put<User>("/auth/profile", userData);
@@ -154,10 +267,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Envia documentos para verificação de identidade com suporte a progresso de upload
-   * Endpoint: POST /auth/submit-verification
-   */
   async submitVerification(
     documentFront: File,
     documentBack: File,
@@ -177,7 +286,7 @@ class AuthService {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          onUploadProgress: progressEvent => {
+          onUploadProgress: (progressEvent) => {
             if (progressEvent.total && onProgress) {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
@@ -198,15 +307,14 @@ class AuthService {
       return response.data;
     } catch (error) {
       throw new Error(
-        extractErrorMessage(error, "Erro ao enviar documentos para verificação.")
+        extractErrorMessage(
+          error,
+          "Erro ao enviar documentos para verificação."
+        )
       );
     }
   }
 
-  /**
-   * Consulta o status de verificação do usuário
-   * Endpoint: GET /auth/verification-status
-   */
   async getVerificationStatus(): Promise<VerificationStatusResponse> {
     try {
       const response = await apiClient.get<VerificationStatusResponse>(
@@ -228,9 +336,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Obtém o usuário atual do localStorage
-   */
   getCurrentUser(): User | null {
     try {
       if (typeof window === "undefined") return null;
@@ -245,64 +350,52 @@ class AuthService {
     }
   }
 
-  /**
-   * Obtém o token atual do localStorage
-   */
-  getToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(TOKEN_KEY);
-  }
-
-  /**
-   * Verifica se o usuário está autenticado
-   */
   isAuthenticated(): boolean {
-    const token = this.getToken();
     const user = this.getCurrentUser();
-    return !!(token && user);
+    return !!user;
   }
 
-  /**
-   * Faz logout removendo token e dados do usuário
-   */
-  logout(): void {
-    if (typeof window === "undefined") return;
-
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(MOCK_TOKEN_KEY);
+  async logout(): Promise<void> {
+    try {
+      // Limpa cookie no servidor
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Erro ao fazer logout no servidor:", error);
+    } finally {
+      // Limpa dados locais (sempre)
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(MOCK_TOKEN_KEY);
+      }
+    }
   }
 
-  /**
-   * Obtém apenas o ID do usuário
-   */
   getUserId(): number | null {
     const user = this.getCurrentUser();
     return user?.id || null;
   }
 
-  /**
-   * Obtém o role do usuário
-   */
   getUserRole(): "BUYER" | "SELLER" | "ADMIN" | null {
     const user = this.getCurrentUser();
     return user?.role || null;
   }
 
-  /**
-   * Verifica se o token é válido fazendo uma requisição ao backend
-   */
   async validateToken(): Promise<boolean> {
     try {
-      await this.getProfile();
-      return true;
+      const response = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
+      return response.ok;
     } catch (error) {
+      console.error("Erro ao validar token:", error);
       return false;
     }
   }
 }
 
-// Exporta uma instância única do serviço
 export const authService = new AuthService();
 
 // Exporta a classe para testes

@@ -1,4 +1,4 @@
-import CollectionPageClient from "@/components/user/CollectionPageClient";
+import { CollectionPageClient } from "@/components/collection";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

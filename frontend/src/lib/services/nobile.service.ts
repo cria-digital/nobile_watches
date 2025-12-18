@@ -17,6 +17,40 @@ import type {
   WishlistItem,
 } from "@/types/nobile";
 
+/**
+ * Interface para resposta de busca avançada
+ */
+export interface SearchAdvancedResponse {
+  watches: Watch[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+/**
+ * Parâmetros para busca avançada
+ */
+export interface SearchAdvancedParams {
+  query?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  condition?: string;
+  movement?: string;
+  caseMaterial?: string;
+  braceletMaterial?: string;
+  dialColor?: string;
+  gender?: string;
+  minYear?: number;
+  maxYear?: number;
+  minDiameter?: number;
+  maxDiameter?: number;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: "asc" | "desc";
+}
+
 class NobileService {
   // ===============================================
   // WATCHES (RELÓGIOS)
@@ -24,6 +58,8 @@ class NobileService {
 
   /**
    * Busca todos os relógios
+   * ⚠️ ATENÇÃO: Este método retorna TODOS os watches, incluindo os sem listings ativos.
+   * Para páginas de listagem, use searchWatchesAdvanced() que filtra apenas watches disponíveis.
    */
   async getWatches(params?: {
     brand?: string;
@@ -54,6 +90,50 @@ class NobileService {
   }
 
   /**
+   * 🆕 Busca relógios com busca avançada (apenas com listings ativos)
+   *
+   * Este é o método RECOMENDADO para páginas de listagem de produtos.
+   * Retorna apenas watches que possuem listings ACTIVE (disponíveis para compra).
+   *
+   * @param params - Parâmetros de busca e filtros
+   * @returns Objeto com watches, total, página e totalPages
+   *
+   * @example
+   * // Buscar IWC ordenado por preço
+   * const result = await nobileService.searchWatchesAdvanced({
+   *   brand: "IWC",
+   *   sortBy: "price",
+   *   order: "asc",
+   *   limit: 20
+   * });
+   *
+   * @example
+   * // Buscar todos os watches disponíveis
+   * const result = await nobileService.searchWatchesAdvanced({
+   *   limit: 100
+   * });
+   */
+  async searchWatchesAdvanced(
+    params: SearchAdvancedParams
+  ): Promise<SearchAdvancedResponse> {
+    try {
+      // Remove parâmetros undefined para não enviar na query string
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => value !== undefined)
+      );
+
+      const response = await apiClient.get<SearchAdvancedResponse>(
+        "/search/advanced",
+        { params: cleanParams }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar relógios"));
+    }
+  }
+
+  /**
    * Cria novo relógio
    */
   async createWatch(data: Partial<Watch>): Promise<Watch> {
@@ -72,22 +152,22 @@ class NobileService {
     formData: FormData
   ): Promise<{ message: string; relogio: Watch }> {
     try {
-      const response = await apiClient.post<{ message: string; relogio: Watch }>(
-        "/watches",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await apiClient.post<{
+        message: string;
+        relogio: Watch;
+      }>("/watches", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao criar relógio"));
     }
   }
+
   /**
-   * Atualiza relógio existente
+   * Atualiza relógio
    */
   async updateWatch(id: number, data: Partial<Watch>): Promise<Watch> {
     try {
@@ -101,23 +181,14 @@ class NobileService {
   /**
    * Deleta relógio
    */
-  async deleteWatch(id: number): Promise<void> {
+  async deleteWatch(id: number): Promise<{ message: string }> {
     try {
-      await apiClient.delete(`/watches/${id}`);
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao deletar relógio"));
-    }
-  }
-
-  /**
-   * Busca relógios do vendedor
-   */
-  async getSellerWatches(sellerId: number): Promise<Watch[]> {
-    try {
-      const response = await apiClient.get<Watch[]>(`/sellers/${sellerId}/watches`);
+      const response = await apiClient.delete<{ message: string }>(
+        `/watches/${id}`
+      );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar relógios do vendedor"));
+      throw new Error(extractErrorMessage(error, "Erro ao deletar relógio"));
     }
   }
 
@@ -126,45 +197,40 @@ class NobileService {
   // ===============================================
 
   /**
-   * Cria anúncio como rascunho
-   */
-  async createDraftListing(
-    watchId: number,
-    data: Omit<CreateListingRequest, "watchId" | "publishNow">
-  ): Promise<ListingResponse> {
-    try {
-      const response = await apiClient.post<ListingResponse>("/listings", {
-        watchId,
-        ...data,
-        publishNow: false,
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao criar rascunho de anúncio"));
-    }
-  }
-
-  /**
-   * Cria e publica anúncio imediatamente
+   * Cria e publica anúncio em uma única operação
+   * Atalho para createListing com publishNow: true
    */
   async createAndPublishListing(
     watchId: number,
-    data: Omit<CreateListingRequest, "watchId" | "publishNow">
+    data: {
+      shippingInfo?: string;
+      returnPolicy?: string;
+      deliveryTime?: string;
+      negotiable?: boolean;
+      titleSuffix?: string;
+    }
   ): Promise<ListingResponse> {
     try {
-      const response = await apiClient.post<ListingResponse>("/listings", {
+      const listingData: CreateListingRequest = {
         watchId,
+        publishNow: true, // ← Chave para publicar automaticamente
         ...data,
-        publishNow: true,
-      });
+      };
+
+      const response = await apiClient.post<ListingResponse>(
+        "/listings",
+        listingData
+      );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao criar e publicar anúncio"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao criar e publicar anúncio")
+      );
     }
   }
 
   /**
-   * Busca meus anúncios (com filtro opcional de status)
+   * Busca meus anúncios (vendedor logado)
    */
   async getMyListings(status?: ListingStatus): Promise<Listing[]> {
     try {
@@ -174,7 +240,9 @@ class NobileService {
       const response = await apiClient.get<Listing[]>(url);
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar meus anúncios"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar meus anúncios")
+      );
     }
   }
 
@@ -191,7 +259,9 @@ class NobileService {
       );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar anúncios ativos"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar anúncios ativos")
+      );
     }
   }
 
@@ -210,9 +280,15 @@ class NobileService {
   /**
    * Atualiza informações do anúncio
    */
-  async updateListing(id: number, data: UpdateListingRequest): Promise<ListingResponse> {
+  async updateListing(
+    id: number,
+    data: UpdateListingRequest
+  ): Promise<ListingResponse> {
     try {
-      const response = await apiClient.put<ListingResponse>(`/listings/${id}`, data);
+      const response = await apiClient.put<ListingResponse>(
+        `/listings/${id}`,
+        data
+      );
       return response.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao atualizar anúncio"));
@@ -239,7 +315,10 @@ class NobileService {
    */
   async pauseListing(id: number): Promise<ListingResponse> {
     try {
-      const response = await apiClient.put<ListingResponse>(`/listings/${id}/pause`, {});
+      const response = await apiClient.put<ListingResponse>(
+        `/listings/${id}/pause`,
+        {}
+      );
       return response.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao pausar anúncio"));
@@ -266,7 +345,10 @@ class NobileService {
    */
   async cancelListing(id: number): Promise<ListingResponse> {
     try {
-      const response = await apiClient.put<ListingResponse>(`/listings/${id}/cancel`, {});
+      const response = await apiClient.put<ListingResponse>(
+        `/listings/${id}/cancel`,
+        {}
+      );
       return response.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao cancelar anúncio"));
@@ -284,16 +366,20 @@ class NobileService {
       );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao marcar anúncio como vendido"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao marcar anúncio como vendido")
+      );
     }
   }
 
   /**
-   * Deleta anúncio (apenas rascunhos ou cancelados sem pedidos)
+   * Deleta anúncio
    */
   async deleteListing(id: number): Promise<DeleteListingResponse> {
     try {
-      const response = await apiClient.delete<DeleteListingResponse>(`/listings/${id}`);
+      const response = await apiClient.delete<DeleteListingResponse>(
+        `/listings/${id}`
+      );
       return response.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao deletar anúncio"));
@@ -305,23 +391,11 @@ class NobileService {
   // ===============================================
 
   /**
-   * Cria novo pedido
-   */
-  async createOrder(data: Partial<Order>): Promise<Order> {
-    try {
-      const response = await apiClient.post<Order>("/orders", data);
-      return response.data;
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao criar pedido"));
-    }
-  }
-
-  /**
    * Busca pedidos do usuário
    */
-  async getUserOrders(): Promise<Order[]> {
+  async getOrders(): Promise<Order[]> {
     try {
-      const response = await apiClient.get<Order[]>("/orders/me");
+      const response = await apiClient.get<Order[]>("/orders");
       return response.data;
     } catch (error) {
       throw new Error(extractErrorMessage(error, "Erro ao buscar pedidos"));
@@ -341,88 +415,18 @@ class NobileService {
   }
 
   /**
-   * Atualiza status do pedido
+   * Cria novo pedido
    */
-  async updateOrderStatus(id: number, status: Order["status"]): Promise<Order> {
+  async createOrder(data: {
+    watchId: number;
+    shippingAddress: string;
+    paymentMethod: string;
+  }): Promise<Order> {
     try {
-      const response = await apiClient.patch<Order>(`/orders/${id}/status`, { status });
+      const response = await apiClient.post<Order>("/orders", data);
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao atualizar status do pedido"));
-    }
-  }
-
-  // ===============================================
-  // COLLECTIONS (COLEÇÕES)
-  // ===============================================
-
-  /**
-   * Busca todas as coleções
-   */
-  async getCollections(): Promise<Collection[]> {
-    try {
-      const response = await apiClient.get<Collection[]>("/collections");
-      return response.data;
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar coleções"));
-    }
-  }
-
-  /**
-   * Busca coleção por ID
-   */
-  async getCollectionById(id: number): Promise<Collection> {
-    try {
-      const response = await apiClient.get<Collection>(`/collections/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar coleção"));
-    }
-  }
-
-  /**
-   * Cria nova coleção
-   */
-  async createCollection(data: Partial<Collection>): Promise<Collection> {
-    try {
-      const response = await apiClient.post<Collection>("/collections", data);
-      return response.data;
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao criar coleção"));
-    }
-  }
-
-  /**
-   * Atualiza uma coleção existente
-   */
-  async updateCollection(id: number, data: Partial<Collection>): Promise<Collection> {
-    try {
-      const response = await apiClient.put<Collection>(`/collections/${id}`, data);
-      return response.data;
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao atualizar coleção"));
-    }
-  }
-
-  /**
-   * Remove uma coleção
-   */
-  async deleteCollection(id: number): Promise<void> {
-    try {
-      await apiClient.delete(`/collections/${id}`);
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao remover coleção"));
-    }
-  }
-
-  /**
-   * Remove um relógio da coleção por watchId
-   */
-  async removeWatchFromCollection(watchId: number): Promise<void> {
-    try {
-      await apiClient.delete(`/collections/watch/${watchId}`);
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao remover relógio da coleção"));
+      throw new Error(extractErrorMessage(error, "Erro ao criar pedido"));
     }
   }
 
@@ -431,12 +435,37 @@ class NobileService {
   // ===============================================
 
   /**
+   * Busca conversas do usuário
+   */
+  async getConversations(): Promise<Message[]> {
+    try {
+      const response = await apiClient.get<Message[]>("/messages");
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar conversas"));
+    }
+  }
+
+  /**
+   * Busca mensagens entre usuários
+   */
+  async getMessagesBetweenUsers(otherUserId: number): Promise<Message[]> {
+    try {
+      const response = await apiClient.get<Message[]>(
+        `/messages/conversation/${otherUserId}`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(extractErrorMessage(error, "Erro ao buscar mensagens"));
+    }
+  }
+
+  /**
    * Envia mensagem
    */
   async sendMessage(data: {
-    recipientId: number;
+    receiverId: number;
     content: string;
-    watchId?: number;
   }): Promise<Message> {
     try {
       const response = await apiClient.post<Message>("/messages", data);
@@ -446,103 +475,90 @@ class NobileService {
     }
   }
 
+  // ===============================================
+  // COLLECTIONS (COLEÇÕES)
+  // ===============================================
+
   /**
-   * Busca conversas do usuário
+   * Busca coleção do usuário
    */
-  async getConversations(): Promise<Message[]> {
+  async getCollection(): Promise<Collection[]> {
     try {
-      const response = await apiClient.get<Message[]>("/messages/conversations");
+      const response = await apiClient.get<Collection[]>("/collections");
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar conversas"));
+      throw new Error(extractErrorMessage(error, "Erro ao buscar coleção"));
     }
   }
 
   /**
-   * Busca mensagens de uma conversa
+   * Adiciona relógio à coleção
    */
-  async getConversationMessages(userId: number): Promise<Message[]> {
+  async createCollection(data: {
+    watchId: number;
+    estimatedValue?: number;
+  }): Promise<Collection> {
     try {
-      const response = await apiClient.get<Message[]>(`/messages/conversation/${userId}`);
+      const response = await apiClient.post<Collection>("/collections", data);
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar mensagens"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao adicionar relógio à coleção")
+      );
     }
   }
 
-  // ===============================================
-  // PRICE HISTORY (HISTÓRICO DE PREÇOS)
-  // ===============================================
-
   /**
-   * Busca histórico de preços de um relógio
+   * Atualiza item da coleção
    */
-  async getPriceHistory(watchId: number): Promise<PriceHistory[]> {
+  async updateCollection(
+    id: number,
+    data: { estimatedValue?: number }
+  ): Promise<Collection> {
     try {
-      const response = await apiClient.get<PriceHistory[]>(
-        `/watches/${watchId}/price-history`
+      const response = await apiClient.put<Collection>(
+        `/collections/${id}`,
+        data
       );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar histórico de preços"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao atualizar item da coleção")
+      );
     }
   }
 
-  // ===============================================
-  // ADMIN LOGS
-  // ===============================================
-
   /**
-   * Busca logs administrativos
+   * Remove relógio da coleção por watchId
    */
-  async getAdminLogs(params?: {
-    page?: number;
-    limit?: number;
-    action?: string;
-  }): Promise<AdminLog[]> {
+  async removeWatchFromCollection(
+    watchId: number
+  ): Promise<{ message: string }> {
     try {
-      const response = await apiClient.get<AdminLog[]>("/admin/logs", { params });
+      const response = await apiClient.delete<{ message: string }>(
+        `/collections/watch/${watchId}`
+      );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar logs administrativos"));
-    }
-  }
-
-  // ===============================================
-  // FAVORITOS
-  // ===============================================
-
-  /**
-   * Adiciona relógio aos favoritos
-   */
-  async addToFavorites(watchId: number): Promise<void> {
-    try {
-      await apiClient.post(`/favorites/${watchId}`);
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao adicionar aos favoritos"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao remover relógio da coleção")
+      );
     }
   }
 
   /**
-   * Remove relógio dos favoritos
+   * Remove item da coleção por ID
    */
-  async removeFromFavorites(watchId: number): Promise<void> {
+  async deleteCollection(id: number): Promise<{ message: string }> {
     try {
-      await apiClient.delete(`/favorites/${watchId}`);
-    } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao remover dos favoritos"));
-    }
-  }
-
-  /**
-   * Busca favoritos do usuário
-   */
-  async getFavorites(): Promise<Watch[]> {
-    try {
-      const response = await apiClient.get<Watch[]>("/favorites");
+      const response = await apiClient.delete<{ message: string }>(
+        `/collections/${id}`
+      );
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar favoritos"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao remover item da coleção")
+      );
     }
   }
 
@@ -551,55 +567,110 @@ class NobileService {
   // ===============================================
 
   /**
-   * Busca lista de desejos do usuário autenticado
-   * Retorna array com metadados da wishlist e objeto completo do relógio
+   * Busca lista de desejos do usuário
    */
   async getWishlist(): Promise<WishlistItem[]> {
     try {
       const response = await apiClient.get<WishlistItem[]>("/wishlist");
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar lista de desejos"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar lista de desejos")
+      );
     }
   }
 
   /**
-   * Adiciona relógio à wishlist
+   * Adiciona relógio à lista de desejos
    */
-  async addToWishlist(watchId: number): Promise<void> {
+  async addToWishlist(watchId: number): Promise<WishlistItem> {
     try {
-      await apiClient.post("/wishlist", { watchId });
+      const response = await apiClient.post<WishlistItem>("/wishlist", {
+        watchId,
+      });
+      return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao adicionar à lista de desejos"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao adicionar à lista de desejos")
+      );
     }
   }
 
   /**
-   * Remove relógio da wishlist
+   * Remove relógio da lista de desejos
    */
-  async removeFromWishlist(watchId: number): Promise<void> {
+  async removeFromWishlist(watchId: number): Promise<{ message: string }> {
     try {
-      await apiClient.delete(`/wishlist/${watchId}`);
+      const response = await apiClient.delete<{ message: string }>(
+        `/wishlist/${watchId}`
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao remover da lista de desejos"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao remover da lista de desejos")
+      );
     }
   }
 
   /**
-   * Verifica se um relógio está na wishlist
+   * Verifica se relógio está na lista de desejos
    */
-  async checkWishlistStatus(watchId: number): Promise<{ isFavorited: boolean }> {
+  async checkWishlistStatus(
+    watchId: number
+  ): Promise<{ isInWishlist: boolean }> {
     try {
-      const response = await apiClient.get<{ isFavorited: boolean }>(
+      const response = await apiClient.get<{ isInWishlist: boolean }>(
         `/wishlist/check/${watchId}`
       );
       return response.data;
     } catch (error) {
       throw new Error(
-        extractErrorMessage(error, "Erro ao verificar status da lista de desejos")
+        extractErrorMessage(
+          error,
+          "Erro ao verificar status da lista de desejos"
+        )
       );
     }
   }
+
+  // ===============================================
+  // PRICE HISTORY (HISTÓRICO DE PREÇOS)
+  // ===============================================
+
+  /**
+   * Busca histórico de preços
+   */
+  async getPriceHistory(watchModel: string): Promise<PriceHistory[]> {
+    try {
+      const response = await apiClient.get<PriceHistory[]>("/price-history", {
+        params: { watchModel },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar histórico de preços")
+      );
+    }
+  }
+
+  // ===============================================
+  // ADMIN (ADMINISTRAÇÃO)
+  // ===============================================
+
+  /**
+   * Busca logs de admin
+   */
+  async getAdminLogs(): Promise<AdminLog[]> {
+    try {
+      const response = await apiClient.get<AdminLog[]>("/admin/logs");
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar logs de admin")
+      );
+    }
+  }
+
   // ===============================================
   // BUSCA
   // ===============================================
@@ -609,10 +680,13 @@ class NobileService {
    */
   async getFilterOptions(): Promise<SearchFilterOptions> {
     try {
-      const response = await apiClient.get<SearchFilterOptions>("/search/filters");
+      const response =
+        await apiClient.get<SearchFilterOptions>("/search/filters");
       return response.data;
     } catch (error) {
-      throw new Error(extractErrorMessage(error, "Erro ao buscar opções de filtros"));
+      throw new Error(
+        extractErrorMessage(error, "Erro ao buscar opções de filtros")
+      );
     }
   }
 
@@ -630,6 +704,7 @@ class NobileService {
 
   /**
    * Busca relógios por termo
+   * ⚠️ Para páginas de listagem, use searchWatchesAdvanced()
    */
   async searchWatches(query: string, limit = 10): Promise<Watch[]> {
     try {

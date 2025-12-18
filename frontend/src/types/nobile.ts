@@ -62,9 +62,14 @@ export interface Watch {
   braceletColor?: string;
   claspType?: string;
   gender?: string;
-
   seller: Seller;
   listings?: WatchListing[];
+  accessories?:
+    | "BOX_AND_PAPERS"
+    | "BOX_ONLY"
+    | "PAPERS_ONLY"
+    | "WATCH_ONLY"
+    | null;
 }
 
 export interface Order {
@@ -165,7 +170,7 @@ export interface Listing {
   publishedAt?: string;
   pausedAt?: string;
   cancelledAt?: string;
-  soldAt?: string;
+  soldAt?: string | null;
   watch?: Watch;
 }
 

@@ -19,6 +19,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function VendedorPage() {
+export default function BecomeASellerPage() {
   return <VendedorHero />;
 }

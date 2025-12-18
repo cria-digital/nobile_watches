@@ -27,7 +27,13 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           {/* Header mobile */}
           <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 h-[64px]">
             <Link href="/" className="flex items-center">
-              <Image src="/logo-white.svg" alt="Nobile" width={91} height={24} priority />
+              <Image
+                src="/logo-white.svg"
+                alt="Nobile"
+                width={91}
+                height={24}
+                priority
+              />
             </Link>
           </header>
         </div>

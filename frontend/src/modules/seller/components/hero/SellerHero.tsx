@@ -164,6 +164,8 @@ export function VendedorHero() {
               fill
               className="object-cover"
               priority
+              // ADICIONAR ESTA LINHA:
+              sizes="(max-width: 768px) 100vw"
             />
           </div>
 
@@ -229,7 +231,7 @@ export function VendedorHero() {
       </section>
 
       {/* Como Funciona */}
-      <section className="py-12 lg:pt-24 lg:pb-20 bg-white">
+      <section id="como-funciona" className="py-12 lg:pt-24 lg:pb-20 bg-white">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="text-center mb-12 md:mb-19">
             <h3 className="text-[#D5A60A] text-sm md:text-[18px] mb-3 tracking-[0.01em]">
@@ -307,6 +309,7 @@ export function VendedorHero() {
 
       {/* FAQ */}
       <section
+        id="duvidas-frequentes"
         aria-label="Dúvidas frequentes"
         className="py-12 md:py-20 lg:py-[202px] bg-white"
       >

@@ -1,7 +1,6 @@
 "use client";
 
 import { useUserCollection } from "@/hooks/useUserCollection";
-
 import { Heart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -9,7 +8,7 @@ import { MobileBackHeader } from "../layout/MobileBackHeader";
 import { Breadcrumbs, Button } from "../ui";
 import { CollectionCard } from "./CollectionCard";
 
-export default function CollectionPageClient() {
+export function CollectionPageClient() {
   const {
     collection,
     allCollection,
@@ -31,7 +30,13 @@ export default function CollectionPageClient() {
         setSelectedBrand(firstBrand);
       }
     }
-  }, [isLoading, allCollection.length, selectedBrand, userBrands, setSelectedBrand]);
+  }, [
+    isLoading,
+    allCollection.length,
+    selectedBrand,
+    userBrands,
+    setSelectedBrand,
+  ]);
 
   // Resetar index quando trocar de marca
   useEffect(() => {
@@ -40,11 +45,15 @@ export default function CollectionPageClient() {
 
   // Funções de navegação entre relógios
   const handlePrevWatch = () => {
-    setCurrentWatchIndex(prev => (prev === 0 ? collection.length - 1 : prev - 1));
+    setCurrentWatchIndex((prev) =>
+      prev === 0 ? collection.length - 1 : prev - 1
+    );
   };
 
   const handleNextWatch = () => {
-    setCurrentWatchIndex(prev => (prev === collection.length - 1 ? 0 : prev + 1));
+    setCurrentWatchIndex((prev) =>
+      prev === collection.length - 1 ? 0 : prev + 1
+    );
   };
 
   // Relógio atual para exibir no desktop
@@ -52,7 +61,8 @@ export default function CollectionPageClient() {
 
   // Contar total de itens por marca
   const getBrandCount = (brandName: string) => {
-    return allCollection.filter(item => item.watch.brand === brandName).length;
+    return allCollection.filter((item) => item.watch.brand === brandName)
+      .length;
   };
 
   return (
@@ -65,7 +75,7 @@ export default function CollectionPageClient() {
           {/* Filtros de Marca */}
           <div className="block lg:hidden mb-6.5">
             <div className="flex h-8 gap-2.5 overflow-x-auto scrollbar-hide">
-              {userBrands.map(brand => {
+              {userBrands.map((brand) => {
                 const count = getBrandCount(brand.name);
                 const isActive = selectedBrand === brand.name;
                 const isDisabled = count === 0;
@@ -73,7 +83,9 @@ export default function CollectionPageClient() {
                 return (
                   <button
                     key={brand.slug}
-                    onClick={() => setSelectedBrand(isActive ? null : brand.name)}
+                    onClick={() =>
+                      setSelectedBrand(isActive ? null : brand.name)
+                    }
                     disabled={isDisabled}
                     className={`flex-shrink-0 w-auto h-8 lg:w-14 lg:h-14 rounded-sm px-3 flex items-center justify-center transition-all relative ${
                       isActive
@@ -124,7 +136,7 @@ export default function CollectionPageClient() {
               <>
                 <div className="grid lg:hidden grid-cols-1 gap-y-4 lg:gap-y-8">
                   <h3 className="text-2xl">{selectedBrand}</h3>
-                  {collection.map(item => (
+                  {collection.map((item) => (
                     <CollectionCard key={item.id} item={item} />
                   ))}
                 </div>
@@ -132,11 +144,14 @@ export default function CollectionPageClient() {
                 <div className="hidden lg:block relative">
                   <div className="absolute left-[50%] top-0 w-[41%] pt-1 px-8 z-20">
                     <Breadcrumbs
-                      items={[{ label: "Home", href: "/" }, { label: "Sua coleção" }]}
+                      items={[
+                        { label: "Home", href: "/" },
+                        { label: "Sua coleção" },
+                      ]}
                     />
 
                     <div className="flex h-8 gap-4 mt-9 overflow-x-auto scrollbar-hide">
-                      {userBrands.map(brand => {
+                      {userBrands.map((brand) => {
                         const count = getBrandCount(brand.name);
                         const isActive = selectedBrand === brand.name;
                         const isDisabled = count === 0;
@@ -144,7 +159,9 @@ export default function CollectionPageClient() {
                         return (
                           <button
                             key={brand.slug}
-                            onClick={() => setSelectedBrand(isActive ? null : brand.name)}
+                            onClick={() =>
+                              setSelectedBrand(isActive ? null : brand.name)
+                            }
                             disabled={isDisabled}
                             className={`flex-shrink-0 w-auto h-8 rounded-sm px-3 flex items-center justify-center transition-all relative ${
                               isActive
@@ -225,7 +242,11 @@ export default function CollectionPageClient() {
         {/* Mobile Bottom Navigation */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-white/10">
           <div className="flex items-center justify-around h-20 px-4">
-            <Link href="/" className="flex flex-col items-center gap-1" aria-label="Home">
+            <Link
+              href="/"
+              className="flex flex-col items-center gap-1"
+              aria-label="Home"
+            >
               <svg
                 width="24"
                 height="24"
@@ -303,7 +324,13 @@ export default function CollectionPageClient() {
                   strokeOpacity="0.6"
                 />
                 <circle cx="9" cy="21" r="1" fill="#141414" fillOpacity="0.6" />
-                <circle cx="18" cy="21" r="1" fill="#141414" fillOpacity="0.6" />
+                <circle
+                  cx="18"
+                  cy="21"
+                  r="1"
+                  fill="#141414"
+                  fillOpacity="0.6"
+                />
               </svg>
             </Link>
 

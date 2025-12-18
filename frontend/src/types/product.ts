@@ -38,11 +38,12 @@ export interface Product {
     email: string;
   };
   listings?: WatchListing[];
-
-  //não existem no back
-
-  hasBox?: boolean;
-  hasDocuments?: boolean;
+  accessories?:
+    | "BOX_AND_PAPERS"
+    | "BOX_ONLY"
+    | "PAPERS_ONLY"
+    | "WATCH_ONLY"
+    | null;
 }
 
 export interface ProductFilters {

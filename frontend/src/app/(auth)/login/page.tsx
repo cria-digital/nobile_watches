@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Login",
-  description: "Acesse sua conta na Nobile e descubra relógios de luxo exclusivos.",
+  description: "Access your account",
 };
 
 export default function LoginPage() {

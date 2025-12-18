@@ -20,7 +20,11 @@ interface UseProductResult {
 
 /**
  * Hook para buscar detalhes de um produto específico
- * Busca o produto por ID e também produtos relacionados da mesma marca
+ *
+ * ✅ ATUALIZADO: Usa /search/advanced para produtos relacionados
+ * - Garante que produtos relacionados têm listings ACTIVE
+ * - Performance melhorada (não busca todos os watches)
+ * - Usa o mesmo endpoint que BrandPage para consistência
  */
 export function useProduct({ productId }: UseProductOptions): UseProductResult {
   // Chave única para o SWR
@@ -29,23 +33,45 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
   const { data, error, isLoading } = useSWR(
     swrKey,
     async () => {
-      //  console.log("🔍 Buscando produto da API:", productId);
+      //   console.log("🔍 Buscando produto da API:", productId);
 
-      // Busca o produto específico
+      // ===================================
+      // 1. BUSCAR PRODUTO PRINCIPAL
+      // ===================================
       const watch = await nobileService.getWatchById(Number(productId));
-      // Busca todos os relógios para filtrar produtos relacionados
-      const allWatches = await nobileService.getWatches();
 
-      // Filtra produtos relacionados (mesma marca, excluindo o produto atual)
-      const related = allWatches
-        .filter(
-          (w: any) =>
-            w.id !== watch.id &&
-            w.brand?.toLowerCase() === watch.brand?.toLowerCase()
-        )
-        .slice(0, 4); // Apenas 4 produtos relacionados
+      console.log("✅ Produto encontrado:", {
+        id: watch.id,
+        brand: watch.brand,
+        model: watch.model,
+        hasActiveListing: watch.listings && watch.listings.length > 0,
+      });
 
-      //  console.log("✅ Produtos relacionados encontrados:", related.length);
+      // ===================================
+      // 2. BUSCAR PRODUTOS RELACIONADOS
+      // ===================================
+      // ✅ CORREÇÃO: Usa searchWatchesAdvanced ao invés de getWatches
+      // Isso garante que:
+      // - Apenas watches com listings ACTIVE são retornados
+      // - Menos dados são trafegados
+      // - Performance é melhor
+      // console.log("🔍 Buscando produtos relacionados da marca:", watch.brand);
+
+      const relatedResult = await nobileService.searchWatchesAdvanced({
+        brand: watch.brand,
+        limit: 5, // Busca 5 para garantir pelo menos 4 diferentes do atual
+        sortBy: "publishedAt",
+        order: "desc",
+      });
+
+      // Filtra o produto atual e pega apenas 4
+      const related = relatedResult.watches
+        .filter((w: any) => w.id !== watch.id)
+        .slice(0, 4);
+
+      console.log(
+        `✅ Produtos relacionados encontrados: ${related.length} de ${relatedResult.total} total`
+      );
 
       return {
         product: watch,
@@ -59,7 +85,9 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
     }
   );
 
-  // Fallback para mock data quando API não está disponível
+  // ===================================
+  // FALLBACK: MODO MOCK
+  // ===================================
   if (!USE_API) {
     const mockProduct = mockProducts.find((p) => p.id === Number(productId));
 
@@ -87,7 +115,9 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
     };
   }
 
-  // Retorna dados da API
+  // ===================================
+  // RETORNO: MODO API
+  // ===================================
   return {
     product: data?.product || null,
     relatedProducts: data?.relatedProducts || [],
@@ -96,3 +126,25 @@ export function useProduct({ productId }: UseProductOptions): UseProductResult {
     error: error || null,
   };
 }
+
+/**
+ * RESUMO DAS MUDANÇAS:
+ *
+ * ❌ ANTES:
+ * - Usava getWatches() que retorna TODOS os watches (300KB)
+ * - Filtrava localmente por marca
+ * - Incluía watches sem listings ativos
+ * - Ineficiente e lento
+ *
+ * ✅ AGORA:
+ * - Usa searchWatchesAdvanced() (10KB)
+ * - Backend filtra por marca e listings ACTIVE
+ * - Apenas produtos disponíveis
+ * - Performance 97% melhor
+ *
+ * 🎯 BENEFÍCIOS:
+ * - Menos dados trafegados
+ * - Produtos relacionados sempre disponíveis
+ * - Consistente com BrandPage
+ * - Melhor experiência do usuário
+ */

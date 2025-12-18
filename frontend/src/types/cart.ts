@@ -15,6 +15,18 @@ export interface CartItem {
     image: string;
     condition: string;
   };
+  listing: {
+    id: number;
+    watchId: number;
+    sellerId: number;
+    status: "ACTIVE" | "DRAFT" | "PAUSED" | "SOLD" | "CANCELLED";
+    titleSuffix?: string;
+    shippingInfo?: string;
+    returnPolicy?: string;
+    deliveryTime?: string;
+    negotiable: boolean;
+    publishedAt?: string;
+  };
   price: number;
 }
 

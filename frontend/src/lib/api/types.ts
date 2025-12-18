@@ -12,6 +12,7 @@ export interface ApiConfig {
   baseURL: string;
   timeout: number;
   withCredentials?: boolean;
+  headers?: Record<string, string>;
 }
 
 /**

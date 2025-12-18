@@ -1,10 +1,13 @@
 import imageCompression from "browser-image-compression";
 import { useState } from "react";
 
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB em bytes
-const MIN_WIDTH = 800;
-const MIN_HEIGHT = 600;
 const MIN_ASPECT_RATIO = 0.5;
 const MAX_ASPECT_RATIO = 3;
 
@@ -39,27 +42,18 @@ export const useDocumentVerification = (): UseDocumentVerificationReturn => {
   };
 
   /**
-   * Valida qualidade da imagem (resolução e aspect ratio)
+   * Valida qualidade da imagem (apenas aspect ratio)
    */
   const validateImageQuality = async (
     file: File,
     type: "document" | "selfie"
   ): Promise<ImageQualityResult> => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const img = new window.Image();
       const objectUrl = URL.createObjectURL(file);
 
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-
-        // Validação de resolução mínima
-        if (img.width < MIN_WIDTH || img.height < MIN_HEIGHT) {
-          resolve({
-            isValid: false,
-            error: `A imagem está com resolução muito baixa (${img.width}x${img.height}). Use uma foto mais nítida com pelo menos ${MIN_WIDTH}x${MIN_HEIGHT} pixels.`,
-          });
-          return;
-        }
 
         // Validação de aspect ratio
         const aspectRatio = img.width / img.height;
@@ -131,7 +125,10 @@ export const useDocumentVerification = (): UseDocumentVerificationReturn => {
   /**
    * Processa a imagem: valida, comprime e retorna arquivo otimizado
    */
-  const processImage = async (file: File, type: "document" | "selfie"): Promise<File> => {
+  const processImage = async (
+    file: File,
+    type: "document" | "selfie"
+  ): Promise<File> => {
     setIsProcessing(true);
     setProcessingProgress(0);
 
@@ -143,7 +140,7 @@ export const useDocumentVerification = (): UseDocumentVerificationReturn => {
       }
       setProcessingProgress(10);
 
-      // 2. Validação de qualidade (resolução e aspect ratio) - 20% do progresso
+      // 2. Validação de qualidade (aspect ratio) - 20% do progresso
       const qualityCheck = await validateImageQuality(file, type);
       if (!qualityCheck.isValid) {
         throw new Error(qualityCheck.error);

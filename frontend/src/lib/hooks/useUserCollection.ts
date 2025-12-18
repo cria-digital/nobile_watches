@@ -36,14 +36,14 @@ export function useUserCollection() {
       if (isMockActive()) {
         console.log("📊 Usando dados mockados da coleção");
         // Simula delay de rede para realismo
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
         setCollection(MOCK_COLLECTION_DATA);
         setIsLoading(false);
         return;
       }
 
       // Caso contrário, buscar dados reais usando nobileService
-      const data = await nobileService.getCollections();
+      const data = await nobileService.getCollection();
 
       // Mapear dados da API para o formato do CollectionItem
       const collectionItems: CollectionItem[] = data.map((item: any) => ({
@@ -129,14 +129,16 @@ export function useUserCollection() {
     try {
       if (isMockActive()) {
         console.log("📊 Mock: Removendo relógio da coleção");
-        setCollection(prev => prev.filter(item => item.watchId !== watchId));
+        setCollection((prev) =>
+          prev.filter((item) => item.watchId !== watchId)
+        );
         return;
       }
 
       // Nota: Assumindo que o backend tem endpoint DELETE /collections/watch/{watchId}
       // Se o endpoint for diferente, ajuste o nobileService conforme necessário
       await nobileService.removeWatchFromCollection(watchId);
-      setCollection(prev => prev.filter(item => item.watchId !== watchId));
+      setCollection((prev) => prev.filter((item) => item.watchId !== watchId));
     } catch (err) {
       throw err;
     }
@@ -145,12 +147,15 @@ export function useUserCollection() {
   /**
    * Atualiza o valor estimado de um item
    */
-  const updateEstimatedValue = async (collectionId: number, estimatedValue: number) => {
+  const updateEstimatedValue = async (
+    collectionId: number,
+    estimatedValue: number
+  ) => {
     try {
       if (isMockActive()) {
         console.log("📊 Mock: Atualizando valor estimado");
-        setCollection(prev =>
-          prev.map(item =>
+        setCollection((prev) =>
+          prev.map((item) =>
             item.id === collectionId ? { ...item, estimatedValue } : item
           )
         );
@@ -158,8 +163,10 @@ export function useUserCollection() {
       }
 
       await nobileService.updateCollection(collectionId, { estimatedValue });
-      setCollection(prev =>
-        prev.map(item => (item.id === collectionId ? { ...item, estimatedValue } : item))
+      setCollection((prev) =>
+        prev.map((item) =>
+          item.id === collectionId ? { ...item, estimatedValue } : item
+        )
       );
     } catch (err) {
       throw err;
@@ -175,7 +182,10 @@ export function useUserCollection() {
       (sum, item) => sum + (item.estimatedValue || item.watch.price),
       0
     );
-    const totalInvestment = collection.reduce((sum, item) => sum + item.watch.price, 0);
+    const totalInvestment = collection.reduce(
+      (sum, item) => sum + item.watch.price,
+      0
+    );
     const profitLoss = totalValue - totalInvestment;
     const profitLossPercentage =
       totalInvestment > 0 ? (profitLoss / totalInvestment) * 100 : 0;
@@ -210,7 +220,7 @@ export function useUserCollection() {
    * Filtra a coleção por marca
    */
   const filteredCollection = selectedBrand
-    ? collection.filter(item => item.watch.brand === selectedBrand)
+    ? collection.filter((item) => item.watch.brand === selectedBrand)
     : collection;
 
   /**

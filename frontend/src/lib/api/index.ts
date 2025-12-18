@@ -6,13 +6,17 @@
  */
 
 // Cliente principal
-export { apiClient, axios, createCustomApiClient, publicApiClient } from "./client";
+export {
+  apiClient,
+  axios,
+  createCustomApiClient,
+  publicApiClient,
+} from "./client";
 export type { AxiosInstance } from "./client";
 
 // Interceptors e utilitários
 export {
   extractErrorMessage,
-  requestAuthInterceptor,
   requestErrorInterceptor,
   responseErrorInterceptor,
   responseSuccessInterceptor,

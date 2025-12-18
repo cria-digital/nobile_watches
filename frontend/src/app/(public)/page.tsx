@@ -1,8 +1,6 @@
 import {
   BecomeSeller,
   BuyerProtection,
-  // FeaturedWatches,
-  // FeaturedWatchesDesktop,
   Hero,
   HowItWorks,
   SellerSpotlight,
@@ -50,32 +48,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Home(props: {
-  params: Promise<{ countryCode: string }>;
-}) {
+export default function Home() {
   return (
     <>
       <Hero />
-
-      {/* Seguro do Comprador */}
       <BuyerProtection />
-
-      {/* Relógios em Destaque */}
-      {/* <div className="block lg:hidden">
-        <FeaturedWatches />
-      </div>
-
-      <div className="hidden lg:block">
-        <FeaturedWatchesDesktop />
-      </div> */}
-
-      {/* Vendedores Destaque */}
       <SellerSpotlight />
-
-      {/* Torne-se um Vendedor */}
       <BecomeSeller />
-
-      {/* Como Funciona */}
       <HowItWorks />
     </>
   );

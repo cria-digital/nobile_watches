@@ -22,58 +22,68 @@ export function filterProducts(
   let filtered = [...products];
 
   // Filtro 1: Faixa de preço
-  if (filters.priceRange.min > 0 || filters.priceRange.max < Number.MAX_SAFE_INTEGER) {
+  if (
+    filters.priceRange.min > 0 ||
+    filters.priceRange.max < Number.MAX_SAFE_INTEGER
+  ) {
     filtered = filtered.filter(
-      p => p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
+      (p) =>
+        p.price >= filters.priceRange.min && p.price <= filters.priceRange.max
     );
   }
 
   // Filtro 2: Marcas
   if (filters.brands.length > 0) {
-    filtered = filtered.filter(p => filters.brands.includes(p.brand));
+    filtered = filtered.filter((p) => filters.brands.includes(p.brand));
   }
 
   // Filtro 3: Modelos
   if (filters.models.length > 0) {
-    filtered = filtered.filter(p => filters.models.includes(p.model));
+    filtered = filtered.filter((p) => filters.models.includes(p.model));
   }
 
   // Filtro 4: Material da caixa
   if (filters.caseMaterials.length > 0) {
     filtered = filtered.filter(
-      p => p.caseMaterial && filters.caseMaterials.includes(p.caseMaterial)
+      (p) => p.caseMaterial && filters.caseMaterials.includes(p.caseMaterial)
     );
   }
 
   // Filtro 5: Material da pulseira
   if (filters.braceletMaterials.length > 0) {
     filtered = filtered.filter(
-      p => p.braceletMaterial && filters.braceletMaterials.includes(p.braceletMaterial)
+      (p) =>
+        p.braceletMaterial &&
+        filters.braceletMaterials.includes(p.braceletMaterial)
     );
   }
 
   // Filtro 6: Cores do mostrador
   if (filters.dialColors.length > 0) {
     filtered = filtered.filter(
-      p => p.dialColor && filters.dialColors.includes(p.dialColor)
+      (p) => p.dialColor && filters.dialColors.includes(p.dialColor)
     );
   }
 
   // Filtro 7: Tipo de movimento
   if (filters.movements.length > 0) {
-    filtered = filtered.filter(p => p.movement && filters.movements.includes(p.movement));
+    filtered = filtered.filter(
+      (p) => p.movement && filters.movements.includes(p.movement)
+    );
   }
 
   // Filtro 8: Condição do produto
   if (filters.conditions.length > 0) {
     filtered = filtered.filter(
-      p => p.condition && filters.conditions.includes(p.condition)
+      (p) => p.condition && filters.conditions.includes(p.condition)
     );
   }
 
   // Filtro 9: Gênero
   if (filters.gender && filters.gender.length > 0) {
-    filtered = filtered.filter(p => p.gender && filters.gender!.includes(p.gender));
+    filtered = filtered.filter(
+      (p) => p.gender && filters.gender!.includes(p.gender)
+    );
   }
 
   // Filtro 10: Apenas vendedores verificados
@@ -83,12 +93,12 @@ export function filterProducts(
 
   // Filtro 11: Com caixa original
   if (filters.hasBoxOnly) {
-    filtered = filtered.filter(p => p.hasBox === true);
+    filtered = filtered.filter((p) => p.accessories === "BOX_ONLY");
   }
 
   // Filtro 12: Com documentação
   if (filters.hasDocumentsOnly) {
-    filtered = filtered.filter(p => p.hasDocuments === true);
+    filtered = filtered.filter((p) => p.accessories === "PAPERS_ONLY");
   }
 
   // Aplicar ordenação
@@ -145,7 +155,7 @@ export function getAvailableFilterOptions(products: Product[]) {
     filter?: (val: any) => boolean
   ): string[] => {
     const values = products
-      .map(p => p[key])
+      .map((p) => p[key])
       .filter((v): v is string => typeof v === "string" && !!v);
 
     const unique = Array.from(new Set(values));
@@ -162,8 +172,8 @@ export function getAvailableFilterOptions(products: Product[]) {
     conditions: extractUnique("condition"),
     genders: extractUnique("gender"),
     priceRange: {
-      min: Math.min(...products.map(p => p.price)),
-      max: Math.max(...products.map(p => p.price)),
+      min: Math.min(...products.map((p) => p.price)),
+      max: Math.max(...products.map((p) => p.price)),
     },
   };
 }
@@ -222,7 +232,8 @@ export function deserializeFilters(queryString: string): AppliedFilters {
     },
     brands: params.get("brands")?.split(",").filter(Boolean) || [],
     models: params.get("models")?.split(",").filter(Boolean) || [],
-    caseMaterials: params.get("caseMaterials")?.split(",").filter(Boolean) || [],
+    caseMaterials:
+      params.get("caseMaterials")?.split(",").filter(Boolean) || [],
     braceletMaterials: [],
     dialColors: [],
     movements: params.get("movements")?.split(",").filter(Boolean) || [],

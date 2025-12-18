@@ -26,7 +26,7 @@ export function BecomeSeller() {
           </h2>
 
           <Link
-            href="/vendedor"
+            href="/become-a-seller"
             className="absolute right-[20px] bottom-[20px] z-20 px-[17px] flex items-center justify-center gap-[6px] bg-[#141414] hover:bg-[#C09609] text-white font-lato font-normal rounded-full transition-colors text-[12px] w-[119px] h-[40px]"
           >
             Saiba mais
@@ -60,8 +60,8 @@ export function BecomeSeller() {
           viewport={{ once: true }}
           className="text-gray-400 mt-[14px] leading-[140%]"
         >
-          Oferecemos uma plataforma segura, elegante e com visibilidade internacional para
-          que você possa vender suas peças com confiança.
+          Oferecemos uma plataforma segura, elegante e com visibilidade
+          internacional para que você possa vender suas peças com confiança.
         </motion.p>
       </div>
 
@@ -91,17 +91,17 @@ export function BecomeSeller() {
             </h2>
 
             <p className="font-lato text-sm md:text-base text-[#777777] leading-[140%] hidden lg:block">
-              Oferecemos uma plataforma segura, elegante e com visibilidade internacional
-              para que você possa vender suas peças com confiança.
+              Oferecemos uma plataforma segura, elegante e com visibilidade
+              internacional para que você possa vender suas peças com confiança.
             </p>
           </div>
 
           <Link
-            href="/vendedor"
+            href="/become-a-seller"
             className="w-[200px] h-[56px] flex items-center justify-center gap-2 bg-[#141414] hover:bg-[#C09609] rounded-full transition-colors text-base"
           >
             <span className="text-white leading-[150%] font-lato font-bold">
-              Garanta o seu
+              Saiba mais
             </span>
 
             <svg

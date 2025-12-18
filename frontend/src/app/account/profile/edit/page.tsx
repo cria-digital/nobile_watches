@@ -24,7 +24,11 @@ interface ProfileFormData {
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { data, updateUserData, isLoading: isLoadingProfile } = useUserProfile();
+  const {
+    data,
+    updateUserData,
+    isLoading: isLoadingProfile,
+  } = useUserProfile();
   const [showPhone, setShowPhone] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -166,7 +170,10 @@ export default function EditProfilePage() {
       <div className="lg:hidden sticky top-0 z-50 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 px-5 h-14">
           <button onClick={() => router.back()} className="-ml-1">
-            <ArrowLeft className="w-[26px] h-[26px] text-pb-500" strokeWidth={1.5} />
+            <ArrowLeft
+              className="w-[26px] h-[26px] text-pb-500"
+              strokeWidth={1.5}
+            />
           </button>
           <h1 className="font-erstoria text-[20px] text-pb-500 font-medium">
             Editar perfil
@@ -195,7 +202,9 @@ export default function EditProfilePage() {
       >
         {/* Nome */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-pb-500 mb-2">Nome</label>
+          <label className="block text-sm font-medium text-pb-500 mb-2">
+            Nome
+          </label>
           <div className="relative">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Image
@@ -228,7 +237,9 @@ export default function EditProfilePage() {
 
         {/* E-mail */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-pb-500 mb-2">E-mail</label>
+          <label className="block text-sm font-medium text-pb-500 mb-2">
+            E-mail
+          </label>
           <div className="relative">
             <div className="absolute left-4 top-1/2 -translate-y-1/2">
               <Image
@@ -261,7 +272,9 @@ export default function EditProfilePage() {
 
         {/* Número */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-pb-500 mb-2">Número</label>
+          <label className="block text-sm font-medium text-pb-500 mb-2">
+            Número
+          </label>
           <div className="relative flex gap-2">
             {/* Country Code Selector */}
             <div className="flex items-center gap-2 h-[56px] px-4 rounded-xl border border-gray-200 bg-[#F7F7F7]">
@@ -335,7 +348,9 @@ export default function EditProfilePage() {
             >
               {/* País */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-pb-500 mb-2">País</label>
+                <label className="block text-sm font-medium text-pb-500 mb-2">
+                  País
+                </label>
                 <div className="relative">
                   <select
                     {...register(`addresses.${index}.country` as const)}
@@ -389,7 +404,7 @@ export default function EditProfilePage() {
                     className="w-full h-[48px] px-4 pr-10 rounded-xl border border-gray-200 bg-white text-pb-500 focus:outline-none focus:border-gold-500 transition-colors appearance-none"
                   >
                     <option value="">Selecione o estado</option>
-                    {brazilianStates.map(state => (
+                    {brazilianStates.map((state) => (
                       <option key={state} value={state}>
                         {state}
                       </option>
@@ -417,7 +432,9 @@ export default function EditProfilePage() {
 
               {/* Rua */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-pb-500 mb-2">Rua</label>
+                <label className="block text-sm font-medium text-pb-500 mb-2">
+                  Rua
+                </label>
                 <input
                   type="text"
                   {...register(`addresses.${index}.street` as const)}
@@ -443,18 +460,19 @@ export default function EditProfilePage() {
         </div>
 
         {/* Alterar senha */}
-        <button
+        {/* <button
           type="button"
           onClick={() => router.push("/account/profile/change-password")}
           className="w-full h-[56px] rounded-full border-2 border-pb-500 text-pb-500 font-medium mb-4 hover:bg-pb-500 hover:text-white transition-colors"
         >
           Alterar minha senha
-        </button>
+        </button> */}
 
         {/* Excluir conta */}
         <button
           type="button"
-          onClick={() => setShowDeleteConfirm(true)}
+          //     onClick={() => setShowDeleteConfirm(true)}
+          disabled
           className="w-full text-center text-red-600 font-medium mb-8 hover:underline"
         >
           Excluir minha conta
@@ -463,7 +481,7 @@ export default function EditProfilePage() {
         {/* Salvar alterações */}
         <button
           type="submit"
-          disabled={isSubmitting}
+          // disabled={isSubmitting}
           className="w-full h-[56px] rounded-full bg-gold-500 text-white font-medium hover:bg-gold-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Salvando..." : "Salvar alterações"}
@@ -474,19 +492,22 @@ export default function EditProfilePage() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-medium text-pb-500 mb-4">Excluir conta</h3>
+            <h3 className="text-xl font-medium text-pb-500 mb-4">
+              Excluir conta
+            </h3>
             <p className="text-gray-600 mb-6">
-              Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir sua conta? Esta ação não pode ser
+              desfeita.
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => setShowDeleteConfirm(false)}
+                //        onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 h-12 rounded-full border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
-                onClick={handleDeleteAccount}
+                //        onClick={handleDeleteAccount}
                 className="flex-1 h-12 rounded-full bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
               >
                 Excluir

@@ -44,21 +44,22 @@ class RecommendationsService {
    * - Se autenticado: retorna recomendações baseadas na wishlist do usuário
    * - Se não autenticado: retorna relógios de marcas premium
    *
+   * ✅ Token enviado automaticamente via cookies (HttpOnly)
+   *
    * @param limit - Número de recomendações (1-50, padrão 12)
-   * @param token - Token de autenticação (opcional)
    * @returns Objeto com recommendations, isPersonalized e count
    */
   async getRecommendations(
-    limit: number = 12,
-    token?: string | null
+    limit: number = 12
   ): Promise<RecommendationsResponse> {
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-      const response = await apiClient.get<RecommendationsResponse>("/recommendations", {
-        params: { limit },
-        headers,
-      });
+      // ✅ Sem headers - cookies são enviados automaticamente pelo apiClient
+      const response = await apiClient.get<RecommendationsResponse>(
+        "/recommendations",
+        {
+          params: { limit },
+        }
+      );
 
       return response.data;
     } catch (error) {
@@ -74,18 +75,17 @@ class RecommendationsService {
 
   /**
    * Busca insights das preferências do usuário
-   * Requer autenticação
+   * Requer autenticação (cookie HttpOnly)
    *
-   * @param token - Token de autenticação (obrigatório)
+   * ✅ Token enviado automaticamente via cookies
+   *
    * @returns Insights baseados na wishlist ou null se não autenticado
    */
-  async getUserInsights(token: string): Promise<InsightsResponse> {
+  async getUserInsights(): Promise<InsightsResponse> {
     try {
+      // ✅ Sem headers - cookies são enviados automaticamente pelo apiClient
       const response = await apiClient.get<InsightsResponse>(
-        "/recommendations/insights",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        "/recommendations/insights"
       );
 
       return response.data;

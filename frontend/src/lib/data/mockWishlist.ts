@@ -86,8 +86,6 @@ export const mockWishlistItems: WishlistItem[] = [
       year: 2022,
       gender: "Masculino",
       condition: "Novo",
-      hasBox: true,
-      hasDocuments: true,
       movement: "Automático",
       caseMaterial: "Aço Oystersteel",
       caseDiameter: 28,

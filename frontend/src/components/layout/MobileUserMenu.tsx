@@ -194,32 +194,19 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                 ))}
               </div>
             </div>
-
-            {/* DEV ONLY: Simular Logout - apenas no mobile */}
-            {/* <div className="mt-6 py-6 border-t border-gray-200">
-              <button
-                onClick={() => {
-                  mockLogout();
-                  onClose();
-                }}
-                className="w-full py-3 px-4 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
-                [DEV] Simular Logout
-              </button>
-            </div> */}
           </div>
         ) : (
           // Menu para usuário não autenticado
           <div className="px-5 pb-6 space-y-4">
             <Link
-              href="/#"
+              href="/become-a-seller#duvidas-frequentes"
               onClick={onClose}
               className="block font-lato text-base font-medium text-gray-700 hover:text-gray-900 py-2"
             >
               Perguntas frequentes
             </Link>
             <Link
-              href="/vendedor"
+              href={isAuthenticated ? "/account/listings" : "/become-a-seller"}
               onClick={onClose}
               className="block font-lato text-base font-medium text-gray-700 hover:text-gray-900 py-2"
             >
@@ -236,7 +223,7 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
                 </Button>
               </Link>
 
-              <Link href="/cadastro">
+              <Link href="/sign-up">
                 <Button
                   variant="outline"
                   size="default"

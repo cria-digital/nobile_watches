@@ -45,6 +45,13 @@ const steps = [
   { id: 7, title: "Preço & Envio" },
 ];
 
+const accessoriesMap: Record<string, string> = {
+  box_and_docs: "BOX_AND_PAPERS",
+  box_only: "BOX_ONLY",
+  docs_only: "PAPERS_ONLY",
+  none: "WATCH_ONLY",
+};
+
 export function SellWatchMobileModal({
   isOpen,
   onClose,
@@ -106,8 +113,6 @@ export function SellWatchMobileModal({
     const validation = await validateImageFile(file, {
       maxSize: MAX_FILE_SIZE,
       allowedFormats: ALLOWED_FORMATS,
-      minWidth: 800,
-      minHeight: 600,
     });
 
     if (!validation.valid) {
@@ -306,6 +311,13 @@ export function SellWatchMobileModal({
         form.append("braceletColor", cleaned.braceletColor);
       if (cleaned.claspType) form.append("claspType", cleaned.claspType);
 
+      if (cleaned.includedAccessories) {
+        const accessoriesValue = accessoriesMap[cleaned.includedAccessories];
+        if (accessoriesValue) {
+          form.append("accessories", accessoriesValue);
+        }
+      }
+
       // Envia apenas 1 imagem
       if (cleaned.image && cleaned.image.length > 0) {
         const file = cleaned.image[0];
@@ -327,10 +339,8 @@ export function SellWatchMobileModal({
 
       showToast("success", "Anúncio criado com sucesso!");
 
-      setTimeout(() => {
-        handleClose();
-        if (onSuccess) onSuccess();
-      }, 1500);
+      handleClose();
+      if (onSuccess) onSuccess();
     } catch (error: any) {
       console.error("Erro ao criar anúncio:", error);
       showToast(
@@ -577,7 +587,7 @@ export function SellWatchMobileModal({
               <Select
                 {...register("braceletMaterial")}
                 id="braceletMaterial"
-                label="Material da bracelete"
+                label="Material do bracelete"
                 placeholder="Selecione..."
                 error={errors.braceletMaterial?.message}
                 options={braceletMaterialOptions}

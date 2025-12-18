@@ -55,14 +55,20 @@ export default function MyListingsPage() {
   } = useMyListings(user);
 
   const hasPermission =
-    user && (user.role === "SELLER" || user.role === "ADMIN") && user.isVerified === true;
+    user &&
+    (user.role === "SELLER" || user.role === "ADMIN") &&
+    user.isVerified === true;
 
   // Adiciona notificação
-  const addNotification = (type: NotificationType, title: string, message: string) => {
+  const addNotification = (
+    type: NotificationType,
+    title: string,
+    message: string
+  ) => {
     const id = Math.random().toString(36).substr(2, 9);
     const notification: Notification = { id, type, title, message };
 
-    setNotifications(prev => [...prev, notification]);
+    setNotifications((prev) => [...prev, notification]);
 
     setTimeout(() => {
       removeNotification(id);
@@ -71,7 +77,7 @@ export default function MyListingsPage() {
 
   // Remove notificação
   const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   // Handler para publicar anúncio
@@ -158,7 +164,11 @@ export default function MyListingsPage() {
 
     try {
       await markAsSold(id);
-      addNotification("success", "Marcado como vendido!", "Parabéns pela venda!");
+      addNotification(
+        "success",
+        "Marcado como vendido!",
+        "Parabéns pela venda!"
+      );
     } catch (error) {
       addNotification(
         "error",
@@ -196,11 +206,15 @@ export default function MyListingsPage() {
 
   const handleModalSuccess = () => {
     refresh();
-    addNotification("success", "Anúncio criado!", "Seu anúncio foi criado com sucesso.");
+    addNotification(
+      "success",
+      "Anúncio criado!",
+      "Seu anúncio foi criado com sucesso."
+    );
   };
 
   const filteredListings = listings.filter(
-    listing => listing.status === TAB_TO_STATUS[activeTab]
+    (listing) => listing.status === TAB_TO_STATUS[activeTab]
   );
 
   // Loading state
@@ -229,11 +243,34 @@ export default function MyListingsPage() {
     );
   }
 
+  // if (!hasPermission) {
+  //   return (
+  //     <div
+  //       className="flex items-center justify-center bg-white px-6"
+  //       style={{ minHeight: "calc(100vh - 120px)" }}
+  //     >
+  //       <div className="max-w-md text-center">
+  //         <AlertCircle className="mx-auto mb-4 h-10 w-10 text-yellow-500" />
+
+  //         <h2 className="text-xl font-medium text-gray-900 mb-2">
+  //           Verificação necessária
+  //         </h2>
+
+  //         <p className="text-gray-600 mb-6">
+  //           Para se tornar um vendedor na plataforma, você precisa solicitar a
+  //           verificação de identidade. Esse processo garante mais segurança para
+  //           compradores e vendedores.
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
   return (
     <div className="min-h-screen bg-white lg:py-8">
       {/* Notificações */}
       <div className="fixed top-4 right-4 z-[200] space-y-2 max-w-sm">
-        {notifications.map(notification => (
+        {notifications.map((notification) => (
           <div
             key={notification.id}
             className={`flex items-start gap-3 p-4 rounded-lg shadow-lg animate-slide-in ${
@@ -252,8 +289,12 @@ export default function MyListingsPage() {
               <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             )}
             <div className="flex-1">
-              <h4 className="font-medium text-sm text-gray-900">{notification.title}</h4>
-              <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+              <h4 className="font-medium text-sm text-gray-900">
+                {notification.title}
+              </h4>
+              <p className="text-sm text-gray-600 mt-1">
+                {notification.message}
+              </p>
             </div>
             <button
               onClick={() => removeNotification(notification.id)}
@@ -279,7 +320,6 @@ export default function MyListingsPage() {
       </div>
 
       {/* Desktop Header */}
-
       <div className="hidden lg:flex items-center justify-between flex-wrap max-w-7xl mx-auto px-8.5">
         <div>
           <Breadcrumbs
@@ -307,8 +347,14 @@ export default function MyListingsPage() {
           <div className="flex lg:px-4 overflow-x-auto overflow-y-hidden">
             <nav className="flex -mb-px">
               {(
-                ["ativo", "rascunho", "vendido", "pausado", "cancelado"] as TabType[]
-              ).map(tab => {
+                [
+                  "ativo",
+                  "rascunho",
+                  "vendido",
+                  "pausado",
+                  "cancelado",
+                ] as TabType[]
+              ).map((tab) => {
                 const count =
                   tab === "ativo"
                     ? stats.active
@@ -335,7 +381,9 @@ export default function MyListingsPage() {
                           `}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    <span className="ml-2 text-xs text-gray-500">({count})</span>
+                    <span className="ml-2 text-xs text-gray-500">
+                      ({count})
+                    </span>
                     {activeTab === tab && (
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#BE9F56]" />
                     )}
@@ -356,7 +404,9 @@ export default function MyListingsPage() {
           ) : error ? (
             <div className="text-center py-12">
               <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <p className="text-gray-900 font-medium mb-2">Erro ao carregar anúncios</p>
+              <p className="text-gray-900 font-medium mb-2">
+                Erro ao carregar anúncios
+              </p>
 
               <Button onClick={refresh}>Tentar novamente</Button>
             </div>
@@ -366,42 +416,57 @@ export default function MyListingsPage() {
                 <h3 className="text-xl text-gray-900 mb-2">
                   {activeTab === "ativo" && "Você não tem anúncios ativos"}
                   {activeTab === "rascunho" && "Você não tem rascunhos"}
-                  {activeTab === "vendido" && "Você ainda não vendeu nenhum relógio"}
+                  {activeTab === "vendido" &&
+                    "Você ainda não vendeu nenhum relógio"}
                   {activeTab === "pausado" && "Você não tem anúncios pausados"}
-                  {activeTab === "cancelado" && "Você não tem anúncios cancelados"}
+                  {activeTab === "cancelado" &&
+                    "Você não tem anúncios cancelados"}
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {activeTab === "ativo" && "Crie um novo anúncio para começar a vender."}
+                  {activeTab === "ativo" &&
+                    "Crie um novo anúncio para começar a vender."}
                   {activeTab === "rascunho" &&
                     "Comece um novo anúncio e salve como rascunho."}
                   {activeTab === "vendido" &&
                     "Quando vender um relógio, ele aparecerá aqui."}
-                  {activeTab === "pausado" && "Pause anúncios ativos para vê-los aqui."}
-                  {activeTab === "cancelado" && "Anúncios cancelados aparecerão aqui."}
+                  {activeTab === "pausado" &&
+                    "Pause anúncios ativos para vê-los aqui."}
+                  {activeTab === "cancelado" &&
+                    "Anúncios cancelados aparecerão aqui."}
                 </p>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-              {filteredListings.map(listing => (
+              {filteredListings.map((listing) => (
                 //@ts-ignore
                 <ListingCard
                   key={listing.id}
                   listing={listing}
                   onPublish={
-                    activeTab === "rascunho" ? () => handlePublish(listing.id) : undefined
+                    activeTab === "rascunho"
+                      ? () => handlePublish(listing.id)
+                      : undefined
                   }
                   onPause={
-                    activeTab === "ativo" ? () => handlePause(listing.id) : undefined
+                    activeTab === "ativo"
+                      ? () => handlePause(listing.id)
+                      : undefined
                   }
                   onReactivate={
                     activeTab === "pausado"
                       ? () => handleReactivate(listing.id)
                       : undefined
                   }
-                  onCancel={() => handleCancel(listing.id)}
+                  onCancel={
+                    activeTab !== "vendido"
+                      ? () => handleCancel(listing.id)
+                      : undefined
+                  }
                   onMarkAsSold={
-                    activeTab === "ativo" ? () => handleMarkAsSold(listing.id) : undefined
+                    activeTab === "ativo"
+                      ? () => handleMarkAsSold(listing.id)
+                      : undefined
                   }
                   onDelete={
                     activeTab === "rascunho" || activeTab === "cancelado"
