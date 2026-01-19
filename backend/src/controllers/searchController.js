@@ -1,9 +1,43 @@
 const prisma = require("../config/prisma");
 
 // Constantes para validação
-const MAX_LIMIT = 100; // Limite máximo de itens por página
+const MAX_LIMIT = 100;
 const DEFAULT_LIMIT = 20;
 const MIN_SEARCH_CHARS = 2;
+
+// ========================================
+// INCLUDE PADRÃO PARA RELÓGIOS
+// ========================================
+// ✅ Centraliza o include para manter consistência
+const WATCH_INCLUDE = {
+  seller: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isVerified: true,
+      city: true,
+      state: true,
+      country: true,
+    },
+  },
+  listings: {
+    where: {
+      status: "ACTIVE",
+    },
+    select: {
+      id: true,
+      status: true,
+      titleSuffix: true,
+      shippingInfo: true,
+      returnPolicy: true,
+      deliveryTime: true,
+      negotiable: true,
+      publishedAt: true,
+    },
+    take: 1,
+  },
+};
 
 /**
  * Busca sugestões para autocompletar
@@ -26,6 +60,12 @@ const buscarSugestoes = async (req, res) => {
           { model: { contains: searchTerm, mode: "insensitive" } },
           { referenceNumber: { contains: searchTerm, mode: "insensitive" } },
         ],
+        // ✅ IMPORTANTE: Apenas relógios com listing ativo
+        listings: {
+          some: {
+            status: "ACTIVE",
+          },
+        },
       },
       select: {
         id: true,
@@ -95,13 +135,19 @@ const buscaAvancada = async (req, res) => {
       order = "desc",
     } = req.query;
 
-    // Validação de paginação com limites seguros
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.min(MAX_LIMIT, Math.max(1, parseInt(limit) || DEFAULT_LIMIT));
     const skip = (pageNum - 1) * limitNum;
 
     // Construir filtros dinâmicos
-    const where = {};
+    const where = {
+      // ✅ IMPORTANTE: Apenas relógios com listing ativo
+      listings: {
+        some: {
+          status: "ACTIVE",
+        },
+      },
+    };
 
     // Busca textual
     if (query && query.trim()) {
@@ -163,7 +209,7 @@ const buscaAvancada = async (req, res) => {
       where.gender = { equals: gender, mode: "insensitive" };
     }
 
-    // MELHORADO: Filtro por ano com validação
+    // Filtro por ano com validação
     if (minYear || maxYear) {
       where.year = {};
       const parsedMinYear = parseInt(minYear);
@@ -208,19 +254,11 @@ const buscaAvancada = async (req, res) => {
       orderBy.createdAt = "desc";
     }
 
-    // Buscar relógios com filtros
+    // ✅ Buscar relógios com filtros E INCLUIR LISTINGS
     const [relogios, total] = await Promise.all([
       prisma.watch.findMany({
         where,
-        include: {
-          seller: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
+        include: WATCH_INCLUDE, // ✅ Usa o include padrão
         skip,
         take: limitNum,
         orderBy,
@@ -270,7 +308,15 @@ const buscaAvancada = async (req, res) => {
  */
 const obterFiltrosDisponiveis = async (req, res) => {
   try {
-    // Buscar valores únicos de cada campo
+    // ✅ IMPORTANTE: Buscar apenas de relógios com listing ativo
+    const whereActiveListings = {
+      listings: {
+        some: {
+          status: "ACTIVE",
+        },
+      },
+    };
+
     const [
       brands,
       caseMaterials,
@@ -285,6 +331,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
     ] = await Promise.all([
       // Marcas
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { brand: true },
         distinct: ["brand"],
         orderBy: { brand: "asc" },
@@ -292,6 +339,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Material da caixa
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { caseMaterial: true },
         distinct: ["caseMaterial"],
         orderBy: { caseMaterial: "asc" },
@@ -299,6 +347,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Material da pulseira
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { braceletMaterial: true },
         distinct: ["braceletMaterial"],
         orderBy: { braceletMaterial: "asc" },
@@ -306,6 +355,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Movimento
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { movement: true },
         distinct: ["movement"],
         orderBy: { movement: "asc" },
@@ -313,6 +363,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Condição
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { condition: true },
         distinct: ["condition"],
         orderBy: { condition: "asc" },
@@ -320,6 +371,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Cor do mostrador
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { dialColor: true },
         distinct: ["dialColor"],
         orderBy: { dialColor: "asc" },
@@ -327,6 +379,7 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Gênero
       prisma.watch.findMany({
+        where: whereActiveListings,
         select: { gender: true },
         distinct: ["gender"],
         orderBy: { gender: "asc" },
@@ -334,18 +387,21 @@ const obterFiltrosDisponiveis = async (req, res) => {
 
       // Faixa de preço (min/max)
       prisma.watch.aggregate({
+        where: whereActiveListings,
         _min: { price: true },
         _max: { price: true },
       }),
 
       // Faixa de ano (min/max)
       prisma.watch.aggregate({
+        where: whereActiveListings,
         _min: { year: true },
         _max: { year: true },
       }),
 
       // Faixa de diâmetro (min/max)
       prisma.watch.aggregate({
+        where: whereActiveListings,
         _min: { caseDiameter: true },
         _max: { caseDiameter: true },
       }),
@@ -395,7 +451,14 @@ const contarResultados = async (req, res) => {
       braceletMaterial,
     } = req.body;
 
-    const where = {};
+    const where = {
+      // ✅ IMPORTANTE: Apenas relógios com listing ativo
+      listings: {
+        some: {
+          status: "ACTIVE",
+        },
+      },
+    };
 
     if (query && query.trim()) {
       const searchTerm = query.trim();
@@ -413,7 +476,6 @@ const contarResultados = async (req, res) => {
     if (braceletMaterial)
       where.braceletMaterial = { equals: braceletMaterial, mode: "insensitive" };
 
-    // Validação de valores numéricos
     if (minPrice || maxPrice) {
       where.price = {};
       const parsedMinPrice = parseFloat(minPrice);
@@ -443,12 +505,19 @@ const contarResultados = async (req, res) => {
 const listarMarcas = async (req, res) => {
   try {
     const brands = await prisma.watch.findMany({
+      where: {
+        // ✅ IMPORTANTE: Apenas marcas de relógios com listing ativo
+        listings: {
+          some: {
+            status: "ACTIVE",
+          },
+        },
+      },
       select: { brand: true },
       distinct: ["brand"],
       orderBy: { brand: "asc" },
     });
 
-    // O .filter(Boolean) já remove null, undefined e strings vazias
     res.json(brands.map(w => w.brand).filter(Boolean));
   } catch (err) {
     console.error("Erro ao listar marcas:", err);

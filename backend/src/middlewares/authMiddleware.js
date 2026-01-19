@@ -1,14 +1,15 @@
-const jwt = require('jsonwebtoken');
+// backend/src/middlewares/authMiddleware.js
+
+const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  // ✅ ATUALIZADO - Lê do cookie ao invés do header
+  const token = req.cookies.token;
 
   // Verifica se o token foi enviado
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido.' });
+  if (!token) {
+    return res.status(401).json({ error: "Token de autenticação não fornecido." });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     // Verifica e decodifica o token
@@ -20,7 +21,7 @@ const authMiddleware = (req, res, next) => {
     // Continua para o próximo middleware/controller
     next();
   } catch (err) {
-    return res.status(403).json({ error: 'Token inválido ou expirado.' });
+    return res.status(403).json({ error: "Token inválido ou expirado." });
   }
 };
 

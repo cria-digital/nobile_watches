@@ -1,5 +1,7 @@
 const prisma = require("../config/prisma");
 
+const MAX_TITLE_SUFFIX_LENGTH = 60;
+
 /**
  * Criar um novo anúncio (rascunho ou publicado)
  * POST /api/listings
@@ -8,6 +10,7 @@ const criarAnuncio = async (req, res) => {
   try {
     const {
       watchId,
+      titleSuffix,
       shippingInfo,
       returnPolicy,
       deliveryTime,
@@ -16,6 +19,13 @@ const criarAnuncio = async (req, res) => {
     } = req.body;
 
     const sellerId = req.user.id;
+
+    // Validação do titleSuffix
+    if (titleSuffix && titleSuffix.length > MAX_TITLE_SUFFIX_LENGTH) {
+      return res.status(400).json({
+        error: `As informações adicionais do título não podem exceder ${MAX_TITLE_SUFFIX_LENGTH} caracteres.`,
+      });
+    }
 
     // Verifica se o relógio existe e pertence ao vendedor
     const watch = await prisma.watch.findUnique({
@@ -56,6 +66,7 @@ const criarAnuncio = async (req, res) => {
         watchId: parseInt(watchId),
         sellerId,
         status,
+        titleSuffix: titleSuffix?.trim() || null,
         shippingInfo,
         returnPolicy,
         deliveryTime,
@@ -230,8 +241,16 @@ const buscarAnuncioPorId = async (req, res) => {
 const atualizarAnuncio = async (req, res) => {
   try {
     const { id } = req.params;
-    const { shippingInfo, returnPolicy, deliveryTime, negotiable } = req.body;
+    const { titleSuffix, shippingInfo, returnPolicy, deliveryTime, negotiable } =
+      req.body;
     const sellerId = req.user.id;
+
+    // Validação do titleSuffix
+    if (titleSuffix && titleSuffix.length > MAX_TITLE_SUFFIX_LENGTH) {
+      return res.status(400).json({
+        error: `As informações adicionais do título não podem exceder ${MAX_TITLE_SUFFIX_LENGTH} caracteres.`,
+      });
+    }
 
     const anuncioExistente = await prisma.listing.findUnique({
       where: { id: parseInt(id) },
@@ -247,14 +266,17 @@ const atualizarAnuncio = async (req, res) => {
       });
     }
 
+    // Prepara dados para atualização (apenas campos fornecidos)
+    const dataToUpdate = {};
+    if (titleSuffix !== undefined) dataToUpdate.titleSuffix = titleSuffix?.trim() || null;
+    if (shippingInfo !== undefined) dataToUpdate.shippingInfo = shippingInfo;
+    if (returnPolicy !== undefined) dataToUpdate.returnPolicy = returnPolicy;
+    if (deliveryTime !== undefined) dataToUpdate.deliveryTime = deliveryTime;
+    if (negotiable !== undefined) dataToUpdate.negotiable = negotiable;
+
     const anuncioAtualizado = await prisma.listing.update({
       where: { id: parseInt(id) },
-      data: {
-        shippingInfo,
-        returnPolicy,
-        deliveryTime,
-        negotiable,
-      },
+      data: dataToUpdate,
       include: {
         watch: true,
       },

@@ -14,23 +14,52 @@ const PREMIUM_BRANDS = [
   "Breguet",
 ];
 
+// ========================================
+// ✅ INCLUDE PADRÃO - CONSISTENTE COM OUTROS CONTROLLERS
+// ========================================
+const WATCH_INCLUDE = {
+  seller: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isVerified: true,
+      city: true,
+      state: true,
+      country: true,
+    },
+  },
+  listings: {
+    where: { status: "ACTIVE" },
+    select: {
+      id: true,
+      status: true,
+      titleSuffix: true,
+      shippingInfo: true,
+      returnPolicy: true,
+      deliveryTime: true,
+      negotiable: true,
+      publishedAt: true,
+    },
+    take: 1,
+  },
+};
+
 /**
  * Gera recomendações personalizadas baseadas no perfil do usuário
  * GET /api/recommendations
  */
 const obterRecomendacoes = async (req, res) => {
   try {
-    const userId = req.user?.id; // Opcional - pode ser null para não autenticados
+    const userId = req.user?.id;
     const { limit = 12 } = req.query;
     const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 12));
 
     let recomendacoes;
 
     if (userId) {
-      // Usuário autenticado - recomendações personalizadas
       recomendacoes = await gerarRecomendacoesPersonalizadas(userId, limitNum);
     } else {
-      // Usuário não autenticado - recomendações genéricas
       recomendacoes = await gerarRecomendacoesGenericas(limitNum);
     }
 
@@ -81,7 +110,6 @@ async function gerarRecomendacoesPersonalizadas(userId, limit) {
   // 4. Construir query de recomendações
   const where = {
     id: { notIn: excludeIds },
-    // IMPORTANTE: Apenas relógios com anúncios ativos
     listings: {
       some: {
         status: "ACTIVE",
@@ -92,22 +120,19 @@ async function gerarRecomendacoesPersonalizadas(userId, limit) {
   // Se o usuário tem preferências claras, usar filtros
   if (preferences.brands.length > 0) {
     where.OR = [
-      // Priorizar marcas favoritas
       { brand: { in: preferences.brands, mode: "insensitive" } },
-      // Incluir também relógios na faixa de preço de interesse
       ...(preferences.priceRange.min && preferences.priceRange.max
         ? [
             {
               price: {
-                gte: preferences.priceRange.min * 0.7, // 30% abaixo
-                lte: preferences.priceRange.max * 1.3, // 30% acima
+                gte: preferences.priceRange.min * 0.7,
+                lte: preferences.priceRange.max * 1.3,
               },
             },
           ]
         : []),
     ];
   } else if (preferences.priceRange.min && preferences.priceRange.max) {
-    // Se não tem marcas favoritas mas tem faixa de preço
     where.price = {
       gte: preferences.priceRange.min * 0.7,
       lte: preferences.priceRange.max * 1.3,
@@ -117,31 +142,9 @@ async function gerarRecomendacoesPersonalizadas(userId, limit) {
   // 5. Buscar relógios recomendados
   const recomendacoes = await prisma.watch.findMany({
     where,
-    include: {
-      seller: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          isVerified: true,
-        },
-      },
-      // Incluir informações de anúncios ativos
-      listings: {
-        where: { status: "ACTIVE" },
-        select: {
-          id: true,
-          status: true,
-          negotiable: true,
-          deliveryTime: true,
-        },
-        take: 1,
-      },
-    },
-    take: limit * 2, // Buscar mais para aplicar score
-    orderBy: [
-      { createdAt: "desc" }, // Priorizar mais recentes
-    ],
+    include: WATCH_INCLUDE,
+    take: limit * 2,
+    orderBy: [{ createdAt: "desc" }],
   });
 
   // 6. Calcular score de relevância e ordenar
@@ -150,11 +153,10 @@ async function gerarRecomendacoesPersonalizadas(userId, limit) {
     relevanceScore: calcularScoreRelevancia(watch, preferences),
   }));
 
-  // Ordenar por score e limitar
   return recomendacoesComScore
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, limit)
-    .map(({ relevanceScore, ...watch }) => watch); // Remove score do retorno
+    .map(({ relevanceScore, ...watch }) => watch);
 }
 
 /**
@@ -164,7 +166,7 @@ function analisarPreferencias(wishlist) {
   if (!wishlist || wishlist.length === 0) {
     return {
       brands: [],
-      priceRange: { min: null, max: null },
+      priceRange: { min: null, max: null, avg: null },
       materials: [],
       movements: [],
       colors: [],
@@ -178,7 +180,6 @@ function analisarPreferencias(wishlist) {
     brandCount[brand] = (brandCount[brand] || 0) + 1;
   });
 
-  // Pegar marcas que aparecem pelo menos 2 vezes, ou as 3 mais frequentes
   const sortedBrands = Object.entries(brandCount)
     .sort(([, a], [, b]) => b - a)
     .map(([brand]) => brand);
@@ -193,10 +194,10 @@ function analisarPreferencias(wishlist) {
   const priceRange = {
     min: prices.length > 0 ? Math.min(...prices) : null,
     max: prices.length > 0 ? Math.max(...prices) : null,
-    avg: prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : null,
+    avg: prices.length > 0 ? prices.reduce((sum, p) => sum + p, 0) / prices.length : null,
   };
 
-  // Extrair outros atributos favoritos
+  // Materiais, movimentos e cores preferidos
   const materials = [
     ...new Set(wishlist.map(item => item.watch.caseMaterial).filter(Boolean)),
   ];
@@ -215,70 +216,66 @@ function analisarPreferencias(wishlist) {
 }
 
 /**
- * Calcula score de relevância de um relógio para as preferências do usuário
+ * Calcula score de relevância para ordenar recomendações
  */
 function calcularScoreRelevancia(watch, preferences) {
   let score = 0;
 
-  // Score por marca favorita (peso alto)
+  // 1. Match de marca (peso alto: +50 pontos)
   if (
     preferences.brands.length > 0 &&
     preferences.brands.some(b => b.toLowerCase() === watch.brand.toLowerCase())
   ) {
-    score += 50;
+    const brandIndex = preferences.brands.findIndex(
+      b => b.toLowerCase() === watch.brand.toLowerCase()
+    );
+    score += 50 - brandIndex * 5;
   }
 
-  // Score por faixa de preço (peso médio)
+  // 2. Faixa de preço (peso médio: +30 pontos)
   if (preferences.priceRange.min && preferences.priceRange.max) {
-    const { min, max, avg } = preferences.priceRange;
-    if (watch.price >= min && watch.price <= max) {
-      score += 30;
-    } else if (watch.price >= min * 0.7 && watch.price <= max * 1.3) {
-      score += 15;
-    }
+    const targetPrice = preferences.priceRange.avg || preferences.priceRange.min;
+    const priceDiff = Math.abs(watch.price - targetPrice);
+    const maxDiff = preferences.priceRange.max - preferences.priceRange.min;
 
-    // Bonus se está próximo da média
-    if (avg && Math.abs(watch.price - avg) <= avg * 0.3) {
-      score += 10;
+    if (maxDiff > 0) {
+      const priceScore = Math.max(0, 30 * (1 - priceDiff / maxDiff));
+      score += priceScore;
     }
   }
 
-  // Score por material da caixa (peso baixo)
+  // 3. Material da caixa (peso baixo: +10 pontos)
   if (
     preferences.materials.length > 0 &&
+    watch.caseMaterial &&
     preferences.materials.includes(watch.caseMaterial)
   ) {
     score += 10;
   }
 
-  // Score por movimento (peso baixo)
+  // 4. Tipo de movimento (peso baixo: +10 pontos)
   if (
     preferences.movements.length > 0 &&
+    watch.movement &&
     preferences.movements.includes(watch.movement)
   ) {
     score += 10;
   }
 
-  // Score por cor do mostrador (peso baixo)
-  if (preferences.colors.length > 0 && preferences.colors.includes(watch.dialColor)) {
+  // 5. Cor do mostrador (peso baixo: +5 pontos)
+  if (
+    preferences.colors.length > 0 &&
+    watch.dialColor &&
+    preferences.colors.includes(watch.dialColor)
+  ) {
     score += 5;
   }
 
-  // Bonus por vendedor verificado
-  if (watch.seller?.isVerified) {
-    score += 15;
-  }
-
-  // Bonus por ter anúncio ativo
-  if (watch.listings && watch.listings.length > 0) {
-    score += 10;
-  }
-
-  // Bonus por relógio recente (últimos 30 dias)
+  // 6. Bonus para relógios recentes (peso baixo: até +20 pontos)
   const daysSinceCreation =
     (Date.now() - new Date(watch.createdAt).getTime()) / (1000 * 60 * 60 * 24);
   if (daysSinceCreation <= 30) {
-    score += 20 * (1 - daysSinceCreation / 30); // Decai linearmente
+    score += 20 * (1 - daysSinceCreation / 30);
   }
 
   return score;
@@ -286,47 +283,58 @@ function calcularScoreRelevancia(watch, preferences) {
 
 /**
  * Gera recomendações genéricas para usuário não autenticado
+ * ✅ GARANTIA: Sempre retorna a quantidade solicitada (ou o máximo disponível)
+ *
+ * Estratégia de fallback:
+ * 1. Tenta buscar de marcas premium
+ * 2. Se insuficiente, complementa com outros relógios ativos (ordenados por data)
  */
 async function gerarRecomendacoesGenericas(limit) {
-  // Buscar relógios de marcas premium com anúncios ativos, priorizando mais recentes
-  const recomendacoes = await prisma.watch.findMany({
+  let recomendacoes = [];
+
+  // 1️⃣ Primeira tentativa: Marcas premium
+  const premiumWatches = await prisma.watch.findMany({
     where: {
       brand: {
         in: PREMIUM_BRANDS,
         mode: "insensitive",
       },
-      // IMPORTANTE: Apenas relógios com anúncios ativos
       listings: {
         some: {
           status: "ACTIVE",
         },
       },
     },
-    include: {
-      seller: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          isVerified: true,
-        },
-      },
-      listings: {
-        where: { status: "ACTIVE" },
-        select: {
-          id: true,
-          status: true,
-          negotiable: true,
-          deliveryTime: true,
-        },
-        take: 1,
-      },
-    },
-    orderBy: [
-      { createdAt: "desc" }, // Mais recentes primeiro
-    ],
+    include: WATCH_INCLUDE,
+    orderBy: [{ createdAt: "desc" }],
     take: limit,
   });
+
+  recomendacoes = premiumWatches;
+
+  // 2️⃣ Se ainda não temos o limite necessário, buscar de todas as marcas
+  if (recomendacoes.length < limit) {
+    const remainingLimit = limit - recomendacoes.length;
+    const excludeIds = recomendacoes.map(w => w.id);
+
+    const additionalWatches = await prisma.watch.findMany({
+      where: {
+        id: {
+          notIn: excludeIds, // Excluir os já retornados
+        },
+        listings: {
+          some: {
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: WATCH_INCLUDE,
+      orderBy: [{ createdAt: "desc" }], // Mais recentes primeiro
+      take: remainingLimit,
+    });
+
+    recomendacoes = [...recomendacoes, ...additionalWatches];
+  }
 
   return recomendacoes;
 }
@@ -345,7 +353,6 @@ const obterInsightsUsuario = async (req, res) => {
       });
     }
 
-    // Buscar wishlist
     const wishlist = await prisma.wishlist.findMany({
       where: { userId },
       include: {
@@ -372,7 +379,6 @@ const obterInsightsUsuario = async (req, res) => {
 
     const preferences = analisarPreferencias(wishlist);
 
-    // Calcular estatísticas adicionais
     const conditions = wishlist.map(item => item.watch.condition).filter(Boolean);
     const years = wishlist.map(item => item.watch.year).filter(Boolean);
 

@@ -77,6 +77,10 @@ router.get("/:id", buscarRelogioPorId);
  *                 type: number
  *               condition:
  *                 type: string
+ *               accessories:
+ *                 type: string
+ *                 enum: [BOX_AND_PAPERS, BOX_ONLY, PAPERS_ONLY, WATCH_ONLY]
+ *                 description: Acessórios incluídos com o relógio
  *               image:
  *                 type: string
  *                 format: binary

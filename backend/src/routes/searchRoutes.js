@@ -10,7 +10,7 @@ const {
 const { searchLimiter } = require("../config/rateLimiter");
 
 // ============================================
-// RATE LIMITER
+// RATE LIMITER - APLICADO EM TODAS AS ROTAS
 // ============================================
 
 router.use(searchLimiter);

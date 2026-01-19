@@ -89,6 +89,11 @@ router.get("/my-listings", listarMeusAnuncios);
  *               watchId:
  *                 type: integer
  *                 description: ID do relógio a ser anunciado
+ *               titleSuffix:
+ *                 type: string
+ *                 maxLength: 60
+ *                 description: Informações adicionais sobre o título (máximo 60 caracteres)
+ *                 example: "Movimento do relógio mecânico, corda manual"
  *               shippingInfo:
  *                 type: string
  *                 description: Informações de envio
@@ -108,7 +113,7 @@ router.get("/my-listings", listarMeusAnuncios);
  *       201:
  *         description: Anúncio criado com sucesso
  *       400:
- *         description: Erro ao criar anúncio
+ *         description: Erro ao criar anúncio (validação ou duplicação)
  */
 router.post("/", criarAnuncio);
 
@@ -153,6 +158,10 @@ router.get("/:id", buscarAnuncioPorId);
  *           schema:
  *             type: object
  *             properties:
+ *               titleSuffix:
+ *                 type: string
+ *                 maxLength: 60
+ *                 description: Informações adicionais sobre o título (máximo 60 caracteres)
  *               shippingInfo:
  *                 type: string
  *               returnPolicy:
@@ -164,6 +173,8 @@ router.get("/:id", buscarAnuncioPorId);
  *     responses:
  *       200:
  *         description: Anúncio atualizado com sucesso
+ *       400:
+ *         description: Erro de validação
  *       403:
  *         description: Sem permissão para atualizar este anúncio
  *       404:

@@ -1,20 +1,37 @@
+// backend/src/config/rateLimiter.js
 const rateLimit = require("express-rate-limit");
 
 // ========================================
-// RATE LIMITER GERAL
+// CONFIGURAÇÃO BASE OTIMIZADA
 // ========================================
+const defaultConfig = {
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false,
+  skipFailedRequests: false,
+};
 
+// ========================================
+// RATE LIMITER GERAL - MAIS PERMISSIVO
+// ========================================
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  ...defaultConfig,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 200, // ✅ Aumentado de 100 para 200
   message: {
     error: "Muitas requisições deste IP. Tente novamente em 15 minutos.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
-
+  // ✅ Skip automático para health checks (não gasta rate limit)
+  skip: req => {
+    return (
+      req.path === "/health" ||
+      req.path === "/teste-bd" ||
+      req.path === "/" ||
+      req.path === "/api-docs"
+    );
+  },
   handler: (req, res) => {
-    console.warn(`⚠️ Rate limit excedido: ${req.ip} - ${req.method} ${req.path}`);
+    console.warn(`⚠️ Rate limit geral excedido: ${req.ip} - ${req.method} ${req.path}`);
     res.status(429).json({
       error: "Muitas requisições deste IP. Tente novamente em 15 minutos.",
       retryAfter: "15 minutos",
@@ -23,30 +40,22 @@ const generalLimiter = rateLimit({
 });
 
 // ========================================
-// RATE LIMITER PARA AUTENTICAÇÃO (POR EMAIL)
+// AUTH LIMITERS - MENOS RESTRITIVOS
 // ========================================
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-
-  // ✅ Usa email como chave (cada conta tem seu próprio limite)
-  keyGenerator: (req, res) => {
-    // Se tem email no body, usa email
-    // Senão, usa a função padrão (que trata IPv6 corretamente)
+  ...defaultConfig,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // ✅ Aumentado de 5 para 10 tentativas
+  keyGenerator: req => {
     if (req.body && req.body.email) {
       return `email:${req.body.email.toLowerCase()}`;
     }
-    // Retorna undefined para usar a chave padrão (IP)
     return undefined;
   },
-
+  skipSuccessfulRequests: true, // ✅ Não conta logins bem-sucedidos
   message: {
     error: "Muitas tentativas de login nesta conta. Tente novamente em 15 minutos.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true,
-
   handler: (req, res) => {
     const identifier = req.body?.email || req.ip;
     console.warn(`🚨 Tentativa de brute force bloqueada: ${identifier}`);
@@ -57,23 +66,13 @@ const authLimiter = rateLimit({
   },
 });
 
-// ========================================
-// RATE LIMITER GLOBAL POR IP
-// ========================================
-
 const authIpLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 15,
-
-  // ✅ Usa a chave padrão (IP) - não precisa keyGenerator customizado
-  // A biblioteca já trata IPv6 corretamente por padrão
-
+  ...defaultConfig,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 30, // ✅ Aumentado de 15 para 30 tentativas
   message: {
     error: "Muitas tentativas de login deste IP. Tente novamente em 15 minutos.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
-
   handler: (req, res) => {
     console.warn(`🚨 IP bloqueado por excesso de tentativas: ${req.ip}`);
     res.status(429).json({
@@ -84,18 +83,15 @@ const authIpLimiter = rateLimit({
 });
 
 // ========================================
-// RATE LIMITER PARA UPLOADS
+// OUTROS LIMITERS
 // ========================================
-
 const uploadLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 10,
+  ...defaultConfig,
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 15, // ✅ Aumentado de 10 para 15 uploads
   message: {
     error: "Limite de uploads atingido. Tente novamente em 1 hora.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
-
   handler: (req, res) => {
     console.warn(`⚠️ Limite de upload excedido: ${req.ip} - ${req.path}`);
     res.status(429).json({
@@ -105,19 +101,13 @@ const uploadLimiter = rateLimit({
   },
 });
 
-// ========================================
-// RATE LIMITER PARA VERIFICAÇÃO
-// ========================================
-
 const verificationLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 3,
+  ...defaultConfig,
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 5, // ✅ Aumentado de 3 para 5 tentativas
   message: {
     error: "Limite de envio de documentos atingido. Tente novamente em 1 hora.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
-
   handler: (req, res) => {
     console.warn(`⚠️ Limite de verificação excedido: ${req.user?.email || req.ip}`);
     res.status(429).json({
@@ -127,19 +117,13 @@ const verificationLimiter = rateLimit({
   },
 });
 
-// ========================================
-// RATE LIMITER PARA BUSCA
-// ========================================
-
 const searchLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 30,
+  ...defaultConfig,
+  windowMs: 1 * 60 * 1000, // 1 minuto
+  max: 60, // ✅ Aumentado de 30 para 60 buscas
   message: {
     error: "Muitas buscas em pouco tempo. Aguarde um momento.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
-
   handler: (req, res) => {
     res.status(429).json({
       error: "Muitas buscas em pouco tempo. Aguarde um momento.",
@@ -148,24 +132,18 @@ const searchLimiter = rateLimit({
   },
 });
 
-// ========================================
-// RATE LIMITER PARA ADMIN
-// ========================================
-
 const adminLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
+  ...defaultConfig,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // ✅ Aumentado de 50 para 100 ações
   message: {
     error: "Limite de ações administrativas excedido.",
   },
-  standardHeaders: true,
-  legacyHeaders: false,
 });
 
 // ========================================
 // EXPORTS
 // ========================================
-
 module.exports = {
   generalLimiter,
   authLimiter,

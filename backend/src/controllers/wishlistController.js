@@ -27,7 +27,9 @@ const adicionarRelogioNaWishlist = async (req, res) => {
     });
 
     if (jaExiste) {
-      return res.status(400).json({ error: "Este relógio já está na sua wishlist." });
+      return res
+        .status(400)
+        .json({ error: "Este relógio já está na sua lista de desejos." });
     }
 
     // Adiciona à wishlist
@@ -57,9 +59,13 @@ const adicionarRelogioNaWishlist = async (req, res) => {
   }
 };
 
+// backend/src/controllers/wishlistController.js
+
 /**
  * Lista todos os relógios da wishlist do usuário
  * GET /api/wishlist
+ *
+ * ✅ ATUALIZADO: Agora inclui o listing ativo do watch
  */
 const listarWishlistDoUsuario = async (req, res) => {
   try {
@@ -73,10 +79,22 @@ const listarWishlistDoUsuario = async (req, res) => {
             seller: {
               select: { id: true, name: true, email: true },
             },
+            // ✅ NOVO: Incluir o listing ativo (se existir)
+            listings: {
+              where: {
+                status: {
+                  in: ["ACTIVE", "SOLD", "PAUSED", "CANCELLED"],
+                },
+              },
+              orderBy: {
+                updatedAt: "desc",
+              },
+              take: 1, // Pegar apenas o listing mais recente
+            },
           },
         },
       },
-      orderBy: { addedAt: "desc" }, // Mais recentes primeiro
+      orderBy: { addedAt: "desc" },
     });
 
     res.json(wishlist);

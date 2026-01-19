@@ -21,6 +21,7 @@ const criarRelogio = async (req, res) => {
       braceletColor,
       claspType,
       gender,
+      accessories,
     } = req.body;
 
     const imageUrl = req.file?.path || null;
@@ -44,6 +45,7 @@ const criarRelogio = async (req, res) => {
         braceletColor,
         claspType,
         gender,
+        accessories,
         images: imageUrl ? [imageUrl] : [],
         sellerId: req.user.id,
       },
@@ -74,13 +76,38 @@ const listarRelogios = async (req, res) => {
     const relogios = await prisma.watch.findMany({
       include: {
         seller: {
-          select: { id: true, name: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            isVerified: true,
+          },
         },
+        listings: {
+          where: {
+            status: "ACTIVE",
+          },
+          select: {
+            id: true,
+            status: true,
+            titleSuffix: true,
+            shippingInfo: true,
+            returnPolicy: true,
+            deliveryTime: true,
+            negotiable: true,
+            publishedAt: true,
+          },
+          take: 1,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
     res.json(relogios);
   } catch (err) {
+    console.error("Erro ao listar relógios:", err);
     res.status(500).json({ error: "Erro ao listar relógios." });
   }
 };
@@ -93,7 +120,29 @@ const buscarRelogioPorId = async (req, res) => {
       where: { id: parseInt(id) },
       include: {
         seller: {
-          select: { id: true, name: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            isVerified: true,
+          },
+        },
+        listings: {
+          where: {
+            status: "ACTIVE",
+          },
+          select: {
+            id: true,
+            status: true,
+            titleSuffix: true,
+            shippingInfo: true,
+            returnPolicy: true,
+            deliveryTime: true,
+            negotiable: true,
+            publishedAt: true,
+          },
+          take: 1,
         },
       },
     });
@@ -104,6 +153,7 @@ const buscarRelogioPorId = async (req, res) => {
 
     res.json(relogio);
   } catch (err) {
+    console.error("Erro ao buscar relógio:", err);
     res.status(500).json({ error: "Erro ao buscar relógio." });
   }
 };

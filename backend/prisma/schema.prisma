@@ -37,6 +37,10 @@ model User {
   documentBackUrl    String?   
   selfieUrl          String?  
   verificationSubmittedAt DateTime?
+
+  resetPasswordToken   String?   @unique
+  resetPasswordExpires DateTime?
+  
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
@@ -44,11 +48,48 @@ model User {
   watches           Watch[]    @relation("SellerWatches")
   listings          Listing[]  @relation("SellerListings")
   orders            Order[]    @relation("BuyerOrders")
-  messagesSent      Message[] @relation("MessagesSent")
-  messagesReceived  Message[] @relation("MessagesReceived")
+  messagesSent      Message[]  @relation("MessagesSent")
+  messagesReceived  Message[]  @relation("MessagesReceived")
   collections       Collection[]
   adminLogs         AdminLog[]
   wishlist          Wishlist[]
+  cart              Cart?      
+  addresses    Address[]
+}
+
+model Address {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  
+  // Tipo e identificação
+  label         String?  // "Casa", "Trabalho", "Outro"
+  recipientName String   // Nome do destinatário
+  
+  // Endereço completo
+  street        String   // Rua/Avenida
+  number        String   // Número
+  complement    String?  // Complemento (apt, sala, etc)
+  neighborhood  String   // Bairro
+  city          String   // Cidade
+  state         String   // Estado/Província
+  zipCode       String   // CEP/Código Postal
+  country       String   // País
+  
+  // Contato
+  phone         String?  // Telefone para entrega
+  
+  // Metadados
+  isDefault     Boolean  @default(false) // Endereço padrão para entregas
+  isActive      Boolean  @default(true)  // Endereço ativo (soft delete)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([userId, isDefault])
 }
 
 model Watch {
@@ -76,6 +117,7 @@ model Watch {
   braceletColor    String?
   claspType        String?
   gender           String?
+  accessories      String?
 
   // Relacionamentos
   seller           User       @relation("SellerWatches", fields: [sellerId], references: [id])
@@ -85,6 +127,7 @@ model Watch {
   collections      Collection[]
   priceHistories   PriceHistory[]
   wishlist         Wishlist[]
+  cartItems        CartItem[] 
 }
 
 model Listing {
@@ -94,6 +137,7 @@ model Listing {
   status          ListingStatus @default(DRAFT)
   
   // Informações específicas do anúncio
+  titleSuffix     String?       // Informações adicionais para o título (máx 60 chars)
   shippingInfo    String?       // Informações de envio
   returnPolicy    String?       // Política de devolução
   deliveryTime    String?       // Prazo de entrega estimado
@@ -108,6 +152,7 @@ model Listing {
   watch           Watch         @relation(fields: [watchId], references: [id])
   seller          User          @relation("SellerListings", fields: [sellerId], references: [id])
   orders          Order[]       // Pedidos relacionados a este anúncio
+  cartItems       CartItem[]    // Relacionamento com itens do carrinho
   
   // Índice único: um relógio só pode ter um anúncio ATIVO ou DRAFT por vez
   @@unique([watchId, status], name: "unique_active_listing")
@@ -117,7 +162,7 @@ model Order {
   id           Int      @id @default(autoincrement())
   buyerId      Int
   watchId      Int
-  listingId    Int?     // Novo campo para vincular ao anúncio
+  listingId    Int?     // Campo para vincular ao anúncio
   status       String
   paymentInfo  String?
   shippingInfo String?
@@ -129,6 +174,40 @@ model Order {
 
   transactions Transaction[]
 }
+
+// 🆕 ===================================
+// MODELOS DE CARRINHO
+// ===================================
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique  // Um usuário tem apenas um carrinho
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  watchId   Int      // Relógio adicionado
+  listingId Int?     // Anúncio específico (se houver)
+  quantity  Int      @default(1) // Sempre 1 para relógios (item único)
+  addedAt   DateTime @default(now())
+  
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  watch     Watch    @relation(fields: [watchId], references: [id], onDelete: Cascade)
+  listing   Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  
+  // Evitar duplicatas: um relógio só pode estar uma vez no carrinho
+  @@unique([cartId, watchId])
+}
+
+// ===================================
+// FIM DOS MODELOS DE CARRINHO
+// ===================================
 
 model Collection {
   id             Int     @id @default(autoincrement())

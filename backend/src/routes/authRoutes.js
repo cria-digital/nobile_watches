@@ -3,10 +3,17 @@ const router = express.Router();
 const {
   register,
   login,
+  logout,
   submitVerification,
   verifyUser,
   getVerificationStatus,
 } = require("../controllers/authController");
+const {
+  solicitarRecuperacao,
+  validarToken,
+  redefinirSenha,
+} = require("../controllers/passwordResetController");
+
 const authMiddleware = require("../middlewares/authMiddleware");
 const { uploadVerification } = require("../config/cloudinary");
 
@@ -181,5 +188,141 @@ router.get("/verification-status", authMiddleware, getVerificationStatus);
  *         description: Usuário não encontrado
  */
 router.put("/verify/:userId", authMiddleware, verifyUser);
+
+// ========================================
+// RECUPERAÇÃO DE SENHA
+// ========================================
+
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Solicita recuperação de senha
+ *     description: Envia um código de verificação para o email do usuário para recuperação de senha
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: usuario@exemplo.com
+ *     responses:
+ *       200:
+ *         description: Instruções enviadas se o email existir
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Email não fornecido
+ *       429:
+ *         description: Muitas tentativas
+ */
+router.post("/forgot-password", authIpLimiter, authLimiter, solicitarRecuperacao);
+
+/**
+ * @swagger
+ * /api/auth/reset-password/{token}:
+ *   get:
+ *     summary: Valida se o token de recuperação é válido
+ *     description: Verifica se o token existe e ainda não expirou
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: token
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token de recuperação (6 dígitos)
+ *         example: "123456"
+ *     responses:
+ *       200:
+ *         description: Token válido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 expiresIn:
+ *                   type: string
+ *       400:
+ *         description: Token inválido ou expirado
+ */
+router.get("/reset-password/:token", validarToken);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Redefine a senha usando o token
+ *     description: Redefine a senha do usuário após validação do token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: "123456"
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 example: "NovaSenha123!"
+ *     responses:
+ *       200:
+ *         description: Senha redefinida com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Token inválido, expirado ou senha inválida
+ *       429:
+ *         description: Muitas tentativas
+ */
+router.post("/reset-password", authIpLimiter, redefinirSenha);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Realiza logout do usuário (limpa cookie)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout realizado com sucesso
+ */
+router.post("/logout", authMiddleware, logout);
 
 module.exports = router;
