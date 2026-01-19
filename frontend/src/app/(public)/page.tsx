@@ -1,6 +1,7 @@
 import {
   BecomeSeller,
   BuyerProtection,
+  FeaturedWatches,
   Hero,
   HowItWorks,
   SellerSpotlight,
@@ -53,6 +54,7 @@ export default function Home() {
     <>
       <Hero />
       <BuyerProtection />
+      <FeaturedWatches />
       <SellerSpotlight />
       <BecomeSeller />
       <HowItWorks />

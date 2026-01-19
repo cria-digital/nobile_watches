@@ -206,7 +206,11 @@ export function MobileUserMenu({ isOpen, onClose }: MobileUserMenuProps) {
               Perguntas frequentes
             </Link>
             <Link
-              href={isAuthenticated ? "/account/listings" : "/become-a-seller"}
+              href={
+                isAuthenticated
+                  ? "/account/listings?source=header"
+                  : "/become-a-seller"
+              }
               onClick={onClose}
               className="block font-lato text-base font-medium text-gray-700 hover:text-gray-900 py-2"
             >

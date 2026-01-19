@@ -65,16 +65,6 @@ export function UserMenu({ user, logout }: UserMenuProps) {
         className="flex items-center gap-3 hover:opacity-80 transition-opacity outline-none"
         aria-label="Menu do usuário"
       >
-        {/* <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-          <Image
-            src={avatarUrl}
-            alt={user.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 0px"
-          />
-        </div> */}
-
         <div className="relative flex items-center justify-center">
           <span className="relative inline-flex items-center justify-center align-middle overflow-hidden select-none w-10 h-10 rounded-full bg-[#D5A60A] p-0 border-0 transition-colors duration-200">
             <div className="font-lato text-[13px] leading-[133%] font-medium text-white">
@@ -97,8 +87,8 @@ export function UserMenu({ user, logout }: UserMenuProps) {
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Menu Panel */}
-          <div className="absolute -right-8 top-full z-50 bg-white shadow-lg w-screen max-w-7xl">
+          {/* Menu Panel - Ajustado para não cobrir a search bar */}
+          <div className="absolute -right-8 top-full mt-6 z-50 bg-white shadow-lg w-screen max-w-7xl">
             <div className="bg-white mx-auto px-5 sm:px-6 lg:px-8 ">
               <div className="bg-white py-[48px] overflow-hidden">
                 {/* Grid Layout */}
@@ -110,7 +100,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                         Gerenciamento
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-nowrap gap-4">
                       {gerenciamentoItems.map((item) => (
                         <MenuItemButton
                           key={item.label}
@@ -128,7 +118,7 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                         Meus dados
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-nowrap gap-4">
                       {meusDadosItems.map((item) => (
                         <MenuItemButton
                           key={`meus-dados-${item.label}`}
@@ -140,19 +130,24 @@ export function UserMenu({ user, logout }: UserMenuProps) {
                   </div>
 
                   {/* Opções Section */}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-shrink-0">
                     <div className="mb-3">
-                      <h3 className="font-lato text-[14px] font-normal text-[#141414] leading-[148%] whitespace-nowrap">
+                      <h3 className="font-lato text-[14px] font-normal leading-[148%] whitespace-nowrap">
                         Opções
                       </h3>
                     </div>
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-nowrap gap-4">
                       {opcoesItems.map((item) => (
                         <MenuItemButton
-                          key={`opcoes-${item.label}-${item.href}`}
+                          key={item.label}
                           item={item}
-                          onClick={() => setIsOpen(false)}
                           isLogout={item.label === "Sair"}
+                          onClick={() => {
+                            if (item.label === "Sair") {
+                              logout();
+                            }
+                            setIsOpen(false);
+                          }}
                         />
                       ))}
                     </div>
@@ -167,38 +162,37 @@ export function UserMenu({ user, logout }: UserMenuProps) {
   );
 }
 
-function MenuItemButton({
-  item,
-  onClick,
-  isLogout = false,
-}: {
+interface MenuItemButtonProps {
   item: MenuItem;
   onClick: () => void;
   isLogout?: boolean;
-}) {
-  const handleClick = (e: React.MouseEvent) => {
-    onClick(); // Fecha o menu
-    if (isLogout) {
-      e.preventDefault(); // Impede a navegação automática do Link
-      const event = new CustomEvent("logout-request");
-      window.dispatchEvent(event);
-    }
-  };
+}
 
-  return (
-    <Link
-      href={item.href}
-      onClick={handleClick}
-      className={`flex flex-col items-center justify-center gap-2 border border-[#EFEFEF] rounded-[12px] px-8 py-6 bg-[#F7F7F7] hover:bg-gray-50 transition-colors ${
-        isLogout
-          ? "text-red-600 hover:bg-red-50 min-w-[140px]"
-          : "text-pb-500 min-w-[140px]"
-      }`}
+function MenuItemButton({ item, onClick, isLogout }: MenuItemButtonProps) {
+  const content = (
+    <div
+      className={`flex flex-col items-center justify-center gap-2 p-4 bg-[#F7F7F7] border border-[#EFEFEF] rounded-[12px] hover:bg-gray-100 transition-colors cursor-pointer h-[88px] ${isLogout ? "w-[120px]" : "w-[164px]"}`}
     >
-      <Image src={item.icon} alt={item.label} width={26} height={26} />
-      <span className="text-xs font-medium whitespace-nowrap">
+      <Image src={item.icon} alt={item.label} width={24} height={24} />
+      <span
+        className={`font-lato text-xs font-medium text-center leading-[148%] ${isLogout ? "text-[#D23423]" : "text-[#141414]"}`}
+      >
         {item.label}
       </span>
+    </div>
+  );
+
+  if (isLogout) {
+    return (
+      <button onClick={onClick} className="text-left">
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={item.href} onClick={onClick}>
+      {content}
     </Link>
   );
 }

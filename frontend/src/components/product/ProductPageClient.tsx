@@ -417,7 +417,7 @@ export function ProductPageClient({ productId }: ProductPageClientProps) {
                   <WishlistButton
                     watchId={product.id}
                     size="large"
-                    // className="absolute right-0 bottom-[6px] w-5 h-5 lg:w-6 lg:h-6"
+                    checkStatus={true}
                   />
                 </div>
               </div>

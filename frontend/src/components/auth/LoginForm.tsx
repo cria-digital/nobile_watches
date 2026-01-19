@@ -84,10 +84,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         />
       )}
 
-      <div>
-        <div className="flex flex-col gap-3 mb-6">
-          <h1 className="text-[28px]">Acesse sua conta</h1>
-          <p className="text-gray-400 text-sm leading-[148%]">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex-2 flex flex-col">
+        <div className="mb-8">
+          <h1 className="text-[28px] leading-[28px] mb-3">Acesse sua conta</h1>
+          <p className="text-gray-400 text-sm leading-[21px] lg:max-w-sm">
             Descubra as marcas mais exclusivas, negocie com segurança e
             acompanhe a valorização das suas peças.
           </p>
@@ -134,11 +134,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-5"
-          autoComplete="on"
-        >
+        {/* Email and Password inputs */}
+        <div className="space-y-5 mb-6">
           {/* Email */}
           <Input
             {...register("email")}
@@ -174,19 +171,21 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               <p className="text-sm text-red-600">{errors.root.message}</p>
             </div>
           )}
+        </div>
 
+        <div className="mt-auto">
           {/* Botão de login */}
           <Button
             type="submit"
             variant="gold"
-            className="w-full h-[54px]"
+            className="w-full h-[54px] mb-2"
             isLoading={isLoading || showSuccessToast}
             disabled={!isButtonEnabled}
           >
             {showSuccessToast ? "Redirecionando..." : "Acessar"}
           </Button>
 
-          <div className="flex items-center justify-between h-[28px]">
+          <div className="flex items-center justify-between h-[54px]">
             <Link
               href="/password/request"
               className="font-lato text-base text-pb-500 font-bold hover:text-gray-900 transition-colors"
@@ -201,8 +200,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               Criar conta
             </Link>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </>
   );
 }

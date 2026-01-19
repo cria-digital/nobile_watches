@@ -42,6 +42,7 @@ export function PasswordRequestForm() {
   const email = watch("email");
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
+    console.log("ONSUBMMIT");
     setIsLoading(true);
     try {
       // Envia requisição para o backend
@@ -116,13 +117,14 @@ export function PasswordRequestForm() {
   // Tela de verificação de código
   if (isSubmitted) {
     return (
-      <div className="flex flex-col gap-8 h-full min-h-[450px] pb-8 lg:pb-0">
-        <div>
+      <div className="relative h-full flex-2 flex flex-col">
+        <div className="mb-8">
           <h1 className="text-[28px] mb-3 leading-[100%]">
             Verifique seu e-mail
           </h1>
           <p className="text-sm text-gray-400 leading-[148%]">
-            Enviamos um código de 6 dígitos para o e-mail{" "}
+            Enviamos um código de 6 dígitos para o e-mail
+            <br />
             <span className="font-medium text-pb-500">
               {getValues("email")}
             </span>
@@ -130,7 +132,7 @@ export function PasswordRequestForm() {
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           <div className="flex items-center justify-center gap-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <input
@@ -155,7 +157,7 @@ export function PasswordRequestForm() {
           )}
         </div>
 
-        <div className="lg:mt-auto space-y-2">
+        <div className="mt-auto space-y-2">
           <Button
             onClick={handleVerifyCode}
             variant="gold"
@@ -179,61 +181,59 @@ export function PasswordRequestForm() {
   }
 
   return (
-    <div className="flex flex-col gap-8 h-full min-h-[450px] pb-8 lg:pb-0">
-      <div>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="relative h-full flex-2 flex flex-col"
+    >
+      <div className="mb-8">
         <h1 className="text-[28px] mb-3 leading-[100%]">Esqueceu sua senha?</h1>
-        <p className="text-sm text-gray-400 leading-[148%]">
-          Informe o e-mail associado à sua conta. Enviaremos um link para que
-          você possa redefinir sua senha.
+        <p className="text-sm text-gray-400 leading-[21px] max-w-sm">
+          Informe o e-mail associado à sua conta. Enviaremos um código de
+          verificação para que você possa redefinir sua senha.
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex-1 flex flex-col gap-8"
-      >
-        <div className="space-y-6">
-          <Input
-            {...register("email")}
-            id="email"
-            label="E-mail"
-            type="email"
-            placeholder="Digite seu e-mail..."
-            icon="/icons/envelope-outline.svg"
-            iconAlt="Envelope"
-            autoComplete="email"
-            inputMode="email"
-            error={errors.email?.message}
-          />
+      <div className="mb-8">
+        <Input
+          {...register("email")}
+          id="email"
+          label="E-mail"
+          type="email"
+          placeholder="Digite seu e-mail..."
+          icon="/icons/envelope-outline.svg"
+          iconAlt="Envelope"
+          autoComplete="email"
+          inputMode="email"
+          error={errors.email?.message}
+        />
 
-          {errors.root && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-sm text-red-600">{errors.root.message}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="lg:mt-auto space-y-2">
-          <Button
-            type="submit"
-            variant="gold"
-            className="w-full h-[52px]"
-            isLoading={isLoading}
-            disabled={!email || !isValid || isLoading}
-          >
-            Enviar código de verificação
-          </Button>
-
-          <div className="flex items-center justify-center">
-            <Link
-              href="/login"
-              className="flex items-center h-[52px] text-base font-semibold text-pb-500 transition-colors"
-            >
-              Voltar
-            </Link>
+        {errors.root && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-sm text-red-600">{errors.root.message}</p>
           </div>
+        )}
+      </div>
+
+      <div className="mt-auto">
+        <Button
+          type="submit"
+          variant="gold"
+          className="w-full h-[56px] mb-2"
+          isLoading={isLoading}
+          disabled={!email || !isValid || isLoading}
+        >
+          Enviar código de verificação
+        </Button>
+
+        <div className="flex items-center justify-center">
+          <Link
+            href="/login"
+            className="flex items-center h-[56px] text-base font-semibold text-pb-500 transition-colors"
+          >
+            Voltar
+          </Link>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }

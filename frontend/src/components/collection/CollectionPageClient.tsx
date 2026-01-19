@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MobileBackHeader } from "../layout/MobileBackHeader";
 import { Breadcrumbs, Button } from "../ui";
+import { UserNav } from "../user/UserNav";
 import { CollectionCard } from "./CollectionCard";
 
 export function CollectionPageClient() {
@@ -66,8 +67,19 @@ export function CollectionPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <MobileBackHeader title="Sua coleção" />
+    <div className="min-h-screen bg-white lg:py-8">
+      <MobileBackHeader title="Minha coleção" />
+
+      {/* Desktop Header */}
+      <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto px-8">
+        <div>
+          <Breadcrumbs
+            items={[{ label: "Home", href: "/" }, { label: "Minha coleção" }]}
+          />
+          <h1 className="text-[32px] leading-[100%]">Minha coleção</h1>
+        </div>
+        <UserNav />
+      </div>
 
       <div className="mx-auto max-w-7xl px-5 lg:px-8 pt-5 lg:pt-[48px] pb-28">
         {/* Content */}

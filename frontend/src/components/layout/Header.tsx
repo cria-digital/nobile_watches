@@ -113,7 +113,9 @@ export function Header() {
                 </Link>
                 <Link
                   href={
-                    isAuthenticated ? "/account/listings" : "/become-a-seller"
+                    isAuthenticated
+                      ? "/account/listings?source=header"
+                      : "/become-a-seller"
                   }
                   className="font-lato text-md font-medium text-gray-400 hover:text-gray-900 transition-colors"
                 >

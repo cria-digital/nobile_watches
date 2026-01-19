@@ -9,7 +9,8 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { useMyListings } from "@/lib/hooks/useMyListings";
 import { ListingStatus } from "@/types/nobile";
 import { AlertCircle, CheckCircle2, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type TabType = "ativo" | "rascunho" | "vendido" | "pausado" | "cancelado";
 
@@ -39,6 +40,8 @@ export default function MyListingsPage() {
 
   const { user } = useAuth();
 
+  const searchParams = useSearchParams();
+
   const {
     listings,
     isLoading,
@@ -58,6 +61,29 @@ export default function MyListingsPage() {
     user &&
     (user.role === "SELLER" || user.role === "ADMIN") &&
     user.isVerified === true;
+
+  useEffect(() => {
+    // Verifica se veio de uma origem autorizada
+    const source = searchParams.get("source");
+    const isFromAuthorizedSource =
+      source === "header" || source === "user-menu";
+
+    if (isFromAuthorizedSource && hasPermission) {
+      // Detecta se é desktop ou mobile
+      const isMobile = window.innerWidth < 1024; // lg breakpoint do Tailwind
+
+      if (isMobile) {
+        setIsMobileModalOpen(true);
+      } else {
+        setIsDesktopModalOpen(true);
+      }
+
+      // Remove o query parameter da URL sem recarregar a página
+      const url = new URL(window.location.href);
+      url.searchParams.delete("source");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams, hasPermission]);
 
   // Adiciona notificação
   const addNotification = (

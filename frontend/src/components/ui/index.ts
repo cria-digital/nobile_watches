@@ -5,5 +5,6 @@ export * from "./Error";
 export * from "./Icon";
 export * from "./Input";
 export * from "./Loading";
+export * from "./Modal";
 export * from "./Select";
 export * from "./Toast";

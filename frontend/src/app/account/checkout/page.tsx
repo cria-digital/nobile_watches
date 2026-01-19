@@ -20,7 +20,6 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const itemIds = searchParams.get("items")?.split(",") || undefined;
 
-  // Hooks
   const { items, isLoading: isLoadingCart, error: cartError } = useCart();
   const { addresses, isLoading: loadingAddresses } = useAddresses();
   //@ts-ignore
@@ -28,18 +27,18 @@ export default function CheckoutPage() {
     itemIds,
   });
 
-  // Estados locais
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [authenticationEnabled, setAuthenticationEnabled] = useState(false);
 
-  // Filtrar itens selecionados
   const selectedItems = itemIds
     ? items.filter((item) => itemIds.includes(item.id))
     : items;
 
   // Calcular totais
   const subtotal = selectedItems.reduce((sum, item) => sum + item.price, 0);
-  const total = subtotal;
+  const authenticationPrice = 3430.0; // R$ 3.430,00
+  const total = subtotal + (authenticationEnabled ? authenticationPrice : 0);
 
   // Selecionar endereço padrão automaticamente
   useEffect(() => {
@@ -115,19 +114,24 @@ export default function CheckoutPage() {
       </div>
 
       {/* Conteúdo */}
-      <div className="max-w-7xl mx-auto py-6 px-5 lg:px-8 lg:mt-8 rounded-xl border-2 border-[#EFEFEF]">
-        <div className="lg:grid lg:grid-cols-5 lg:gap-8">
+      <div className="max-w-7xl mx-auto lg:py-8 px-5 lg:px-8">
+        <div className="lg:grid lg:grid-cols-5 lg:gap-8 rounded-xl lg:border-2 border-[#EFEFEF] px-2 py-6 lg:px-8">
           {/* Coluna esquerda - Itens e Endereço */}
           <div className="lg:col-span-2">
             <div className="">
+              <div className="flex items-center h-2 mb-6">
+                <div className="w-[90%] h-[2.5px] bg-[#D5A60A]" />
+              </div>
               <div className="mb-8">
-                <h2 className="text-2xl mb-3">Resumo do pedido</h2>
+                <h2 className="text-2xl leading-[30px] mb-3">
+                  Resumo do pedido
+                </h2>
                 <p className="text-sm text-gray-400 font-light max-w-sm">
                   Este é o momento de garantir que tudo está conforme o
                   esperado: modelo, condição e acessórios incluídos.
                 </p>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {selectedItems.map((item) => (
                   <div
                     key={item.id}
@@ -191,32 +195,90 @@ export default function CheckoutPage() {
           </div>
 
           {/* Coluna direita - Resumo e Checkout */}
-          <div className="lg:col-span-3 mt-6 lg:mt-0">
-            <div className="p-6 bg-[#F7F7F7] rounded-3xl mb-3.5">
+          <div className="lg:col-span-3 mt-4 lg:mt-0">
+            <div className="py-6 lg:p-6 lg:bg-[#F7F7F7] rounded-3xl mb-3.5">
               <h2 className="text-[22px] mb-6">Central de autenticidade</h2>
-              <div className="flex flex-col items-start gap-3 max-h-[299px] rounded-lg bg-[#EFEFEF] py-[18px] px-4">
-                <div className="relative flex-shrink-0">
-                  <div className="w-[80px] h-[80px]">
-                    <Image
-                      src="/images/product/watchtime-logo.svg"
-                      alt="Watch Time Logo"
-                      width={80}
-                      height={80}
-                      className="object-contain"
-                    />
-                  </div>
+
+              {/* Card selecionável */}
+              <button
+                onClick={() => setAuthenticationEnabled(!authenticationEnabled)}
+                className={`w-full relative flex flex-col items-start gap-3 rounded-xl py-[18px] px-4 transition-all text-left ${
+                  authenticationEnabled
+                    ? "bg-[#141414] border-2 border-[#141414]"
+                    : "bg-[#EFEFEF] border-2 border-transparent hover:border-gray-300"
+                }`}
+              >
+                {/* Radio button */}
+                <div
+                  className={`absolute top-[18px] right-4 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    authenticationEnabled
+                      ? "border-[#D5A60A] bg-[#D5A60A]"
+                      : "border-gray-400 bg-transparent"
+                  }`}
+                >
+                  {authenticationEnabled && (
+                    <div className="w-2 h-2 bg-white rounded-full" />
+                  )}
                 </div>
-                <p className="font-semibold tracking-[0.01em] max-w-xs">
-                  Sua compra com laudo de autenticidade Watch time!
-                </p>
 
-                <p className="text-xs/relaxed text-gray-400 max-w-xs">
-                  Enviamos seus relógios até uma central para verificar a
-                  autenticidade com o custo adicional de{" "}
-                  <span className="font-bold text-gray-400">R$3.430,00.</span>
-                </p>
-              </div>
+                {/* Conteúdo do card */}
+                {authenticationEnabled ? (
+                  <>
+                    <div className="relative flex-shrink-0">
+                      <div className="w-[80px] h-[80px]">
+                        <Image
+                          src="/images/product/watchtime-logo.svg"
+                          alt="Watch Time Logo"
+                          width={80}
+                          height={80}
+                          className="object-contain"
+                        />
+                      </div>
+                    </div>
+                    <p className="font-semibold tracking-[0.01em] max-w-xs text-white">
+                      Sua compra com laudo de autenticidade Watch time!
+                    </p>
+                    <p className="text-xs/relaxed text-gray-300 max-w-xs">
+                      Enviamos seus relógios até uma central para verificar a
+                      autenticidade com o custo adicional de{" "}
+                      <span className="font-bold text-white">
+                        {formatCurrency(authenticationPrice)}
+                      </span>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative flex-shrink-0">
+                      <div className="w-[80px] h-[80px]">
+                        <Image
+                          src="/images/product/watchtime-logo.svg"
+                          alt="Watch Time Logo"
+                          width={80}
+                          height={80}
+                          className="object-contain opacity-50"
+                        />
+                      </div>
+                    </div>
+                    <p className="font-semibold tracking-[0.01em] max-w-xs">
+                      Sua compra com laudo de autenticidade Watch time!
+                    </p>
+                    <p className="text-xs/relaxed text-gray-800 max-w-xs">
+                      Enviamos seus relógios até uma central para verificar a
+                      autenticidade com o custo adicional de{" "}
+                      <span className="font-bold text-white">
+                        {formatCurrency(authenticationPrice)}
+                      </span>
+                    </p>
 
+                    <div className="flex items-center gap-3.5 w-full min-h-[54px] bg-[#fbedeb] p-[14px] rounded-[8px] border-2 border-gray-200">
+                      <AlertCircle className="w-5 h-5 text-[#D23423] flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-[#D23423] font-semibold leading-[20px] tracking-[-0.01em]">
+                        Sua compra será enviada sem segurança de autenticidade.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </button>
               {/* Endereços */}
               <div className="border-t border-[#EFEFEF] pt-6">
                 <div className="flex items-center justify-between mb-4">
@@ -245,12 +307,12 @@ export default function CheckoutPage() {
                         <div
                           className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 absolute right-4 top-4                              ${
                             selectedAddress?.id === address.id
-                              ? "border-[#D5A60A] bg-[#D5A60A]"
+                              ? "border-gray-400 bg-white"
                               : "border-gray-300"
                           }`}
                         >
                           {selectedAddress?.id === address.id && (
-                            <div className="w-2 h-2 bg-white rounded-full" />
+                            <div className="w-3 h-3 bg-[#D5A60A] rounded-full" />
                           )}
                         </div>
 
@@ -291,14 +353,14 @@ export default function CheckoutPage() {
                             </p>
                           </div>
 
-                          <div className="flex items-center p-4">
-                            <div className="flex-1">
+                          <div className="flex items-center">
+                            <div className="flex-1 border-r-1 border-[#D9D9D9] p-4">
                               <p className="text-sm font-semibold text-center">
                                 {address.neighborhood} - {address.city},{" "}
                                 {address.state}
                               </p>
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1  p-4">
                               <p className="text-sm font-semibold text-center">
                                 {address.zipCode}
                               </p>
@@ -325,24 +387,38 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              {/* Resumo */}
-              <div className="space-y-2 mt-6 p-4">
+              {/* Resumo de valores */}
+              <div className="space-y-2.5 mt-6 p-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Subtotal</span>
                   <span className="font-medium">
-                    R$ {subtotal.toLocaleString("pt-BR")}
+                    {formatCurrency(subtotal)}
                   </span>
+                </div>
+
+                {authenticationEnabled && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Autenticação</span>
+                    <span className="font-medium">
+                      {formatCurrency(authenticationPrice)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Entrega</span>
+                  <span className="font-medium">R$ 00,00</span>
                 </div>
               </div>
             </div>
 
             {/* Valor final */}
             <div className="bg-[#F7F7F7] rounded-3xl py-6 px-8 sticky top-24">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div>
                   <p className="text-sm font-light">Total</p>
                   <p className="text-[22px] font-medium">
-                    R$ {total.toLocaleString("pt-BR")}
+                    <span>{formatCurrency(total)}</span>
                   </p>
                 </div>
 

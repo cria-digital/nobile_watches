@@ -51,7 +51,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   const isButtonEnabled = Boolean(isValid && !isLoading);
 
-  const showToast = (message: string, type: "success" | "error" | "info" | "warning") => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" | "info" | "warning"
+  ) => {
     setToast({ message, type });
   };
 
@@ -76,7 +79,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       }, 1500);
     } catch (err: any) {
       // Detecta o tipo de erro e mostra mensagem apropriada
-      const errorMessage = err.message || "Erro ao criar conta. Tente novamente.";
+      const errorMessage =
+        err.message || "Erro ao criar conta. Tente novamente.";
 
       if (
         errorMessage.includes("já cadastrado") ||
@@ -87,7 +91,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           "error"
         );
       } else if (errorMessage.includes("senha")) {
-        showToast("A senha não atende aos requisitos mínimos de segurança.", "error");
+        showToast(
+          "A senha não atende aos requisitos mínimos de segurança.",
+          "error"
+        );
       } else {
         showToast(errorMessage, "error");
       }
@@ -108,9 +115,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <div className="w-full max-w-[500px]">
         <div className="flex flex-col gap-3 mb-6">
           <h1 className="text-[28px] leading-[28px]">Crie sua conta</h1>
-          <p className="text-gray-400 text-sm leading-[21px]">
-            Descubra as marcas mais exclusivas, negocie com segurança e acompanhe a
-            valorização das suas peças.
+          <p className="text-gray-400 text-sm leading-[21px] max-w-sm">
+            Descubra as marcas mais exclusivas, negocie com segurança e
+            acompanhe a valorização das suas peças.
           </p>
         </div>
 
@@ -122,14 +129,24 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
               className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Entrar com Google"
             >
-              <Image src="/icons/google.svg" alt="Google" width={40} height={40} />
+              <Image
+                src="/icons/google.svg"
+                alt="Google"
+                width={40}
+                height={40}
+              />
             </button>
             <button
               type="button"
               className="flex-1 flex items-center justify-center w-[60px] h-[60px] max-w-[60px] bg-[#F7F7F7] border border-[#D9D9D9] rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Entrar com Apple"
             >
-              <Image src="/icons/apple.svg" alt="Apple" width={40} height={40} />
+              <Image
+                src="/icons/apple.svg"
+                alt="Apple"
+                width={40}
+                height={40}
+              />
             </button>
           </div>
         </div>
@@ -216,7 +233,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                   width={24}
                   height={24}
                 />
-                <span className="text-sm text-[#0E121B] tracking-[-0.006em]">+55</span>
+                <span className="text-sm text-[#0E121B] tracking-[-0.006em]">
+                  +55
+                </span>
               </div>
             }
             className="pl-[90px]"
@@ -251,7 +270,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             label="Cidade"
             autoComplete="off"
             placeholder={
-              selectedState ? "Selecione a cidade" : "Selecione um estado primeiro"
+              selectedState
+                ? "Selecione a cidade"
+                : "Selecione um estado primeiro"
             }
             options={availableCities}
             disabled={!selectedState || availableCities.length === 0}
@@ -302,7 +323,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           {/* Link para login */}
           <div className="text-center">
-            <Link href="/login" className="font-bold text-pb-500 transition-colors">
+            <Link
+              href="/login"
+              className="font-bold text-pb-500 transition-colors"
+            >
               Login
             </Link>
           </div>

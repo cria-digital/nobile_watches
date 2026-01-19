@@ -99,6 +99,7 @@ export default function CartPage() {
                   Carrinho de compras
                 </h1>
               </div>
+              <UserNav />
             </div>
           </div>
         </div>

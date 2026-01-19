@@ -1,12 +1,13 @@
+// frontend/src/lib/hooks/useWishlistStatus.ts
+
 import { apiClient } from "@/lib/api";
 import { useAuth } from "@/lib/context/AuthContext";
 import useSWR from "swr";
 
 interface WishlistStatusResponse {
-  isFavorited: boolean;
+  isInWishlist: boolean;
+  wishlistId: number | null;
 }
-
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 /**
  * Fetcher para verificar status da wishlist
@@ -14,46 +15,48 @@ const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 const checkWishlistStatus = async (url: string): Promise<boolean> => {
   try {
     const response = await apiClient.get<WishlistStatusResponse>(url);
-    return response.data.isFavorited || false;
+    return response.data.isInWishlist || false;
   } catch (error) {
-    // Em caso de erro, assume que não está favoritado
     console.error("Erro ao verificar status da wishlist:", error);
     return false;
   }
 };
 
 /**
- * Hook customizado para gerenciar o status da wishlist usando SWR
- *
+ * Hook para gerenciar o status da wishlist usando SWR
  *
  * @param watchId - ID do relógio
- * @returns Status da wishlist e função de mutação
+ * @param shouldCheck - Se true, faz requisição para verificar status. Default: false
  */
-export function useWishlistStatus(watchId: string | number) {
+export function useWishlistStatus(
+  watchId: string | number,
+  shouldCheck: boolean = false // ← Adicione este parâmetro
+) {
   const { isAuthenticated } = useAuth();
 
-  // Construir chave do SWR - só faz requisição se estiver autenticado e não estiver em modo mock
+  // Só faz requisição se:
+  // 1. Estiver autenticado
+  // 2. shouldCheck for true (apenas em ProductPageClient)
   const swrKey =
-    isAuthenticated && !USE_MOCK_DATA ? `/wishlist/check/${watchId}` : null;
+    isAuthenticated && shouldCheck ? `/wishlist/check/${watchId}` : null;
 
   const {
     data: isFavorited,
     error,
     mutate,
   } = useSWR(swrKey, checkWishlistStatus, {
-    // Configurações do SWR
-    revalidateOnFocus: false, // Não revalidar ao focar na aba
-    revalidateOnReconnect: false, // Não revalidar ao reconectar
-    shouldRetryOnError: true, // Tentar novamente em caso de erro
-    errorRetryCount: 1, // Tentar apenas uma vez
-    dedupingInterval: 2000, // Deduplica requisições dentro de 2 segundos
-    fallbackData: false, // Valor padrão enquanto carrega
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: true,
+    errorRetryCount: 1,
+    dedupingInterval: 2000,
+    fallbackData: false,
   });
 
   return {
     isFavorited: isFavorited ?? false,
     isLoading: !error && isFavorited === undefined && swrKey !== null,
     error,
-    mutate, // Função para atualizar manualmente o cache
+    mutate,
   };
 }
